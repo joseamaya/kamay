@@ -25,7 +25,8 @@ The project is in **Phase 3 — blocks, scenes and inheritance**. Working today:
 - **Actions**: orders (`decir`, `mover`, `girar`, `cambiar_escala`) plus
   user-defined methods, triggered on start, click or collision.
 - **Blocks**: build method bodies with stackable blocks (call a method, assign
-  an attribute, repeat) and watch the Python they generate.
+  an attribute, repeat) and convert them to/from code; code the editor cannot
+  represent is kept as advanced code.
 - **Code**: Python generated live, shown in a CodeMirror view (read-only) with
   editable method bodies.
 - **Execution**: run the program with **Pyodide** (Web Worker) and see the
@@ -34,8 +35,7 @@ The project is in **Phase 3 — blocks, scenes and inheritance**. Working today:
 - **Persistence**: autosave to IndexedDB and `.kamay.json` export/import.
 - **Undo/redo** and error messages in Spanish.
 
-Pending (Phase 3): code ↔ blocks sync (advanced code), richer events and
-optional physics.
+Pending (Phase 3): richer events and optional physics.
 
 ## Accessibility
 

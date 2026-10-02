@@ -380,6 +380,40 @@ if __name__ == "__main__":
     expect(heroe?.content).toContain('            self.mover(1, 2)')
   })
 
+  it('emits advanced code blocks verbatim', () => {
+    const project = projectSchema.parse({
+      version: 1,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          classes: [
+            {
+              id: 'class-heroe',
+              name: 'Heroe',
+              inherits: 'Actor',
+              methods: [
+                {
+                  name: 'rutina',
+                  parameters: [],
+                  body: {
+                    kind: 'blocks',
+                    ops: [{ id: 'b1', op: 'code', args: { code: 'if True:\n    pass' } }],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+
+    const heroe = generatePython(project).files.find((file) => file.path === 'Heroe.py')
+    expect(heroe?.content).toContain('        if True:')
+    expect(heroe?.content).toContain('            pass')
+  })
+
   it('is deterministic for the same model', () => {
     const first = generatePython(buildFixture())
     const second = generatePython(buildFixture())
