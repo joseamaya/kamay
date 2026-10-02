@@ -13,6 +13,8 @@ export const es = {
     redo: 'Rehacer',
     newProject: 'Nuevo',
     toggleTheme: 'Cambiar tema',
+    themeLight: 'Claro',
+    themeDark: 'Oscuro',
     textSize: 'Tamaño de texto',
     textNormal: 'Normal',
     textLarge: 'Grande',

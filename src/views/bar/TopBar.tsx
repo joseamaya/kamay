@@ -180,7 +180,7 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
           aria-label={messages.bar.toggleTheme}
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         >
-          {theme === 'dark' ? '☀' : '🌙'}
+          {theme === 'dark' ? messages.bar.themeDark : messages.bar.themeLight}
         </Button>
       </div>
 
