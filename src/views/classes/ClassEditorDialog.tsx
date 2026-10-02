@@ -21,15 +21,11 @@ import type {
 import { Button } from '../../ui/Button'
 import { ColorInput } from '../../ui/ColorInput'
 import { Dialog } from '../../ui/Dialog'
-import { LazyCodeEditor } from '../../ui/LazyCodeEditor'
 import { Select } from '../../ui/Select'
+import { MethodBodyEditor } from './MethodBodyEditor'
 
 const INPUT_CLASS =
   'border-border bg-background focus-visible:ring-ring h-8 w-full rounded-md border px-2 text-sm focus-visible:ring-2 focus-visible:outline-none'
-
-function methodCode(method: Method): string {
-  return method.body.kind === 'code' ? method.body.code : ''
-}
 
 function defaultValue(type: AttributeType): number | string | boolean {
   if (type === 'number') return 0
@@ -307,7 +303,7 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
                   ...current,
                   methods: [
                     ...current.methods,
-                    { name: 'nuevo', parameters: [], body: { kind: 'code', code: '' } },
+                    { name: 'nuevo', parameters: [], body: { kind: 'blocks', ops: [] } },
                   ],
                 }))
               }
@@ -414,18 +410,12 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
                 ) : null}
               </div>
 
-              <div className="mt-2 flex flex-col gap-1 text-xs">
-                <span className="text-muted-foreground">{messages.classEditor.body}</span>
-                <div className="border-border h-28 overflow-hidden rounded-md border">
-                  <LazyCodeEditor
-                    value={methodCode(method)}
-                    onValueChange={(code) =>
-                      updateMethod(methodIndex, { body: { kind: 'code', code } })
-                    }
-                    ariaLabel={messages.classEditor.body}
-                  />
-                </div>
-              </div>
+              <MethodBodyEditor
+                scene={scene}
+                definition={draft}
+                method={method}
+                onChange={(body) => updateMethod(methodIndex, { body })}
+              />
             </div>
           ))}
         </section>

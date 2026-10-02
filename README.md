@@ -24,6 +24,8 @@ The project is in **Phase 2 — own classes and editable code**. Working today:
 - **Properties**: position, rotation, scale and color.
 - **Actions**: orders (`decir`, `mover`, `girar`, `cambiar_escala`) plus
   user-defined methods, triggered on start, click or collision.
+- **Blocks**: build method bodies with stackable blocks (call a method, assign
+  an attribute, repeat) and watch the Python they generate.
 - **Code**: Python generated live, shown in a CodeMirror view (read-only) with
   editable method bodies.
 - **Execution**: run the program with **Pyodide** (Web Worker) and see the
@@ -32,7 +34,8 @@ The project is in **Phase 2 — own classes and editable code**. Working today:
 - **Persistence**: autosave to IndexedDB and `.kamay.json` export/import.
 - **Undo/redo** and error messages in Spanish.
 
-Pending (Phase 3): blocks (blocks → code).
+Pending (Phase 3): code ↔ blocks sync (advanced code), richer events and
+optional physics.
 
 ## Stack
 
