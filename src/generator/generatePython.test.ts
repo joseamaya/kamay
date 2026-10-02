@@ -323,6 +323,63 @@ if __name__ == "__main__":
     expect(heroe?.content).toContain('class Heroe(Personaje):')
   })
 
+  it('compiles method blocks into Python statements', () => {
+    const project = projectSchema.parse({
+      version: 1,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          classes: [
+            {
+              id: 'class-heroe',
+              name: 'Heroe',
+              inherits: 'Actor',
+              attributes: [{ name: 'vida', type: 'number', initial: 100 }],
+              methods: [
+                {
+                  name: 'rutina',
+                  parameters: [],
+                  body: {
+                    kind: 'blocks',
+                    ops: [
+                      { id: 'b1', op: 'set', args: { name: 'vida', value: 50 } },
+                      {
+                        id: 'b2',
+                        op: 'call',
+                        args: { method: 'decir', values: { mensaje: 'hola' } },
+                      },
+                      {
+                        id: 'b3',
+                        op: 'repeat',
+                        args: { times: 2 },
+                        children: [
+                          {
+                            id: 'b4',
+                            op: 'call',
+                            args: { method: 'mover', values: { x: 1, y: 2 } },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+
+    const heroe = generatePython(project).files.find((file) => file.path === 'Heroe.py')
+    expect(heroe?.content).toContain('    def rutina(self):')
+    expect(heroe?.content).toContain('        self.vida = 50')
+    expect(heroe?.content).toContain('        self.decir("hola")')
+    expect(heroe?.content).toContain('        for _ in range(2):')
+    expect(heroe?.content).toContain('            self.mover(1, 2)')
+  })
+
   it('is deterministic for the same model', () => {
     const first = generatePython(buildFixture())
     const second = generatePython(buildFixture())

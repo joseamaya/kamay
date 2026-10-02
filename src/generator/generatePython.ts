@@ -1,13 +1,7 @@
 import { collisionKey, findBuiltinMethod, resolveMethods } from '../model'
-import type {
-  Action,
-  Attribute,
-  ClassDefinition,
-  Method,
-  ObjectInstance,
-  Project,
-  Scene,
-} from '../model'
+import type { Action, ClassDefinition, Method, ObjectInstance, Project, Scene } from '../model'
+import { blocksToLines } from './blocks'
+import { indent, pyLiteral, TYPE_HINTS } from './python'
 
 export interface GeneratedFile {
   path: string
@@ -20,33 +14,6 @@ export interface GenerationResult {
 
 const ENCODING_HEADER = '# -*- coding: utf-8 -*-'
 
-const TYPE_HINTS: Record<Attribute['type'], string> = {
-  number: 'float',
-  string: 'str',
-  boolean: 'bool',
-}
-
-function pyLiteral(value: unknown): string {
-  if (value === null || value === undefined) return 'None'
-  if (typeof value === 'boolean') return value ? 'True' : 'False'
-  if (typeof value === 'number') return Number.isFinite(value) ? String(value) : 'float("nan")'
-  if (typeof value === 'string') return JSON.stringify(value)
-  if (Array.isArray(value)) return `[${value.map(pyLiteral).join(', ')}]`
-  if (typeof value === 'object') {
-    const entries = Object.entries(value as Record<string, unknown>)
-    return `{${entries.map(([key, item]) => `${pyLiteral(key)}: ${pyLiteral(item)}`).join(', ')}}`
-  }
-  return 'None'
-}
-
-function indent(text: string, spaces = 4): string {
-  const pad = ' '.repeat(spaces)
-  return text
-    .split('\n')
-    .map((line) => (line.length > 0 ? pad + line : line))
-    .join('\n')
-}
-
 function collectClasses(project: Project): ClassDefinition[] {
   const byName = new Map<string, ClassDefinition>()
   for (const scene of project.scenes) {
@@ -57,7 +24,7 @@ function collectClasses(project: Project): ClassDefinition[] {
   return [...byName.values()]
 }
 
-function generateMethod(method: Method): string {
+function generateMethod(method: Method, definition: ClassDefinition, scene: Scene): string {
   const parameters = ['self', ...method.parameters.map((p) => `${p.name}: ${TYPE_HINTS[p.type]}`)]
   const lines: string[] = [`def ${method.name}(${parameters.join(', ')}):`]
 
@@ -66,16 +33,12 @@ function generateMethod(method: Method): string {
     return lines.join('\n')
   }
 
-  if (method.body.ops.length === 0) {
-    lines.push('    pass')
-  } else {
-    lines.push('    # TODO: ejecutar bloques (Fase 3)')
-    lines.push('    pass')
-  }
+  const blockLines = blocksToLines(scene, definition, method.body.ops)
+  lines.push(blockLines.length > 0 ? indent(blockLines.join('\n')) : '    pass')
   return lines.join('\n')
 }
 
-function generateClassFile(definition: ClassDefinition): string {
+function generateClassFile(definition: ClassDefinition, scene: Scene): string {
   const bases = definition.inherits ? `(${definition.inherits})` : ''
   const lines: string[] = [ENCODING_HEADER, `# Clase ${definition.name}`]
 
@@ -102,7 +65,7 @@ function generateClassFile(definition: ClassDefinition): string {
   }
 
   for (const method of definition.methods) {
-    members.push(generateMethod(method))
+    members.push(generateMethod(method, definition, scene))
   }
 
   if (members.length === 0) {
@@ -250,10 +213,13 @@ export function generatePython(project: Project, sceneId?: string | null): Gener
   const scenes = sceneId ? project.scenes.filter((scene) => scene.id === sceneId) : project.scenes
   const scoped = scenes.length > 0 ? { ...project, scenes } : project
   const classes = collectClasses(scoped)
-  const files: GeneratedFile[] = classes.map((definition) => ({
-    path: `${definition.name}.py`,
-    content: generateClassFile(definition),
-  }))
+  const files: GeneratedFile[] = classes.map((definition) => {
+    const scene =
+      scoped.scenes.find((candidate) =>
+        candidate.classes.some((item) => item.id === definition.id),
+      ) ?? scoped.scenes[0]!
+    return { path: `${definition.name}.py`, content: generateClassFile(definition, scene) }
+  })
 
   files.push({ path: 'principal.py', content: generateBootstrap(scoped, classes) })
 

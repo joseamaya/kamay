@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import { methodBody } from './helpers'
+import { methodBody, useCodeBody } from './helpers'
 
 test('runs the generated program with pyodide', async ({ page }) => {
   test.skip(!process.env.PYODIDE_E2E, 'set PYODIDE_E2E=1 to run the real Pyodide test')
@@ -69,6 +69,7 @@ test('runs a user-defined method with pyodide', async ({ page }) => {
   await page.getByLabel('Nombre de la clase').fill('Heroe')
   await dialog.getByRole('button', { name: 'Agregar método' }).click()
   await page.getByLabel('Nombre del método').fill('saludar')
+  await useCodeBody(page)
   await methodBody(page).fill('self.decir("hola")')
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
@@ -92,6 +93,7 @@ test('shows an inline error when a method fails', async ({ page }) => {
   await page.getByLabel('Nombre de la clase').fill('Heroe')
   await dialog.getByRole('button', { name: 'Agregar método' }).click()
   await page.getByLabel('Nombre del método').fill('saludar')
+  await useCodeBody(page)
   await methodBody(page).fill('self.no_existe()')
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
@@ -120,6 +122,7 @@ test('runs an inherited method with pyodide', async ({ page }) => {
   await page.getByLabel('Nombre de la clase').fill('Personaje')
   await dialog.getByRole('button', { name: 'Agregar método' }).click()
   await page.getByLabel('Nombre del método').fill('saludar')
+  await useCodeBody(page)
   await methodBody(page).fill('self.decir("hola")')
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
@@ -127,6 +130,30 @@ test('runs an inherited method with pyodide', async ({ page }) => {
   dialog = page.getByRole('dialog')
   await page.getByLabel('Nombre de la clase').fill('Heroe')
   await page.getByLabel('Hereda de').selectOption('Personaje')
+  await dialog.getByRole('button', { name: 'Guardar' }).click()
+
+  await page.getByRole('button', { name: 'Crear objeto de Heroe' }).click()
+  await page.getByRole('button', { name: 'heroe1', exact: true }).click()
+  await page.getByLabel('Orden').selectOption('saludar')
+  await page.getByRole('button', { name: 'Agregar orden' }).click()
+
+  await page.getByRole('button', { name: 'Ejecutar' }).click()
+  await expect(page.getByText('Listo.')).toBeVisible({ timeout: 150_000 })
+})
+
+test('runs a method built with blocks with pyodide', async ({ page }) => {
+  test.skip(!process.env.PYODIDE_E2E, 'set PYODIDE_E2E=1 to run the real Pyodide test')
+  test.setTimeout(180_000)
+
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Nueva clase' }).click()
+  const dialog = page.getByRole('dialog')
+  await page.getByLabel('Nombre de la clase').fill('Heroe')
+  await dialog.getByRole('button', { name: 'Agregar método' }).click()
+  await page.getByLabel('Nombre del método').fill('saludar')
+  await dialog.getByRole('button', { name: 'Orden' }).click()
+  await dialog.getByLabel('Mensaje').fill('hola')
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
   await page.getByRole('button', { name: 'Crear objeto de Heroe' }).click()

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import { codeContent, methodBody } from './helpers'
+import { codeContent, methodBody, useCodeBody } from './helpers'
 
 test('renders the code dock with a syntax-highlighted editor', async ({ page }) => {
   await page.goto('/')
@@ -28,6 +28,7 @@ test('creates a class with a method and instantiates it', async ({ page }) => {
   await page.getByLabel('Nombre de la clase').fill('Heroe')
   await dialog.getByRole('button', { name: 'Agregar método' }).click()
   await page.getByLabel('Nombre del método').fill('saludar')
+  await useCodeBody(page)
   await methodBody(page).fill('self.decir("hola")')
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
@@ -171,4 +172,23 @@ test('renames and deletes a scene', async ({ page }) => {
   await page.getByRole('dialog').getByRole('button', { name: 'Eliminar' }).click()
   await expect(page.getByRole('button', { name: 'Nivel 2', exact: true })).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Principal', exact: true })).toBeVisible()
+})
+
+test('builds a method body with blocks', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Nueva clase' }).click()
+  const dialog = page.getByRole('dialog')
+  await page.getByLabel('Nombre de la clase').fill('Heroe')
+  await dialog.getByRole('button', { name: 'Agregar método' }).click()
+  await page.getByLabel('Nombre del método').fill('saludar')
+
+  await dialog.getByRole('button', { name: 'Orden' }).click()
+  await dialog.getByLabel('Mensaje').fill('hola')
+
+  await dialog.getByRole('button', { name: 'Guardar' }).click()
+
+  await page.getByRole('tab', { name: 'Heroe.py' }).click()
+  await expect(codeContent(page)).toContainText('def saludar(self):')
+  await expect(codeContent(page)).toContainText('self.decir("hola")')
 })
