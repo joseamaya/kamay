@@ -1,33 +1,25 @@
-/**
- * Bridge between the user's Python (executed with Pyodide in a Web Worker) and
- * the Canvas engine running on the main thread.
- *
- * Phase 0 only defines the contract; the Pyodide worker is implemented in Phase 1.
- *
- * TODO(Phase 1): load Pyodide in a dedicated worker and implement `RuntimeBridge`.
- */
-
 export type RuntimeCommand =
-  | { type: 'spawn'; objectId: string; class: string; image: string | null }
-  | { type: 'say'; objectId: string; message: string }
-  | { type: 'move'; objectId: string; x: number; y: number }
-  | { type: 'rotate'; objectId: string; degrees: number }
-  | { type: 'scale'; objectId: string; factor: number }
-  | { type: 'wait'; seconds: number }
-  | { type: 'finish' }
+  | { type: 'say'; target: string; message: string }
+  | { type: 'move'; target: string; x: number; y: number }
+  | { type: 'rotate'; target: string; degrees: number }
+  | { type: 'scale'; target: string; factor: number }
 
 export interface RuntimeError {
+  kind: string
   message: string
   line: number | null
 }
 
+export type RuntimeStatus = 'idle' | 'loading' | 'ready' | 'running' | 'error'
+
 export interface RuntimeBridge {
-  /** Starts loading Pyodide without blocking the UI. */
+  /** Loads Pyodide without blocking the UI. */
   preload: () => Promise<void>
-  /** Runs generated Python source and streams engine commands back. */
-  run: (source: Record<string, string>) => Promise<void>
-  /** Stops the current run and resets to the initial scene state. */
-  reset: () => void
+  /** Runs generated Python files and streams engine commands back. */
+  run: (files: Record<string, string>, entry: string) => Promise<void>
+  /** Stops the current run by terminating and dropping the worker. */
+  stop: () => void
   onCommand: (listener: (command: RuntimeCommand) => void) => () => void
   onError: (listener: (error: RuntimeError) => void) => () => void
+  onStatus: (listener: (status: RuntimeStatus) => void) => () => void
 }

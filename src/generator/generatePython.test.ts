@@ -47,9 +47,11 @@ describe('generatePython', () => {
     expect(heroe?.content).toBe(`# -*- coding: utf-8 -*-
 # Clase Heroe
 
+from kamay_runtime import Actor
+
 class Heroe(Actor):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name=None):
+        super().__init__(name)
         self.vida = 100
 
     def saltar(self):
@@ -70,7 +72,7 @@ from Heroe import Heroe
 
 def main():
     # Escena: Principal
-    h1 = Heroe()
+    h1 = Heroe("h1")
     h1.x = 0
     h1.y = 0
     h1.decir("¡Hola!")
@@ -104,6 +106,30 @@ if __name__ == "__main__":
               ],
             },
           ],
+          objects: [{ id: 'h1', name: 'h1', class: 'Heroe' }],
+          events: [
+            {
+              type: 'on_start',
+              actions: [{ target: 'h1', method: 'mover', args: { y: 2, x: 1 } }],
+            },
+          ],
+        },
+      ],
+    })
+
+    const main = generatePython(project).files.find((file) => file.path === 'principal.py')
+    expect(main?.content).toContain('h1.mover(1, 2)')
+  })
+
+  it('orders builtin method arguments by the engine parameter order', () => {
+    const project = projectSchema.parse({
+      version: 1,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          classes: [{ id: 'class-heroe', name: 'Heroe', inherits: 'Actor' }],
           objects: [{ id: 'h1', name: 'h1', class: 'Heroe' }],
           events: [
             {

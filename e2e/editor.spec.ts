@@ -6,8 +6,19 @@ test('adds an object and reflects it in the code view', async ({ page }) => {
   await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
 
   await expect(page.getByRole('button', { name: 'circle1', exact: true })).toBeVisible()
-  await expect(page.locator('pre')).toContainText('circle1 = Circle()')
+  await expect(page.locator('pre')).toContainText('circle1 = Circle("circle1")')
   await expect(page.locator('pre')).toContainText('from Circle import Circle')
+})
+
+test('adds an action and reflects it in the code view', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByLabel('Mensaje').fill('hola')
+  await page.getByRole('button', { name: 'Agregar orden' }).click()
+
+  await expect(page.locator('pre')).toContainText('circle1.decir("hola")')
 })
 
 test('warns before discarding unsaved changes', async ({ page }) => {

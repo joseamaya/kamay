@@ -1,5 +1,5 @@
 import type { ActorShape } from '../model'
-import type { Actor, RenderOptions, SceneState, Vector2 } from './types'
+import type { Actor, Bubble, RenderOptions, SceneState, Vector2 } from './types'
 
 export const ACTOR_SIZE = 48
 
@@ -80,4 +80,41 @@ export function renderScene(
 
   const actors = [...scene.actors].sort((a, b) => a.zIndex - b.zIndex)
   for (const actor of actors) renderActor(ctx, actor, options)
+}
+
+export function renderBubbles(
+  ctx: CanvasRenderingContext2D,
+  bubbles: Bubble[],
+  actors: Actor[],
+  options: RenderOptions,
+): void {
+  for (const bubble of bubbles) {
+    const actor = actors.find((candidate) => candidate.id === bubble.target)
+    if (!actor) continue
+
+    const screen = sceneToScreen(actor.transform.position, options)
+    const padding = 8
+    const height = 28
+
+    ctx.save()
+    ctx.font = '14px system-ui, sans-serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+
+    const width = ctx.measureText(bubble.message).width + padding * 2
+    const x = screen.x - width / 2
+    const y = screen.y - (ACTOR_SIZE / 2) * Math.max(actor.transform.scale, 0.2) - height - 8
+
+    ctx.fillStyle = '#ffffff'
+    ctx.strokeStyle = '#c2603a'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.rect(x, y, width, height)
+    ctx.fill()
+    ctx.stroke()
+
+    ctx.fillStyle = '#1f1a17'
+    ctx.fillText(bubble.message, screen.x, y + height / 2)
+    ctx.restore()
+  }
 }

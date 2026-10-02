@@ -1,5 +1,5 @@
 import { createId } from './ids'
-import type { ClassDefinition, ObjectInstance, Project, Scene } from './schema'
+import type { Action, ClassDefinition, EventType, ObjectInstance, Project, Scene } from './schema'
 
 export type ActorShape = 'circle' | 'square' | 'triangle'
 
@@ -96,6 +96,29 @@ export function setSceneBackground(scene: Scene, background: string): Scene {
 
 export function renameProject(project: Project, name: string): Project {
   return { ...project, meta: { ...project.meta, name } }
+}
+
+export function addSceneAction(scene: Scene, eventType: EventType, action: Action): Scene {
+  const events = [...scene.events]
+  const index = events.findIndex((event) => event.type === eventType)
+  if (index >= 0) {
+    const event = events[index]!
+    events[index] = { ...event, actions: [...event.actions, action] }
+  } else {
+    events.push({ type: eventType, actions: [action] })
+  }
+  return { ...scene, events }
+}
+
+export function removeSceneAction(scene: Scene, eventType: EventType, actionIndex: number): Scene {
+  return {
+    ...scene,
+    events: scene.events.map((event) =>
+      event.type === eventType
+        ? { ...event, actions: event.actions.filter((_, index) => index !== actionIndex) }
+        : event,
+    ),
+  }
 }
 
 export function replaceScene(project: Project, scene: Scene): Project {

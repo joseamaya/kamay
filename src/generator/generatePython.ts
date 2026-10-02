@@ -1,3 +1,4 @@
+import { findBuiltinMethod } from '../model'
 import type {
   Action,
   Attribute,
@@ -76,19 +77,20 @@ function generateMethod(method: Method): string {
 
 function generateClassFile(definition: ClassDefinition): string {
   const bases = definition.inherits ? `(${definition.inherits})` : ''
-  const lines: string[] = [
-    ENCODING_HEADER,
-    `# Clase ${definition.name}`,
-    '',
-    `class ${definition.name}${bases}:`,
-  ]
+  const lines: string[] = [ENCODING_HEADER, `# Clase ${definition.name}`]
+
+  if (definition.inherits === 'Actor') {
+    lines.push('', 'from kamay_runtime import Actor')
+  }
+
+  lines.push('', `class ${definition.name}${bases}:`)
 
   const members: string[] = []
 
   if (definition.inherits || definition.attributes.length > 0) {
-    const initLines = ['def __init__(self):']
+    const initLines = ['def __init__(self, name=None):']
     const body: string[] = []
-    if (definition.inherits) body.push('super().__init__()')
+    if (definition.inherits) body.push('super().__init__(name)')
     for (const attribute of definition.attributes) {
       body.push(`self.${attribute.name} = ${pyLiteral(attribute.initial)}`)
     }
@@ -129,13 +131,14 @@ function orderedArgs(scene: Scene, action: Action): unknown[] {
     ? scene.classes.find((candidate) => candidate.name === object.class)
     : undefined
   const method = definition?.methods.find((candidate) => candidate.name === action.method)
-  if (!method) return Object.values(action.args)
+  const parameters = method?.parameters ?? findBuiltinMethod(action.method)?.parameters
+  if (!parameters) return Object.values(action.args)
 
-  const byParameter = method.parameters
+  const byParameter = parameters
     .filter((parameter) => parameter.name in action.args)
     .map((parameter) => action.args[parameter.name])
   const extras = Object.entries(action.args)
-    .filter(([name]) => !method.parameters.some((parameter) => parameter.name === name))
+    .filter(([name]) => !parameters.some((parameter) => parameter.name === name))
     .map(([, value]) => value)
 
   return [...byParameter, ...extras]
@@ -148,7 +151,7 @@ function generateAction(scene: Scene, action: Action): string {
 }
 
 function generateObjectStatements(object: ObjectInstance): string[] {
-  const lines = [`${object.name} = ${object.class}()`]
+  const lines = [`${object.name} = ${object.class}(${pyLiteral(object.name)})`]
   for (const [key, value] of Object.entries(object.attributes)) {
     lines.push(`${object.name}.${key} = ${pyLiteral(value)}`)
   }

@@ -13,16 +13,19 @@ English.
 
 ## Status
 
-The project is in **Phase 1 (MVP), milestone M1 — local editor**. Working today:
+The project is in **Phase 1 (MVP), milestone M2 — execution**. Working today:
 
 - **Factory**: add and remove objects from the catalog (circle, square, triangle).
 - **Stage**: custom Canvas 2D engine with background, selection and drag.
 - **Properties**: position, rotation, scale and color.
+- **Actions**: give objects orders (`decir`, `mover`, `girar`, `cambiar_escala`).
 - **Code**: Python generated live from the model.
+- **Execution**: run the program with **Pyodide** (Web Worker) and see the
+  objects talk and move; errors are shown in Spanish.
 - **Persistence**: autosave to IndexedDB and `.kamay.json` export/import.
 - **Undo/redo** and error messages in Spanish.
 
-Pending (M2–M3): real execution with **Pyodide** and the actions/methods UI.
+Pending (M3): richer methods, class bodies and blocks.
 
 ## Stack
 
@@ -33,7 +36,7 @@ Pending (M2–M3): real execution with **Pyodide** and the actions/methods UI.
 | State          | Zustand (typed central store)                 |
 | Data schema    | Versioned JSON validated with Zod             |
 | Styling        | Tailwind CSS v4                               |
-| Python runtime | Pyodide (M2, in a Web Worker)                 |
+| Python runtime | Pyodide (in a Web Worker, pinned CDN)         |
 | Engine         | Custom Canvas 2D                              |
 | Persistence    | IndexedDB (idb) + `.kamay.json` export/import |
 | Tests          | Vitest + React Testing Library + Playwright   |
@@ -71,9 +74,9 @@ src/
   model/         # versioned Zod schema, types and migrations
   store/         # central state (Zustand) with undo/redo
   generator/     # JSON model -> deterministic Python code
-  runtime/       # Pyodide bridge contract
-  engine/        # Canvas 2D engine
-  views/         # stage, factory, code and top bar
+  runtime/       # Pyodide worker, bridge and error translation
+  engine/        # Canvas 2D engine and runtime commands
+  views/         # stage, factory, actions, code and top bar
   persistence/   # IndexedDB and export/import
   i18n/          # Spanish UI strings
   ui/            # reusable components and design system

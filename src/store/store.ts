@@ -2,15 +2,17 @@ import { create } from 'zustand'
 
 import {
   addCatalogObject,
+  addSceneAction,
   createEmptyProject,
   findCatalogItem,
   removeObject as removeObjectFromScene,
+  removeSceneAction,
   renameProject as renameProjectInProject,
   replaceScene,
   setSceneBackground,
   updateObjectAttributes as updateObjectAttributesOnScene,
 } from '../model'
-import type { Project, Scene } from '../model'
+import type { Action, EventType, Project, Scene } from '../model'
 
 const HISTORY_LIMIT = 50
 
@@ -28,6 +30,8 @@ export interface ProjectState {
     patch: Record<string, number | string | boolean>,
   ) => void
   setBackground: (sceneId: string, background: string) => void
+  addAction: (sceneId: string, eventType: EventType, action: Action) => void
+  removeAction: (sceneId: string, eventType: EventType, actionIndex: number) => void
   renameProject: (name: string) => void
   undo: () => void
   redo: () => void
@@ -82,6 +86,18 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   setBackground: (sceneId, background) => {
     get().updateProject((project) =>
       updateScene(project, sceneId, (scene) => setSceneBackground(scene, background)),
+    )
+  },
+
+  addAction: (sceneId, eventType, action) => {
+    get().updateProject((project) =>
+      updateScene(project, sceneId, (scene) => addSceneAction(scene, eventType, action)),
+    )
+  },
+
+  removeAction: (sceneId, eventType, actionIndex) => {
+    get().updateProject((project) =>
+      updateScene(project, sceneId, (scene) => removeSceneAction(scene, eventType, actionIndex)),
     )
   },
 

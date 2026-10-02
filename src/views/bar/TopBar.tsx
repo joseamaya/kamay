@@ -4,16 +4,18 @@ import type { ChangeEventHandler } from 'react'
 import { getMessages } from '../../i18n'
 import { createEmptyProject, createId } from '../../model'
 import type { PersistenceApi } from '../../persistence'
-import { canRedo, canUndo, useEditorStore, useProjectStore } from '../../store'
+import type { RuntimeApi } from '../../runtime'
+import { canRedo, canUndo, useEditorStore, useProjectStore, useRuntimeStore } from '../../store'
 import { Button } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
 import { OpenProjectDialog } from './OpenProjectDialog'
 
 export interface TopBarProps {
   persistence: PersistenceApi
+  runtime: RuntimeApi
 }
 
-export function TopBar({ persistence }: TopBarProps) {
+export function TopBar({ persistence, runtime }: TopBarProps) {
   const messages = getMessages()
   const undo = useProjectStore((state) => state.undo)
   const redo = useProjectStore((state) => state.redo)
@@ -28,6 +30,8 @@ export function TopBar({ persistence }: TopBarProps) {
   const clearLog = useEditorStore((state) => state.clearLog)
   const dirty = useEditorStore((state) => state.dirty)
   const setDirty = useEditorStore((state) => state.setDirty)
+  const runtimeStatus = useRuntimeStore((state) => state.status)
+  const isRunning = runtimeStatus === 'loading' || runtimeStatus === 'running'
 
   const [openDialog, setOpenDialog] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
@@ -133,9 +137,15 @@ export function TopBar({ persistence }: TopBarProps) {
         <Button variant="ghost" size="sm" onClick={redo} disabled={!hasFuture}>
           {messages.bar.redo}
         </Button>
-        <Button variant="secondary" size="sm" disabled title={messages.bar.runSoon}>
-          {messages.bar.run}
-        </Button>
+        {isRunning ? (
+          <Button variant="secondary" size="sm" onClick={runtime.stop}>
+            {messages.bar.stop}
+          </Button>
+        ) : (
+          <Button variant="primary" size="sm" onClick={runtime.run}>
+            {messages.bar.run}
+          </Button>
+        )}
       </div>
 
       <input
