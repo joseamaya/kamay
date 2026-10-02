@@ -55,15 +55,18 @@ const theme = EditorView.theme({
 
 const highlight = HighlightStyle.define([
   { tag: tags.keyword, color: 'var(--color-primary)', fontWeight: '600' },
-  { tag: [tags.string, tags.special(tags.string)], color: 'oklch(52% 0.13 150)' },
+  { tag: [tags.string, tags.special(tags.string)], color: 'var(--color-syntax-string)' },
   {
     tag: [tags.comment, tags.lineComment],
     color: 'var(--color-muted-foreground)',
     fontStyle: 'italic',
   },
-  { tag: [tags.number, tags.bool, tags.null], color: 'oklch(55% 0.16 305)' },
-  { tag: [tags.function(tags.variableName), tags.labelName], color: 'oklch(52% 0.15 250)' },
-  { tag: [tags.typeName, tags.className, tags.namespace], color: 'oklch(58% 0.15 45)' },
+  { tag: [tags.number, tags.bool, tags.null], color: 'var(--color-syntax-number)' },
+  {
+    tag: [tags.function(tags.variableName), tags.labelName],
+    color: 'var(--color-syntax-function)',
+  },
+  { tag: [tags.typeName, tags.className, tags.namespace], color: 'var(--color-syntax-type)' },
   {
     tag: [tags.definition(tags.variableName), tags.variableName],
     color: 'var(--color-foreground)',

@@ -29,6 +29,10 @@ const emptyRectList = {
 } as unknown as DOMRectList
 
 if (typeof Range !== 'undefined') {
-  Range.prototype.getBoundingClientRect = () => emptyRect
-  Range.prototype.getClientRects = () => emptyRectList
+  if (!Range.prototype.getBoundingClientRect) {
+    Range.prototype.getBoundingClientRect = () => emptyRect
+  }
+  if (!Range.prototype.getClientRects) {
+    Range.prototype.getClientRects = () => emptyRectList
+  }
 }
