@@ -5,14 +5,17 @@ import {
   addSceneAction,
   createEmptyProject,
   findCatalogItem,
+  instantiateClass as instantiateClassInScene,
+  removeClass as removeClassFromScene,
   removeObject as removeObjectFromScene,
   removeSceneAction,
   renameProject as renameProjectInProject,
   replaceScene,
   setSceneBackground,
   updateObjectAttributes as updateObjectAttributesOnScene,
+  upsertClass,
 } from '../model'
-import type { Action, EventType, Project, Scene } from '../model'
+import type { Action, ClassDefinition, EventType, Project, Scene } from '../model'
 
 const HISTORY_LIMIT = 50
 
@@ -30,6 +33,9 @@ export interface ProjectState {
     patch: Record<string, number | string | boolean>,
   ) => void
   setBackground: (sceneId: string, background: string) => void
+  saveClass: (sceneId: string, definition: ClassDefinition) => void
+  removeClass: (sceneId: string, classId: string) => void
+  instantiateClass: (sceneId: string, classId: string) => void
   addAction: (sceneId: string, eventType: EventType, action: Action) => void
   removeAction: (sceneId: string, eventType: EventType, actionIndex: number) => void
   renameProject: (name: string) => void
@@ -40,7 +46,8 @@ export interface ProjectState {
 function updateScene(project: Project, sceneId: string, updater: (scene: Scene) => Scene): Project {
   const scene = project.scenes.find((candidate) => candidate.id === sceneId)
   if (!scene) return project
-  return replaceScene(project, updater(scene))
+  const next = updater(scene)
+  return next === scene ? project : replaceScene(project, next)
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
@@ -86,6 +93,24 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   setBackground: (sceneId, background) => {
     get().updateProject((project) =>
       updateScene(project, sceneId, (scene) => setSceneBackground(scene, background)),
+    )
+  },
+
+  saveClass: (sceneId, definition) => {
+    get().updateProject((project) =>
+      updateScene(project, sceneId, (scene) => upsertClass(scene, definition)),
+    )
+  },
+
+  removeClass: (sceneId, classId) => {
+    get().updateProject((project) =>
+      updateScene(project, sceneId, (scene) => removeClassFromScene(scene, classId)),
+    )
+  },
+
+  instantiateClass: (sceneId, classId) => {
+    get().updateProject((project) =>
+      updateScene(project, sceneId, (scene) => instantiateClassInScene(scene, classId)),
     )
   },
 

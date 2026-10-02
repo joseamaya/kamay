@@ -18,7 +18,7 @@ export const ACTOR_CATALOG: CatalogItem[] = [
 
 export const BASE_CLASS = 'Actor'
 
-const OBJECT_DEFAULTS = {
+export const OBJECT_DEFAULTS = {
   x: 0,
   y: 0,
   rotation: 0,
@@ -47,7 +47,7 @@ export function catalogClass(item: CatalogItem): ClassDefinition {
   }
 }
 
-function nextObjectName(scene: Scene, className: string): string {
+export function nextObjectName(scene: Scene, className: string): string {
   const base = className.toLowerCase()
   let index = 1
   const names = new Set(scene.objects.map((object) => object.name))
@@ -55,13 +55,21 @@ function nextObjectName(scene: Scene, className: string): string {
   return `${base}${index}`
 }
 
-export function createObjectFromCatalog(scene: Scene, item: CatalogItem): ObjectInstance {
+export function createObject(
+  scene: Scene,
+  className: string,
+  attributes: Record<string, number | string | boolean> = {},
+): ObjectInstance {
   return {
     id: createId('object'),
-    name: nextObjectName(scene, item.className),
-    class: item.className,
-    attributes: { ...OBJECT_DEFAULTS, color: item.color, shape: item.shape },
+    name: nextObjectName(scene, className),
+    class: className,
+    attributes: { ...OBJECT_DEFAULTS, ...attributes },
   }
+}
+
+export function createObjectFromCatalog(scene: Scene, item: CatalogItem): ObjectInstance {
+  return createObject(scene, item.className, { color: item.color, shape: item.shape })
 }
 
 /** Adds the catalog object (and its class if missing) to the scene. */
