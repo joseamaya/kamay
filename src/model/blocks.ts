@@ -4,9 +4,6 @@ import { BUILTIN_METHODS } from './methods'
 import type { BuiltinMethod } from './methods'
 import type { Attribute, AttributeType, ClassDefinition, Operation, Scene } from './schema'
 
-/** Block kinds supported by the visual method-body editor. */
-export type BlockOp = 'call' | 'set' | 'repeat'
-
 export function createCallBlock(
   method = BUILTIN_METHODS[0]?.name ?? '',
   values: Record<string, unknown> = {},
