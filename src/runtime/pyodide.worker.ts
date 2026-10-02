@@ -1,9 +1,10 @@
 /// <reference lib="webworker" />
 import { PYODIDE_CDN } from './config'
+import { EventRegistry } from './eventRegistry'
 import type { WorkerRequest, WorkerResponse } from './protocol'
 import { toRuntimeError } from './pythonError'
 import runtimeSource from './python/runtime.py?raw'
-import type { RuntimeCommand } from './types'
+import type { RuntimeCommand, TriggerKind } from './types'
 
 interface PyodideLike {
   FS: {
@@ -14,6 +15,7 @@ interface PyodideLike {
 }
 
 let pyodidePromise: Promise<PyodideLike> | null = null
+const registry = new EventRegistry()
 
 function post(message: WorkerResponse): void {
   self.postMessage(message)
@@ -32,6 +34,14 @@ async function ensurePyodide(): Promise<PyodideLike> {
   return pyodidePromise
 }
 
+function handleTrigger(kind: TriggerKind, source: string): void {
+  try {
+    registry.dispatch(kind, source)
+  } catch (error) {
+    post({ type: 'error', error: toRuntimeError(error) })
+  }
+}
+
 async function run(files: Record<string, string>, entry: string): Promise<void> {
   try {
     const pyodide = await ensurePyodide()
@@ -43,7 +53,15 @@ async function run(files: Record<string, string>, entry: string): Promise<void> 
         // Ignore malformed commands coming from user code.
       }
     }
+    ;(globalThis as Record<string, unknown>).__kamay_registrar = (
+      kind: TriggerKind,
+      source: string,
+      handler: () => void,
+    ) => {
+      registry.register(kind, source, handler)
+    }
 
+    registry.clear()
     pyodide.FS.mkdirTree('/kamay')
     pyodide.FS.writeFile('/kamay/kamay_runtime.py', runtimeSource)
     for (const [name, content] of Object.entries(files)) {
@@ -76,5 +94,7 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
     void ensurePyodide()
   } else if (request.type === 'run') {
     void run(request.files, request.entry)
+  } else if (request.type === 'trigger') {
+    handleTrigger(request.kind, request.source)
   }
 }

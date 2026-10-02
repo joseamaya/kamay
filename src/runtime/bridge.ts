@@ -49,6 +49,9 @@ export function createRuntimeBridge(): RuntimeBridge {
     run: async (files, entry) => {
       ensureWorker().postMessage({ type: 'run', files, entry } satisfies WorkerRequest)
     },
+    trigger: (kind, source) => {
+      worker?.postMessage({ type: 'trigger', kind, source } satisfies WorkerRequest)
+    },
     stop: () => {
       worker?.terminate()
       worker = null

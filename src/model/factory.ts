@@ -80,7 +80,20 @@ export function addCatalogObject(scene: Scene, item: CatalogItem): Scene {
 }
 
 export function removeObject(scene: Scene, objectId: string): Scene {
-  return { ...scene, objects: scene.objects.filter((object) => object.id !== objectId) }
+  const target = scene.objects.find((object) => object.id === objectId)
+  if (!target) return scene
+
+  const identifiers = new Set([target.id, target.name])
+  return {
+    ...scene,
+    objects: scene.objects.filter((object) => object.id !== objectId),
+    events: scene.events
+      .map((event) => ({
+        ...event,
+        actions: event.actions.filter((action) => !identifiers.has(action.target)),
+      }))
+      .filter((event) => !(event.source && identifiers.has(event.source))),
+  }
 }
 
 export function updateObjectAttributes(
@@ -106,23 +119,45 @@ export function renameProject(project: Project, name: string): Project {
   return { ...project, meta: { ...project.meta, name } }
 }
 
-export function addSceneAction(scene: Scene, eventType: EventType, action: Action): Scene {
+function sameTrigger(event: Scene['events'][number], eventType: EventType, source: string | null) {
+  return event.type === eventType && (event.source ?? null) === (source ?? null)
+}
+
+export function findEvent(
+  scene: Scene,
+  eventType: EventType,
+  source: string | null,
+): Scene['events'][number] | undefined {
+  return scene.events.find((event) => sameTrigger(event, eventType, source))
+}
+
+export function addEventAction(
+  scene: Scene,
+  eventType: EventType,
+  source: string | null,
+  action: Action,
+): Scene {
   const events = [...scene.events]
-  const index = events.findIndex((event) => event.type === eventType)
+  const index = events.findIndex((event) => sameTrigger(event, eventType, source))
   if (index >= 0) {
     const event = events[index]!
     events[index] = { ...event, actions: [...event.actions, action] }
   } else {
-    events.push({ type: eventType, actions: [action] })
+    events.push({ type: eventType, source: source ?? null, actions: [action] })
   }
   return { ...scene, events }
 }
 
-export function removeSceneAction(scene: Scene, eventType: EventType, actionIndex: number): Scene {
+export function removeEventAction(
+  scene: Scene,
+  eventType: EventType,
+  source: string | null,
+  actionIndex: number,
+): Scene {
   return {
     ...scene,
     events: scene.events.map((event) =>
-      event.type === eventType
+      sameTrigger(event, eventType, source)
         ? { ...event, actions: event.actions.filter((_, index) => index !== actionIndex) }
         : event,
     ),

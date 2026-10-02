@@ -10,8 +10,8 @@ import {
   toSceneState,
 } from '../../engine'
 import type { Actor } from '../../engine'
-import { onRuntimeCommand, onRuntimeReset } from '../../runtime'
-import { useActiveScene, useEditorStore, useProjectStore } from '../../store'
+import { emitRuntimeTrigger, onRuntimeCommand, onRuntimeReset } from '../../runtime'
+import { useActiveScene, useEditorStore, useProjectStore, useRuntimeStore } from '../../store'
 
 interface Point {
   x: number
@@ -20,6 +20,7 @@ interface Point {
 
 interface DragState {
   objectId: string
+  name: string
   pointerStart: Point
   origin: Point
   offset: Point
@@ -45,6 +46,7 @@ export function ScenarioCanvas() {
   const selectedObjectId = useEditorStore((state) => state.selectedObjectId)
   const selectObject = useEditorStore((state) => state.selectObject)
   const updateObjectAttributes = useProjectStore((state) => state.updateObjectAttributes)
+  const runtimeStatus = useRuntimeStore((state) => state.status)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -171,6 +173,7 @@ export function ScenarioCanvas() {
     selectObject(actor.id)
     dragRef.current = {
       objectId: actor.id,
+      name: actor.name,
       pointerStart: point,
       origin: { ...actor.transform.position },
       offset: { x: 0, y: 0 },
@@ -194,11 +197,16 @@ export function ScenarioCanvas() {
     dragRef.current = null
     if (!drag) return
 
-    if (scene && (drag.offset.x !== 0 || drag.offset.y !== 0)) {
+    const moved = drag.offset.x !== 0 || drag.offset.y !== 0
+    if (scene && moved) {
       updateObjectAttributes(scene.id, drag.objectId, {
         x: Math.round(drag.origin.x + drag.offset.x),
         y: Math.round(drag.origin.y + drag.offset.y),
       })
+    }
+
+    if (!moved && (runtimeStatus === 'ready' || runtimeStatus === 'running')) {
+      emitRuntimeTrigger({ kind: 'click', source: drag.name })
     }
   }
 

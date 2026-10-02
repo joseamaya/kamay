@@ -46,6 +46,25 @@ describe('ActionsPanel', () => {
     })
   })
 
+  it('adds a click action whose source is the object', async () => {
+    const user = userEvent.setup()
+    const sceneId = useProjectStore.getState().project.scenes[0]!.id
+    useProjectStore.getState().addObject(sceneId, 'circle')
+    const objectId = useProjectStore.getState().project.scenes[0]!.objects[0]!.id
+    useEditorStore.setState({ selectedObjectId: objectId })
+
+    render(<ActionsPanel />)
+    await user.selectOptions(screen.getByLabelText('Cuándo'), 'on_click')
+    await user.type(screen.getByLabelText('Mensaje'), 'hola')
+    await user.click(screen.getByRole('button', { name: 'Agregar orden' }))
+
+    const clickEvent = useProjectStore
+      .getState()
+      .project.scenes[0]!.events.find((event) => event.type === 'on_click')
+    expect(clickEvent?.source).toBe('circle1')
+    expect(clickEvent?.actions[0]).toMatchObject({ method: 'decir', args: { mensaje: 'hola' } })
+  })
+
   it('adds an action for the selected object', async () => {
     const user = userEvent.setup()
     const sceneId = useProjectStore.getState().project.scenes[0]!.id

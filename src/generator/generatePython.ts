@@ -160,6 +160,10 @@ function generateObjectStatements(object: ObjectInstance): string[] {
   return lines
 }
 
+function clickHandlerName(source: string): string {
+  return `al_hacer_clic_${source}`
+}
+
 function generateSceneBody(scene: Scene): string[] {
   const lines: string[] = [`# Escena: ${scene.name}`]
 
@@ -172,9 +176,18 @@ function generateSceneBody(scene: Scene): string[] {
       for (const action of event.actions) {
         lines.push(generateAction(scene, action))
       }
-    } else {
-      lines.push(`# TODO: evento ${event.type} (Fase 2)`)
+    } else if (event.type === 'on_collision') {
+      lines.push('# TODO: colisiones (siguiente hito)')
     }
+  }
+
+  for (const event of scene.events) {
+    if (event.type !== 'on_click' || !event.source) continue
+    const name = clickHandlerName(event.source)
+    const body = event.actions.map((action) => generateAction(scene, action))
+    lines.push(`def ${name}():`)
+    lines.push(body.length > 0 ? indent(body.join('\n')) : '    pass')
+    lines.push(`registrar("click", ${pyLiteral(event.source)}, ${name})`)
   }
 
   return lines
@@ -189,6 +202,11 @@ function generateBootstrap(project: Project, classes: ClassDefinition[]): string
   const imports = classes
     .filter((definition) => usedClassNames.has(definition.name))
     .map((definition) => `from ${definition.name} import ${definition.name}`)
+
+  const needsRegistrar = project.scenes.some((scene) =>
+    scene.events.some((event) => event.type === 'on_click' && event.source),
+  )
+  if (needsRegistrar) imports.push('from kamay_runtime import registrar')
 
   const header = [ENCODING_HEADER, `# Proyecto: ${project.meta.name}`]
   if (project.meta.author) header.push(`# Autor: ${project.meta.author}`)
