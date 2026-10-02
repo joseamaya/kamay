@@ -8,6 +8,7 @@ import { cn } from '../../ui/cn'
 import { Dialog } from '../../ui/Dialog'
 import { Panel } from '../../ui/Panel'
 import { ClassEditorDialog } from '../classes/ClassEditorDialog'
+import { SceneManager } from '../scenes/SceneManager'
 
 function ShapePreview({ shape, color }: { shape: ActorShape; color: string }) {
   const style = { backgroundColor: color }
@@ -89,6 +90,8 @@ export function FactoryView() {
   return (
     <Panel title={messages.factory.title} className="min-h-0">
       <div className="flex h-full flex-col gap-4">
+        <SceneManager />
+
         <div>
           <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
             {messages.factory.catalogTitle}

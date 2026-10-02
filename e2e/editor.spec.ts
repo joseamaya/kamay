@@ -139,3 +139,36 @@ test('creates a class that inherits from another class', async ({ page }) => {
   await page.getByRole('button', { name: 'heroe1', exact: true }).click()
   await expect(page.getByLabel('vida', { exact: true })).toBeVisible()
 })
+
+test('creates and switches between scenes', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await expect(page.getByRole('button', { name: 'circle1', exact: true })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Nueva escena' }).click()
+  await expect(page.getByRole('button', { name: 'Escena 2', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'circle1', exact: true })).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'Agregar Cuadrado al escenario' }).click()
+  await expect(page.getByRole('button', { name: 'square1', exact: true })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Principal', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'circle1', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'square1', exact: true })).toHaveCount(0)
+})
+
+test('renames and deletes a scene', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Nueva escena' }).click()
+  await page.getByRole('button', { name: 'Renombrar Escena 2' }).click()
+  await page.getByLabel('Nombre de la escena').fill('Nivel 2')
+  await page.getByRole('dialog').getByRole('button', { name: 'Entendido' }).click()
+  await expect(page.getByRole('button', { name: 'Nivel 2', exact: true })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Eliminar Nivel 2' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Eliminar' }).click()
+  await expect(page.getByRole('button', { name: 'Nivel 2', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Principal', exact: true })).toBeVisible()
+})

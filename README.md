@@ -18,6 +18,8 @@ The project is in **Phase 2 — own classes and editable code**. Working today:
 - **Factory**: add and remove objects from the catalog (circle, square, triangle).
 - **Classes**: create your own classes with attributes and methods, instantiate
   several objects from them and inherit from another class.
+- **Scenes**: create, rename, switch and delete scenes; the stage and the
+  generated code follow the active scene.
 - **Stage**: custom Canvas 2D engine with background, selection and drag.
 - **Properties**: position, rotation, scale and color.
 - **Actions**: orders (`decir`, `mover`, `girar`, `cambiar_escala`) plus
@@ -30,7 +32,7 @@ The project is in **Phase 2 — own classes and editable code**. Working today:
 - **Persistence**: autosave to IndexedDB and `.kamay.json` export/import.
 - **Undo/redo** and error messages in Spanish.
 
-Pending (Phase 3): blocks (blocks → code) and multiple scenes.
+Pending (Phase 3): blocks (blocks → code).
 
 ## Stack
 

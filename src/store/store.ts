@@ -4,13 +4,17 @@ import {
   addCatalogObject,
   addEventAction,
   createEmptyProject,
+  createScene,
   duplicateObject as duplicateObjectInScene,
   findCatalogItem,
   instantiateClass as instantiateClassInScene,
+  nextSceneName,
   removeClass as removeClassFromScene,
   removeEventAction,
   removeObject as removeObjectFromScene,
+  removeScene as removeSceneFromProject,
   renameProject as renameProjectInProject,
+  renameScene as renameSceneInProject,
   replaceScene,
   setSceneBackground,
   updateObjectAttributes as updateObjectAttributesOnScene,
@@ -53,6 +57,9 @@ export interface ProjectState {
     actionIndex: number,
   ) => void
   renameProject: (name: string) => void
+  addScene: () => string
+  renameScene: (sceneId: string, name: string) => void
+  removeScene: (sceneId: string) => void
   undo: () => void
   redo: () => void
 }
@@ -152,6 +159,20 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   renameProject: (name) => {
     get().updateProject((project) => renameProjectInProject(project, name))
+  },
+
+  addScene: () => {
+    const scene = createScene(nextSceneName(get().project))
+    get().updateProject((project) => ({ ...project, scenes: [...project.scenes, scene] }))
+    return scene.id
+  },
+
+  renameScene: (sceneId, name) => {
+    get().updateProject((project) => renameSceneInProject(project, sceneId, name))
+  },
+
+  removeScene: (sceneId) => {
+    get().updateProject((project) => removeSceneFromProject(project, sceneId))
   },
 
   undo: () =>

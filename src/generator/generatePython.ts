@@ -243,16 +243,19 @@ function generateBootstrap(project: Project, classes: ClassDefinition[]): string
 
 /**
  * Generates the Python source for a project in a deterministic way:
- * the same model always produces the same files and ordering.
+ * the same model always produces the same files and ordering. When a scene id
+ * is given, only that scene is generated so the stage and the code match.
  */
-export function generatePython(project: Project): GenerationResult {
-  const classes = collectClasses(project)
+export function generatePython(project: Project, sceneId?: string | null): GenerationResult {
+  const scenes = sceneId ? project.scenes.filter((scene) => scene.id === sceneId) : project.scenes
+  const scoped = scenes.length > 0 ? { ...project, scenes } : project
+  const classes = collectClasses(scoped)
   const files: GeneratedFile[] = classes.map((definition) => ({
     path: `${definition.name}.py`,
     content: generateClassFile(definition),
   }))
 
-  files.push({ path: 'principal.py', content: generateBootstrap(project, classes) })
+  files.push({ path: 'principal.py', content: generateBootstrap(scoped, classes) })
 
   return { files }
 }

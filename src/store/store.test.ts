@@ -142,4 +142,30 @@ describe('useProjectStore', () => {
     useProjectStore.getState().removeAction(sceneId, 'on_start', null, null, 0)
     expect(useProjectStore.getState().project.scenes[0]!.events[0]?.actions).toHaveLength(0)
   })
+
+  it('adds a scene and returns its id', () => {
+    const id = useProjectStore.getState().addScene()
+    const scenes = useProjectStore.getState().project.scenes
+
+    expect(scenes).toHaveLength(2)
+    expect(scenes[1]?.id).toBe(id)
+    expect(scenes[1]?.name).toBe('Escena 2')
+  })
+
+  it('renames a scene', () => {
+    const id = useProjectStore.getState().addScene()
+    useProjectStore.getState().renameScene(id, 'Nivel 2')
+
+    expect(useProjectStore.getState().project.scenes[1]?.name).toBe('Nivel 2')
+  })
+
+  it('removes a scene but keeps the last one', () => {
+    const id = useProjectStore.getState().addScene()
+    useProjectStore.getState().removeScene(id)
+    expect(useProjectStore.getState().project.scenes).toHaveLength(1)
+
+    const lastId = useProjectStore.getState().project.scenes[0]!.id
+    useProjectStore.getState().removeScene(lastId)
+    expect(useProjectStore.getState().project.scenes).toHaveLength(1)
+  })
 })
