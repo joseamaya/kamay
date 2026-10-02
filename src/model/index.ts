@@ -22,6 +22,28 @@ export function createScene(name: string): Scene {
   }
 }
 
+/** Suggests an unused scene name based on the current count. */
+export function nextSceneName(project: Project): string {
+  const base = 'Escena'
+  const names = new Set(project.scenes.map((scene) => scene.name))
+  let index = project.scenes.length + 1
+  while (names.has(`${base} ${index}`)) index += 1
+  return `${base} ${index}`
+}
+
+export function renameScene(project: Project, sceneId: string, name: string): Project {
+  return {
+    ...project,
+    scenes: project.scenes.map((scene) => (scene.id === sceneId ? { ...scene, name } : scene)),
+  }
+}
+
+/** Removes a scene, keeping at least one in the project. */
+export function removeScene(project: Project, sceneId: string): Project {
+  if (project.scenes.length <= 1) return project
+  return { ...project, scenes: project.scenes.filter((scene) => scene.id !== sceneId) }
+}
+
 export function createEmptyProject(meta: Partial<ProjectMeta> = {}): Project {
   return {
     version: CURRENT_SCHEMA_VERSION,

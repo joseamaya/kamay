@@ -19,7 +19,11 @@ function maxHeight(): number {
 export function CodeView() {
   const messages = getMessages()
   const project = useProjectStore((state) => state.project)
-  const files = useMemo(() => generatePython(project).files, [project])
+  const activeSceneId = useEditorStore((state) => state.activeSceneId)
+  const files = useMemo(
+    () => generatePython(project, activeSceneId).files,
+    [project, activeSceneId],
+  )
 
   const codeHeight = useEditorStore((state) => state.codeHeight)
   const setCodeHeight = useEditorStore((state) => state.setCodeHeight)

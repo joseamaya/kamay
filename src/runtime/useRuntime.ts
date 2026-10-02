@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { generatePython } from '../generator'
-import { useProjectStore, useRuntimeStore } from '../store'
+import { useEditorStore, useProjectStore, useRuntimeStore } from '../store'
 import { createRuntimeBridge } from './bridge'
 import { emitRuntimeCommand, emitRuntimeReset, onRuntimeTrigger } from './bus'
 
@@ -32,8 +32,9 @@ export function useRuntime(): RuntimeApi {
 
   const run = useCallback(() => {
     const project = useProjectStore.getState().project
+    const activeSceneId = useEditorStore.getState().activeSceneId
     const files = Object.fromEntries(
-      generatePython(project).files.map((file) => [file.path, file.content]),
+      generatePython(project, activeSceneId).files.map((file) => [file.path, file.content]),
     )
     setError(null)
     setStatus('loading')
