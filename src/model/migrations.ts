@@ -27,6 +27,8 @@ export const migrations: Record<number, SchemaMigration> = {
   1: (data) => mapEvents(data, 2, (event) => ({ source: null, ...event })),
   // v2 -> v3: events gained an `other` field for the collision pair.
   2: (data) => mapEvents(data, 3, (event) => ({ other: null, ...event })),
+  // v3 -> v4: events gained `key` (keyboard) and `signal` fields.
+  3: (data) => mapEvents(data, 4, (event) => ({ key: null, signal: null, ...event })),
 }
 
 export class MigrationError extends Error {

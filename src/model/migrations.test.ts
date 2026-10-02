@@ -39,6 +39,23 @@ describe('migrateProject', () => {
     expect(result.scenes[0]?.events[0]?.other).toBeNull()
   })
 
+  it('upgrades a v3 project by adding key and signal', () => {
+    const input = {
+      version: 3,
+      meta: { name: 'Demo' },
+      scenes: [{ id: 'scene-1', name: 'Principal', events: [{ type: 'on_click', source: 'a' }] }],
+    }
+
+    const result = migrateProject(input) as {
+      version: number
+      scenes: { events: { key: unknown; signal: unknown }[] }[]
+    }
+
+    expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
+    expect(result.scenes[0]?.events[0]?.key).toBeNull()
+    expect(result.scenes[0]?.events[0]?.signal).toBeNull()
+  })
+
   it('upgrades a v2 project by adding the collision other', () => {
     const input = {
       version: 2,
