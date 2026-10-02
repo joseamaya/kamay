@@ -22,8 +22,8 @@ The project is in **Phase 3 — blocks, scenes and inheritance**. Working today:
   generated code follow the active scene.
 - **Stage**: custom Canvas 2D engine with background, selection and drag.
 - **Properties**: position, rotation, scale and color.
-- **Actions**: orders (`decir`, `mover`, `girar`, `cambiar_escala`) plus
-  user-defined methods, triggered on start, click or collision.
+- **Actions**: orders (`decir`, `mover`, `girar`, `cambiar_escala`, `esperar`)
+  plus user-defined methods, triggered on start, click or collision.
 - **Blocks**: build method bodies with stackable blocks (call a method, assign
   an attribute, repeat) and convert them to/from code; code the editor cannot
   represent is kept as advanced code.

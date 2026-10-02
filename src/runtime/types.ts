@@ -3,6 +3,7 @@ export type RuntimeCommand =
   | { type: 'move'; target: string; x: number; y: number }
   | { type: 'rotate'; target: string; degrees: number }
   | { type: 'scale'; target: string; factor: number }
+  | { type: 'wait'; seconds: number }
 
 export interface RuntimeError {
   kind: string

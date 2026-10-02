@@ -30,3 +30,6 @@ class Actor:
 
     def cambiar_escala(self, factor):
         _emit({"type": "scale", "target": self._kamay_name, "factor": float(factor)})
+
+    def esperar(self, segundos):
+        _emit({"type": "wait", "seconds": float(segundos)})

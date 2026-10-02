@@ -9,6 +9,7 @@ describe('builtin methods', () => {
       'mover',
       'girar',
       'cambiar_escala',
+      'esperar',
     ])
   })
 
