@@ -1,12 +1,4 @@
-/**
- * Canvas 2D engine contract.
- *
- * Phase 0 only defines the types; the game loop and rendering are implemented
- * in Phase 1.
- *
- * TODO(Phase 1): implement a `requestAnimationFrame` loop with fixed-step
- * updates, actor transforms and simple AABB/circle collisions.
- */
+import type { ActorShape } from '../model/factory'
 
 export interface Vector2 {
   x: number
@@ -21,8 +13,9 @@ export interface Transform {
 
 export interface Actor {
   id: string
-  class: string
-  image: string | null
+  name: string
+  shape: ActorShape
+  color: string
   transform: Transform
   zIndex: number
 }
@@ -32,20 +25,8 @@ export interface SceneState {
   actors: Actor[]
 }
 
-export interface Tween {
-  objectId: string
-  property: 'position' | 'rotation' | 'scale'
-  from: number | Vector2
-  to: number | Vector2
-  duration: number
-  elapsed: number
-}
-
-export interface Engine {
-  mount: (canvas: HTMLCanvasElement) => void
-  unmount: () => void
-  loadScene: (state: SceneState) => void
-  applyCommand: (command: import('../runtime/types').RuntimeCommand) => void
-  update: (deltaSeconds: number) => void
-  render: () => void
+export interface RenderOptions {
+  width: number
+  height: number
+  selectedId?: string | null
 }

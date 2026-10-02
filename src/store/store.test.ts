@@ -52,4 +52,45 @@ describe('useProjectStore', () => {
     useProjectStore.getState().undo()
     expect(useProjectStore.getState().project).toBe(before)
   })
+
+  it('adds an object from the catalog and records history', () => {
+    const sceneId = useProjectStore.getState().project.scenes[0]!.id
+    useProjectStore.getState().addObject(sceneId, 'circle')
+
+    const scene = useProjectStore.getState().project.scenes[0]!
+    expect(scene.objects).toHaveLength(1)
+    expect(scene.classes[0]?.name).toBe('Circle')
+    expect(useProjectStore.getState().past).toHaveLength(1)
+
+    useProjectStore.getState().undo()
+    expect(useProjectStore.getState().project.scenes[0]?.objects).toHaveLength(0)
+  })
+
+  it('ignores unknown catalog items', () => {
+    const sceneId = useProjectStore.getState().project.scenes[0]!.id
+    useProjectStore.getState().addObject(sceneId, 'unknown')
+    expect(useProjectStore.getState().project.scenes[0]?.objects).toHaveLength(0)
+  })
+
+  it('updates and removes an object', () => {
+    const sceneId = useProjectStore.getState().project.scenes[0]!.id
+    useProjectStore.getState().addObject(sceneId, 'circle')
+    const objectId = useProjectStore.getState().project.scenes[0]!.objects[0]!.id
+
+    useProjectStore
+      .getState()
+      .updateObjectAttributes(sceneId, objectId, { x: 10, color: '#000000' })
+    const updated = useProjectStore.getState().project.scenes[0]!.objects[0]!
+    expect(updated.attributes.x).toBe(10)
+    expect(updated.attributes.color).toBe('#000000')
+
+    useProjectStore.getState().removeObject(sceneId, objectId)
+    expect(useProjectStore.getState().project.scenes[0]?.objects).toHaveLength(0)
+  })
+
+  it('sets the active scene background', () => {
+    const sceneId = useProjectStore.getState().project.scenes[0]!.id
+    useProjectStore.getState().setBackground(sceneId, 'night')
+    expect(useProjectStore.getState().project.scenes[0]?.background).toBe('night')
+  })
 })
