@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { format, getMessages } from '../../i18n'
-import { ACTOR_CATALOG, classUsageCount } from '../../model'
+import { ACTOR_CATALOG, classInheritanceUsageCount, classUsageCount } from '../../model'
 import type { ActorShape, CatalogItem, ClassDefinition } from '../../model'
 import { useActiveScene, useEditorStore, useProjectStore } from '../../store'
 import { cn } from '../../ui/cn'
@@ -38,7 +38,7 @@ export function FactoryView() {
 
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const [pendingDeleteClass, setPendingDeleteClass] = useState<ClassDefinition | null>(null)
-  const [blockedClass, setBlockedClass] = useState<ClassDefinition | null>(null)
+  const [blockedClass, setBlockedClass] = useState<{ name: string; reasons: string[] } | null>(null)
   const [editorClass, setEditorClass] = useState<ClassDefinition | null | undefined>(undefined)
 
   const catalogLabels: Record<string, string> = {
@@ -69,7 +69,13 @@ export function FactoryView() {
   }
 
   const requestDeleteClass = (definition: ClassDefinition) => {
-    if (classUsageCount(scene, definition.name) > 0) setBlockedClass(definition)
+    const reasons: string[] = []
+    if (classUsageCount(scene, definition.name) > 0)
+      reasons.push(messages.factory.deleteBlockedObjects)
+    if (classInheritanceUsageCount(scene, definition.name) > 0) {
+      reasons.push(messages.factory.deleteBlockedInherited)
+    }
+    if (reasons.length > 0) setBlockedClass({ name: definition.name, reasons })
     else setPendingDeleteClass(definition)
   }
 
@@ -242,7 +248,10 @@ export function FactoryView() {
         onConfirm={() => setBlockedClass(null)}
       >
         {blockedClass
-          ? format(messages.factory.deleteClassBlocked, { name: blockedClass.name })
+          ? format(messages.factory.deleteBlocked, {
+              name: blockedClass.name,
+              reasons: blockedClass.reasons.join(' y '),
+            })
           : null}
       </Dialog>
 

@@ -1,4 +1,4 @@
-import { collisionKey, findBuiltinMethod } from '../model'
+import { collisionKey, findBuiltinMethod, resolveMethods } from '../model'
 import type {
   Action,
   Attribute,
@@ -129,10 +129,9 @@ function resolveVariableName(scene: Scene, target: string): string {
  */
 function orderedArgs(scene: Scene, action: Action): unknown[] {
   const object = findObject(scene, action.target)
-  const definition = object
-    ? scene.classes.find((candidate) => candidate.name === object.class)
+  const method = object
+    ? resolveMethods(scene, object.class).find((candidate) => candidate.name === action.method)
     : undefined
-  const method = definition?.methods.find((candidate) => candidate.name === action.method)
   const parameters = method?.parameters ?? findBuiltinMethod(action.method)?.parameters
   if (!parameters) return Object.values(action.args)
 

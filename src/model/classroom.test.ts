@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  availableBaseClasses,
   classUsageCount,
   createClassDraft,
   createScene,
@@ -8,6 +9,9 @@ import {
   hasClassDraftErrors,
   instantiateClass,
   removeClass,
+  resolveAttributeDefaults,
+  resolveCustomAttributes,
+  resolveMethods,
   updateObjectAttributes,
   upsertClass,
   validateClassDraft,
@@ -110,6 +114,78 @@ describe('per-instance state', () => {
     expect(clone.id).not.toBe(source.id)
     expect(clone.name).toBe('heroe2')
     expect(clone.attributes).toEqual(source.attributes)
+  })
+})
+
+describe('inheritance', () => {
+  const personaje = createClassDraft('Personaje')
+  const heroe = { ...createClassDraft('Heroe'), inherits: 'Personaje' }
+
+  function sceneWithFamily() {
+    let scene = upsertClass(createScene('Principal'), personaje)
+    scene = upsertClass(scene, heroe)
+    return scene
+  }
+
+  it('offers Actor and non-descendant classes as bases', () => {
+    expect(availableBaseClasses(sceneWithFamily(), heroe)).toEqual(['Actor', 'Personaje'])
+  })
+
+  it('excludes descendants to avoid cycles', () => {
+    expect(availableBaseClasses(sceneWithFamily(), personaje)).not.toContain('Heroe')
+  })
+
+  it('propagates inherits when the base class is renamed', () => {
+    const scene = upsertClass(sceneWithFamily(), { ...personaje, name: 'Criatura' })
+    expect(scene.classes.find((candidate) => candidate.name === 'Heroe')?.inherits).toBe('Criatura')
+  })
+
+  it('keeps a class that still has subclasses', () => {
+    expect(removeClass(sceneWithFamily(), personaje.id).classes).toHaveLength(2)
+  })
+
+  it('resolves inherited attributes, own definitions first', () => {
+    const scene = upsertClass(sceneWithFamily(), {
+      ...personaje,
+      attributes: [
+        { name: 'color', type: 'string', initial: '#fff' },
+        { name: 'shape', type: 'string', initial: 'circle' },
+        { name: 'vida', type: 'number', initial: 100 },
+      ],
+    })
+    expect(resolveCustomAttributes(scene, 'Heroe').map((attribute) => attribute.name)).toEqual([
+      'vida',
+    ])
+    expect(resolveAttributeDefaults(scene, 'Heroe').vida).toBe(100)
+  })
+
+  it('resolves inherited methods, own definitions first', () => {
+    const scene = upsertClass(sceneWithFamily(), {
+      ...personaje,
+      methods: [
+        { name: 'saludar', parameters: [], body: { kind: 'code', code: '' } },
+        { name: 'comer', parameters: [], body: { kind: 'code', code: '' } },
+      ],
+    })
+    expect(resolveMethods(scene, 'Heroe').map((method) => method.name)).toEqual([
+      'saludar',
+      'comer',
+    ])
+  })
+
+  it('flags an unknown, self or cyclic base', () => {
+    const scene = sceneWithFamily()
+    expect(validateClassDraft(scene, { ...heroe, inherits: 'Fantasma' }).inheritsInvalid).toBe(true)
+    expect(validateClassDraft(scene, { ...personaje, inherits: 'Personaje' }).inheritsInvalid).toBe(
+      true,
+    )
+    expect(validateClassDraft(scene, { ...personaje, inherits: 'Heroe' }).inheritsInvalid).toBe(
+      true,
+    )
+  })
+
+  it('accepts a valid base', () => {
+    expect(validateClassDraft(sceneWithFamily(), heroe).inheritsInvalid).toBe(false)
   })
 })
 

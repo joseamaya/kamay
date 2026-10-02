@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { getMessages } from '../../i18n'
-import { BUILTIN_METHODS, findEvent } from '../../model'
+import { BUILTIN_METHODS, findEvent, resolveMethods } from '../../model'
 import type { Action, AttributeType, BuiltinMethod } from '../../model'
 import { useActiveScene, useEditorStore, useProjectStore, useSelectedObject } from '../../store'
 import { Button } from '../../ui/Button'
@@ -51,8 +51,7 @@ export function ActionsPanel() {
     )
   }
 
-  const definition = scene.classes.find((candidate) => candidate.name === object.class)
-  const customMethods: BuiltinMethod[] = (definition?.methods ?? []).map((method) => ({
+  const customMethods: BuiltinMethod[] = resolveMethods(scene, object.class).map((method) => ({
     name: method.name,
     parameters: method.parameters,
   }))

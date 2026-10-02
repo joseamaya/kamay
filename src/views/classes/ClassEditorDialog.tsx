@@ -3,6 +3,8 @@ import { useMemo, useState } from 'react'
 import { getMessages } from '../../i18n'
 import {
   ACTOR_CATALOG,
+  availableBaseClasses,
+  BASE_CLASS,
   createClassDraft,
   hasClassDraftErrors,
   newAttribute,
@@ -57,6 +59,10 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
   const shapeOptions = ACTOR_CATALOG.map((item) => ({
     value: item.shape,
     label: messages.catalog[item.shape],
+  }))
+  const baseOptions = availableBaseClasses(scene, draft).map((name) => ({
+    value: name,
+    label: name,
   }))
 
   const visual = (name: 'color' | 'shape', fallback: string): string => {
@@ -146,21 +152,36 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
     >
       <div className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1 text-xs">
-            <span className="text-muted-foreground">{messages.classEditor.name}</span>
-            <input
-              className={INPUT_CLASS}
-              value={draft.name}
-              onChange={(event) =>
-                setDraft((current) => ({ ...current, name: event.target.value }))
-              }
-            />
-            {errors.nameInvalid ? (
-              <span className="text-destructive">{messages.classEditor.errorNameInvalid}</span>
-            ) : errors.nameTaken ? (
-              <span className="text-destructive">{messages.classEditor.errorNameTaken}</span>
-            ) : null}
-          </label>
+          <div className="flex flex-col gap-3">
+            <label className="flex flex-col gap-1 text-xs">
+              <span className="text-muted-foreground">{messages.classEditor.name}</span>
+              <input
+                className={INPUT_CLASS}
+                value={draft.name}
+                onChange={(event) =>
+                  setDraft((current) => ({ ...current, name: event.target.value }))
+                }
+              />
+              {errors.nameInvalid ? (
+                <span className="text-destructive">{messages.classEditor.errorNameInvalid}</span>
+              ) : errors.nameTaken ? (
+                <span className="text-destructive">{messages.classEditor.errorNameTaken}</span>
+              ) : null}
+            </label>
+            <div className="flex flex-col gap-1">
+              <Select
+                label={messages.classEditor.base}
+                value={draft.inherits ?? BASE_CLASS}
+                options={baseOptions}
+                onChange={(value) => setDraft((current) => ({ ...current, inherits: value }))}
+              />
+              {errors.inheritsInvalid ? (
+                <span className="text-destructive text-xs">
+                  {messages.classEditor.errorInherits}
+                </span>
+              ) : null}
+            </div>
+          </div>
           <div className="flex flex-col justify-center gap-2">
             <ColorInput
               label={messages.classEditor.color}
@@ -193,9 +214,7 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
             </Button>
           </header>
           {customAttributes.length === 0 ? (
-            <p className="text-muted-foreground text-xs">
-              {messages.classEditor.base}: {draft.inherits ?? '—'}
-            </p>
+            <p className="text-muted-foreground text-xs">{messages.classEditor.noAttributes}</p>
           ) : (
             <ul className="flex flex-col gap-1">
               {customAttributes.map(({ attribute, index }) => (
