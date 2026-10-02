@@ -157,6 +157,7 @@ export const es = {
     mover: 'Mover',
     girar: 'Girar',
     cambiar_escala: 'Cambiar escala',
+    esperar: 'Esperar',
   },
   params: {
     mensaje: 'Mensaje',
@@ -164,6 +165,7 @@ export const es = {
     y: 'Y',
     grados: 'Grados',
     factor: 'Factor',
+    segundos: 'Segundos',
   },
   code: {
     title: 'Código',

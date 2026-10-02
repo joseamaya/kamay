@@ -41,6 +41,7 @@ export function ActionsPanel() {
     y: messages.params.y,
     grados: messages.params.grados,
     factor: messages.params.factor,
+    segundos: messages.params.segundos,
   }
 
   if (!scene || !object) {

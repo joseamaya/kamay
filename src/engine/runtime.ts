@@ -6,6 +6,8 @@ import type { Actor, Bubble, SceneState } from './types'
 const MOVE_DURATION = 0.6
 const SAY_DURATION = 2.5
 
+type ActorCommand = Exclude<RuntimeCommand, { type: 'wait' }>
+
 /**
  * Mutable state produced by executing the student's program. It starts from the
  * model's initial scene and reacts to engine commands, advancing animations on
@@ -16,6 +18,9 @@ export class RuntimeController {
   private bubbles: Bubble[] = []
   private tweens: Tween[] = []
   private reducedMotion = false
+  private clock = 0
+  private delay = 0
+  private pending: { command: ActorCommand; at: number }[] = []
 
   setReducedMotion(value: boolean): void {
     this.reducedMotion = value
@@ -28,6 +33,9 @@ export class RuntimeController {
     }))
     this.bubbles = []
     this.tweens = []
+    this.clock = 0
+    this.delay = 0
+    this.pending = []
   }
 
   private find(target: string): Actor | undefined {
@@ -35,6 +43,18 @@ export class RuntimeController {
   }
 
   apply(command: RuntimeCommand): void {
+    if (command.type === 'wait') {
+      this.delay += command.seconds
+      return
+    }
+    if (this.delay > 0) {
+      this.pending.push({ command, at: this.clock + this.delay })
+      return
+    }
+    this.applyNow(command)
+  }
+
+  private applyNow(command: ActorCommand): void {
     const actor = this.find(command.target)
     if (!actor) return
 
@@ -86,6 +106,13 @@ export class RuntimeController {
   }
 
   update(delta: number): void {
+    this.clock += delta
+    if (this.pending.length > 0) {
+      const due = this.pending.filter((item) => item.at <= this.clock)
+      this.pending = this.pending.filter((item) => item.at > this.clock)
+      for (const item of due) this.applyNow(item.command)
+    }
+
     this.tweens = advanceTweens(this.tweens, delta, ({ objectId, property, value }) => {
       const actor = this.actors.find((candidate) => candidate.id === objectId)
       if (!actor) return
