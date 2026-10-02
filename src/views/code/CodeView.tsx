@@ -5,6 +5,7 @@ import { generatePython } from '../../generator'
 import { getMessages } from '../../i18n'
 import { CODE_MIN_HEIGHT, useEditorStore, useProjectStore } from '../../store'
 import { cn } from '../../ui/cn'
+import { LazyCodeEditor } from '../../ui/LazyCodeEditor'
 
 const COPY_FEEDBACK_MS = 1500
 const RESIZE_STEP = 24
@@ -38,8 +39,6 @@ export function CodeView() {
   useEffect(() => {
     if (codeFile && !files.some((file) => file.path === codeFile)) setCodeFile(null)
   }, [files, codeFile, setCodeFile])
-
-  const lines = activeFile ? activeFile.content.replace(/\n$/, '').split('\n') : []
 
   const handleCopy = async () => {
     if (!activeFile) return
@@ -151,20 +150,14 @@ export function CodeView() {
           id={panelId}
           role="tabpanel"
           aria-labelledby={activeFile ? `${panelId}-tab-${activeFile.path}` : undefined}
-          className="min-h-0 flex-1 overflow-auto"
+          className="min-h-0 flex-1"
         >
           {activeFile ? (
-            <div className="flex min-w-max font-mono text-xs leading-5">
-              <ol
-                aria-hidden="true"
-                className="bg-card text-muted-foreground border-border sticky left-0 z-10 flex-none border-r px-3 py-3 text-right select-none"
-              >
-                {lines.map((_, index) => (
-                  <li key={index}>{index + 1}</li>
-                ))}
-              </ol>
-              <pre className="px-3 py-3 whitespace-pre">{lines.join('\n')}</pre>
-            </div>
+            <LazyCodeEditor
+              readOnly
+              value={activeFile.content}
+              ariaLabel={`${messages.code.title}: ${activeFile.path}`}
+            />
           ) : (
             <p className="text-muted-foreground p-4 text-sm">{messages.code.empty}</p>
           )}

@@ -1,10 +1,14 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createEmptyProject } from '../../model'
 import { useEditorStore, useProjectStore } from '../../store'
 import { CodeView } from './CodeView'
+
+function editorText(container: HTMLElement): string {
+  return container.querySelector('.cm-content')?.textContent ?? ''
+}
 
 beforeEach(() => {
   useProjectStore.setState({ project: createEmptyProject({ name: 'Demo' }), past: [], future: [] })
@@ -17,7 +21,7 @@ describe('CodeView', () => {
     const sceneId = useProjectStore.getState().project.scenes[0]!.id
     useProjectStore.getState().addObject(sceneId, 'circle')
 
-    render(<CodeView />)
+    const { container } = render(<CodeView />)
 
     expect(screen.getByRole('tab', { name: 'principal.py' })).toHaveAttribute(
       'aria-selected',
@@ -27,7 +31,7 @@ describe('CodeView', () => {
     await user.click(screen.getByRole('tab', { name: 'Circle.py' }))
 
     expect(screen.getByRole('tab', { name: 'Circle.py' })).toHaveAttribute('aria-selected', 'true')
-    expect(screen.getByText(/class Circle\(Actor\)/)).toBeInTheDocument()
+    await waitFor(() => expect(editorText(container)).toContain('class Circle(Actor):'))
   })
 
   it('copies the active file', async () => {

@@ -1,13 +1,23 @@
 import { expect, test } from '@playwright/test'
 
+import { codeContent, methodBody } from './helpers'
+
+test('renders the code dock with a syntax-highlighted editor', async ({ page }) => {
+  await page.goto('/')
+
+  await expect(page.locator('.cm-editor')).toBeVisible()
+  await expect(page.locator('.cm-gutters .cm-lineNumbers')).toBeVisible()
+  await expect(codeContent(page)).toContainText('def main():')
+})
+
 test('adds an object and reflects it in the code view', async ({ page }) => {
   await page.goto('/')
 
   await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
 
   await expect(page.getByRole('button', { name: 'circle1', exact: true })).toBeVisible()
-  await expect(page.locator('pre')).toContainText('circle1 = Circle("circle1")')
-  await expect(page.locator('pre')).toContainText('from Circle import Circle')
+  await expect(codeContent(page)).toContainText('circle1 = Circle("circle1")')
+  await expect(codeContent(page)).toContainText('from Circle import Circle')
 })
 
 test('creates a class with a method and instantiates it', async ({ page }) => {
@@ -18,17 +28,17 @@ test('creates a class with a method and instantiates it', async ({ page }) => {
   await page.getByLabel('Nombre de la clase').fill('Heroe')
   await dialog.getByRole('button', { name: 'Agregar método' }).click()
   await page.getByLabel('Nombre del método').fill('saludar')
-  await page.getByLabel('Cuerpo').fill('self.decir("hola")')
+  await methodBody(page).fill('self.decir("hola")')
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
   await page.getByRole('tab', { name: 'Heroe.py' }).click()
-  await expect(page.locator('pre')).toContainText('class Heroe(Actor):')
-  await expect(page.locator('pre')).toContainText('def saludar(self):')
-  await expect(page.locator('pre')).toContainText('self.decir("hola")')
+  await expect(codeContent(page)).toContainText('class Heroe(Actor):')
+  await expect(codeContent(page)).toContainText('def saludar(self):')
+  await expect(codeContent(page)).toContainText('self.decir("hola")')
 
   await page.getByRole('button', { name: 'Crear objeto de Heroe' }).click()
   await page.getByRole('tab', { name: 'principal.py' }).click()
-  await expect(page.locator('pre')).toContainText('heroe1 = Heroe("heroe1")')
+  await expect(codeContent(page)).toContainText('heroe1 = Heroe("heroe1")')
 })
 
 test('keeps per-instance state for objects of the same class', async ({ page }) => {
@@ -47,8 +57,8 @@ test('keeps per-instance state for objects of the same class', async ({ page }) 
   await page.getByRole('button', { name: 'heroe1', exact: true }).click()
   await page.getByLabel('vida', { exact: true }).fill('40')
 
-  await expect(page.locator('pre')).toContainText('heroe1.vida = 40')
-  await expect(page.locator('pre')).toContainText('heroe2.vida = 0')
+  await expect(codeContent(page)).toContainText('heroe1.vida = 40')
+  await expect(codeContent(page)).toContainText('heroe2.vida = 0')
 })
 
 test('shows every generated file and switches tabs', async ({ page }) => {
@@ -57,10 +67,10 @@ test('shows every generated file and switches tabs', async ({ page }) => {
   await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
 
   await page.getByRole('tab', { name: 'Circle.py' }).click()
-  await expect(page.locator('pre')).toContainText('class Circle(Actor):')
+  await expect(codeContent(page)).toContainText('class Circle(Actor):')
 
   await page.getByRole('tab', { name: 'principal.py' }).click()
-  await expect(page.locator('pre')).toContainText('circle1 = Circle("circle1")')
+  await expect(codeContent(page)).toContainText('circle1 = Circle("circle1")')
 })
 
 test('adds an action and reflects it in the code view', async ({ page }) => {
@@ -71,7 +81,7 @@ test('adds an action and reflects it in the code view', async ({ page }) => {
   await page.getByLabel('Mensaje').fill('hola')
   await page.getByRole('button', { name: 'Agregar orden' }).click()
 
-  await expect(page.locator('pre')).toContainText('circle1.decir("hola")')
+  await expect(codeContent(page)).toContainText('circle1.decir("hola")')
 })
 
 test('warns before discarding unsaved changes', async ({ page }) => {
