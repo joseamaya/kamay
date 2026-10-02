@@ -12,6 +12,11 @@ export const es = {
     undo: 'Deshacer',
     redo: 'Rehacer',
     newProject: 'Nuevo',
+    toggleTheme: 'Cambiar tema',
+    textSize: 'Tamaño de texto',
+    textNormal: 'Normal',
+    textLarge: 'Grande',
+    textXLarge: 'Muy grande',
   },
   views: {
     scenario: 'Escenario',
@@ -109,6 +114,7 @@ export const es = {
   },
   scenario: {
     title: 'Escenario',
+    canvasLabel: 'Escenario. Usa las flechas para mover el objeto seleccionado.',
     empty: 'El escenario está vacío.',
     emptyHint: 'Agrega objetos desde la Fábrica y verás su efecto aquí.',
   },

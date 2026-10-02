@@ -5,9 +5,18 @@ import { getMessages } from '../../i18n'
 import { createEmptyProject, createId } from '../../model'
 import type { PersistenceApi } from '../../persistence'
 import type { RuntimeApi } from '../../runtime'
-import { canRedo, canUndo, useEditorStore, useProjectStore, useRuntimeStore } from '../../store'
+import {
+  canRedo,
+  canUndo,
+  useEditorStore,
+  usePreferencesStore,
+  useProjectStore,
+  useRuntimeStore,
+} from '../../store'
+import type { FontScale } from '../../store'
 import { Button } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
+import { Select } from '../../ui/Select'
 import { OpenProjectDialog } from './OpenProjectDialog'
 
 export interface TopBarProps {
@@ -32,6 +41,10 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
   const setDirty = useEditorStore((state) => state.setDirty)
   const runtimeStatus = useRuntimeStore((state) => state.status)
   const isRunning = runtimeStatus === 'loading' || runtimeStatus === 'running'
+  const theme = usePreferencesStore((state) => state.theme)
+  const setTheme = usePreferencesStore((state) => state.setTheme)
+  const fontScale = usePreferencesStore((state) => state.fontScale)
+  const setFontScale = usePreferencesStore((state) => state.setFontScale)
 
   const [openDialog, setOpenDialog] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
@@ -146,6 +159,29 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
             {messages.bar.run}
           </Button>
         )}
+
+        <span className="bg-border mx-1 h-5 w-px" aria-hidden="true" />
+
+        <Select
+          ariaLabel={messages.bar.textSize}
+          value={fontScale}
+          options={[
+            { value: 'normal', label: messages.bar.textNormal },
+            { value: 'large', label: messages.bar.textLarge },
+            { value: 'xlarge', label: messages.bar.textXLarge },
+          ]}
+          className="w-28"
+          onChange={(value) => setFontScale(value as FontScale)}
+        />
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-pressed={theme === 'dark'}
+          aria-label={messages.bar.toggleTheme}
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        >
+          {theme === 'dark' ? '☀' : '🌙'}
+        </Button>
       </div>
 
       <input

@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 import { usePersistence } from '../persistence'
 import { useRuntime } from '../runtime'
-import { useEditorStore, useProjectStore } from '../store'
+import { useEditorStore, usePreferencesEffects, useProjectStore } from '../store'
 import { ActionsPanel } from './actions/ActionsPanel'
 import { ActivityPanel } from './activity/ActivityPanel'
 import { TopBar } from './bar/TopBar'
@@ -12,6 +12,7 @@ import { AttributesPanel } from './inspector/AttributesPanel'
 import { ScenarioView } from './scenario/ScenarioView'
 
 export function App() {
+  usePreferencesEffects()
   const persistence = usePersistence()
   const runtime = useRuntime()
   const project = useProjectStore((state) => state.project)
