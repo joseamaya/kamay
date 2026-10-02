@@ -155,7 +155,7 @@ export default function CodeEditor({
     const view = viewRef.current
     if (!view) return
     view.dispatch(setDiagnostics(view.state, toDiagnostics(view.state.doc, diagnostics ?? [])))
-  }, [diagnostics, readOnly, ariaLabel])
+  }, [diagnostics, value, readOnly, ariaLabel])
 
   return <div ref={hostRef} className={cn('h-full overflow-hidden', className)} />
 }
