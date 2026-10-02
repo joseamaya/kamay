@@ -1,94 +1,98 @@
 # Kamay
 
-> **Un entorno interactivo, lúdico y didáctico para aprender Programación
-> Orientada a Objetos, donde el estudiante construye clases y objetos jugando y
-> ve, en todo momento, el código Python real que está generando.**
+> **An interactive, playful and didactic environment to learn Object-Oriented
+> Programming, where the student builds classes and objects by playing and sees,
+> at all times, the real Python code being generated.**
 
-**Kamay** es un nombre quechua que significa _crear, formar, fundar_ y, en su uso
-andino, _animar / dar ánima_. Resume las dos acciones del entorno: se **moldea**
-una clase y se **da vida** a los objetos. Ver [CREDITS.md](CREDITS.md).
+**Kamay** is a Quechua word meaning _to create, to shape, to found_ and, in its
+Andean use, _to animate / to give a soul_. It sums up the two actions of the
+environment: you **shape** a class and you **bring** objects **to life**.
 
-## Estado
+The user interface is in Spanish; the codebase, tooling and documentation are in
+English.
 
-El proyecto está en **Fase 1 (MVP), hito M1 — editor local**. Ya funciona:
+## Status
 
-- **Fábrica**: agregar y eliminar objetos del catálogo (círculo, cuadrado, triángulo).
-- **Escenario**: motor Canvas 2D con fondo, selección y arrastre de objetos.
-- **Propiedades**: posición, rotación, escala y color.
-- **Código**: Python generado en vivo desde el modelo.
-- **Persistencia**: autoguardado en IndexedDB y export/import `.kamay.json`.
-- **Undo/redo** y mensajes de error en español.
+The project is in **Phase 1 (MVP), milestone M1 — local editor**. Working today:
 
-Pendiente (M2–M3): ejecución real con **Pyodide** y la UI de acciones/métodos.
-Consulta la hoja de ruta y el diseño en [`docs/`](docs/README.md).
+- **Factory**: add and remove objects from the catalog (circle, square, triangle).
+- **Stage**: custom Canvas 2D engine with background, selection and drag.
+- **Properties**: position, rotation, scale and color.
+- **Code**: Python generated live from the model.
+- **Persistence**: autosave to IndexedDB and `.kamay.json` export/import.
+- **Undo/redo** and error messages in Spanish.
+
+Pending (M2–M3): real execution with **Pyodide** and the actions/methods UI.
 
 ## Stack
 
-| Capa             | Tecnología                                    |
-| ---------------- | --------------------------------------------- |
-| UI               | TypeScript + React                            |
-| Build            | Vite                                          |
-| Estado           | Zustand (store central tipado)                |
-| Esquema de datos | JSON versionado validado con Zod              |
-| Estilos          | Tailwind CSS v4                               |
-| Runtime Python   | Pyodide (M2, en Web Worker)                   |
-| Motor            | Canvas 2D propio                              |
-| Persistencia     | IndexedDB (idb) + export/import `.kamay.json` |
-| Tests            | Vitest + React Testing Library + Playwright   |
-| Lint / formato   | oxlint + Prettier                             |
+| Layer          | Technology                                    |
+| -------------- | --------------------------------------------- |
+| UI             | TypeScript + React                            |
+| Build          | Vite                                          |
+| State          | Zustand (typed central store)                 |
+| Data schema    | Versioned JSON validated with Zod             |
+| Styling        | Tailwind CSS v4                               |
+| Python runtime | Pyodide (M2, in a Web Worker)                 |
+| Engine         | Custom Canvas 2D                              |
+| Persistence    | IndexedDB (idb) + `.kamay.json` export/import |
+| Tests          | Vitest + React Testing Library + Playwright   |
+| Lint / format  | oxlint + Prettier                             |
 
-## Requisitos
+## Requirements
 
-- Node.js **>= 22.12** (ver `.nvmrc`).
-- pnpm (se fija vía `packageManager` en `package.json`).
+- Node.js **>= 22.12** (see `.nvmrc`).
+- pnpm (pinned via `packageManager` in `package.json`).
 
-## Desarrollo
+## Development
 
 ```bash
 pnpm install
-pnpm dev          # servidor de desarrollo
-pnpm build        # typecheck + build de producción
-pnpm preview      # sirve el build
+pnpm dev          # development server
+pnpm build        # typecheck + production build
+pnpm preview      # serve the build
 ```
 
-## Calidad
+## Quality
 
 ```bash
 pnpm lint         # oxlint
-pnpm format       # Prettier (escribe)
-pnpm format:check # Prettier (verifica)
+pnpm format       # Prettier (write)
+pnpm format:check # Prettier (check)
 pnpm typecheck    # tsc -b
-pnpm test         # Vitest (unitarios)
-pnpm test:e2e     # Playwright (requiere: pnpm exec playwright install)
+pnpm test         # Vitest (unit)
+pnpm test:e2e     # Playwright (requires: pnpm exec playwright install)
 ```
 
-## Estructura
+## Structure
 
 ```
 src/
-  model/         # esquema Zod versionado, tipos y migraciones
-  store/         # estado central (Zustand) con undo/redo
-  generator/     # modelo JSON -> código Python determinista
-  runtime/       # contrato del puente a Pyodide (Fase 1)
-  engine/        # contrato del motor Canvas 2D (Fase 1)
-  views/         # escenario, fábrica, código y barra superior
-  persistence/   # contrato de IndexedDB y export/import (Fase 1)
-  i18n/          # textos de la interfaz en español
-  ui/            # componentes reutilizables y sistema de diseño
+  model/         # versioned Zod schema, types and migrations
+  store/         # central state (Zustand) with undo/redo
+  generator/     # JSON model -> deterministic Python code
+  runtime/       # Pyodide bridge contract
+  engine/        # Canvas 2D engine
+  views/         # stage, factory, code and top bar
+  persistence/   # IndexedDB and export/import
+  i18n/          # Spanish UI strings
+  ui/            # reusable components and design system
 ```
 
-## Convenciones
+## Conventions
 
-- **Código e identificadores en inglés**; **interfaz y documentación en español**.
-- **Commits** con Conventional Commits (`feat:`, `fix:`, `docs:`…).
-- Todo cambio en el modelo JSON lleva **migración** y test de esquema.
-- Ver [CONTRIBUTING.md](CONTRIBUTING.md).
+- **Code, identifiers and documentation in English**; **user interface in
+  Spanish** (all UI strings live in `src/i18n/es.ts`).
+- **Conventional Commits** (`feat:`, `fix:`, `docs:`, `test:`, `chore:`).
+- Every change to the JSON model ships with a **migration** and a schema test.
+- New functionality ships with tests. Run `pnpm lint`, `pnpm typecheck` and
+  `pnpm test` before opening a pull request; `main` requires green CI.
 
-## Despliegue
+## Deployment
 
-La salida de `pnpm build` es **100 % estática** (`dist/`): desplegable en GitHub
-Pages, Netlify o Cloudflare Pages.
+The `pnpm build` output is **fully static** (`dist/`): deployable to GitHub
+Pages, Netlify or Cloudflare Pages.
 
-## Licencia
+## License
 
 [MIT](LICENSE) © 2026 Jose Amaya.
