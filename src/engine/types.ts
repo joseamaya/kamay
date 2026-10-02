@@ -25,6 +25,12 @@ export interface SceneState {
   actors: Actor[]
 }
 
+export interface Bubble {
+  target: string
+  message: string
+  ttl: number
+}
+
 export interface RenderOptions {
   width: number
   height: number

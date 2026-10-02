@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 
 import { usePersistence } from '../persistence'
+import { useRuntime } from '../runtime'
 import { useEditorStore, useProjectStore } from '../store'
+import { ActionsPanel } from './actions/ActionsPanel'
 import { ActivityPanel } from './activity/ActivityPanel'
 import { TopBar } from './bar/TopBar'
 import { CodeView } from './code/CodeView'
@@ -11,6 +13,7 @@ import { ScenarioView } from './scenario/ScenarioView'
 
 export function App() {
   const persistence = usePersistence()
+  const runtime = useRuntime()
   const project = useProjectStore((state) => state.project)
   const activeSceneId = useEditorStore((state) => state.activeSceneId)
   const setActiveSceneId = useEditorStore((state) => state.setActiveSceneId)
@@ -31,12 +34,13 @@ export function App() {
 
   return (
     <div className="flex h-screen flex-col">
-      <TopBar persistence={persistence} />
+      <TopBar persistence={persistence} runtime={runtime} />
       <main className="grid flex-1 grid-cols-1 gap-3 overflow-auto p-3 lg:grid-cols-[18rem_1fr_26rem] lg:overflow-hidden">
         <FactoryView />
         <ScenarioView />
-        <div className="flex min-h-0 flex-col gap-3">
+        <div className="flex min-h-0 flex-col gap-3 overflow-auto">
           <AttributesPanel />
+          <ActionsPanel />
           <CodeView />
         </div>
       </main>

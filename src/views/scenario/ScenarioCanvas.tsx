@@ -1,8 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 
-import { ACTOR_SIZE, renderScene, toSceneState } from '../../engine'
+import {
+  ACTOR_SIZE,
+  RuntimeController,
+  createLoop,
+  renderBubbles,
+  renderScene,
+  toSceneState,
+} from '../../engine'
 import type { Actor } from '../../engine'
+import { onRuntimeCommand, onRuntimeReset } from '../../runtime'
 import { useActiveScene, useEditorStore, useProjectStore } from '../../store'
 
 interface Point {
@@ -41,7 +49,25 @@ export function ScenarioCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<DragState | null>(null)
+  const controllerRef = useRef(new RuntimeController())
   const [size, setSize] = useState<Point>({ x: 0, y: 0 })
+
+  const sceneRef = useRef(scene)
+  const selectedRef = useRef(selectedObjectId)
+  const sizeRef = useRef(size)
+  const lastSizeRef = useRef<Point>({ x: 0, y: 0 })
+
+  useEffect(() => {
+    sceneRef.current = scene
+  }, [scene])
+
+  useEffect(() => {
+    selectedRef.current = selectedObjectId
+  }, [selectedObjectId])
+
+  useEffect(() => {
+    sizeRef.current = size
+  }, [size])
 
   useEffect(() => {
     const element = containerRef.current
@@ -56,55 +82,78 @@ export function ScenarioCanvas() {
     return () => observer.disconnect()
   }, [])
 
-  const draw = useCallback(() => {
+  useEffect(() => {
+    if (scene) controllerRef.current.reset(toSceneState(scene))
+  }, [scene])
+
+  useEffect(() => onRuntimeCommand((command) => controllerRef.current.apply(command)), [])
+
+  useEffect(
+    () =>
+      onRuntimeReset(() => {
+        const current = sceneRef.current
+        if (current) controllerRef.current.reset(toSceneState(current))
+      }),
+    [],
+  )
+
+  const render = useCallback(() => {
     const canvas = canvasRef.current
-    if (!canvas || size.x === 0 || size.y === 0 || !scene) return
+    const { x: width, y: height } = sizeRef.current
+    if (!canvas || width === 0 || height === 0) return
 
     const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1
-    canvas.width = Math.round(size.x * dpr)
-    canvas.height = Math.round(size.y * dpr)
+    if (lastSizeRef.current.x !== width || lastSizeRef.current.y !== height) {
+      canvas.width = Math.round(width * dpr)
+      canvas.height = Math.round(height * dpr)
+      lastSizeRef.current = { x: width, y: height }
+    }
 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
-    const base = toSceneState(scene)
+    const background = sceneRef.current?.background ?? 'grass'
+    let actors = controllerRef.current.getActors()
     const drag = dragRef.current
-    const actors = drag
-      ? base.actors.map((actor) =>
-          actor.id === drag.objectId
-            ? {
-                ...actor,
-                transform: {
-                  ...actor.transform,
-                  position: {
-                    x: drag.origin.x + drag.offset.x,
-                    y: drag.origin.y + drag.offset.y,
-                  },
+    if (drag) {
+      actors = actors.map((actor) =>
+        actor.id === drag.objectId
+          ? {
+              ...actor,
+              transform: {
+                ...actor.transform,
+                position: {
+                  x: drag.origin.x + drag.offset.x,
+                  y: drag.origin.y + drag.offset.y,
                 },
-              }
-            : actor,
-        )
-      : base.actors
+              },
+            }
+          : actor,
+      )
+    }
 
-    renderScene(
-      ctx,
-      { ...base, actors },
-      { width: size.x, height: size.y, selectedId: selectedObjectId },
-    )
-  }, [scene, selectedObjectId, size])
+    const options = { width, height, selectedId: selectedRef.current }
+    renderScene(ctx, { background, actors }, options)
+    renderBubbles(ctx, controllerRef.current.getBubbles(), actors, options)
+  }, [])
 
   useEffect(() => {
-    draw()
-  }, [draw])
+    const loop = createLoop({
+      update: (delta) => controllerRef.current.update(delta),
+      render,
+    })
+    loop.start()
+    return () => loop.stop()
+  }, [render])
 
   const toScenePoint = (event: ReactPointerEvent<HTMLCanvasElement>): Point | null => {
     const canvas = canvasRef.current
     if (!canvas) return null
     const rect = canvas.getBoundingClientRect()
     return {
-      x: event.clientX - rect.left - size.x / 2,
-      y: size.y / 2 - (event.clientY - rect.top),
+      x: event.clientX - rect.left - sizeRef.current.x / 2,
+      y: sizeRef.current.y / 2 - (event.clientY - rect.top),
     }
   }
 
@@ -113,7 +162,7 @@ export function ScenarioCanvas() {
     const point = toScenePoint(event)
     if (!point) return
 
-    const actor = hitTest(toSceneState(scene).actors, point)
+    const actor = hitTest(controllerRef.current.getActors(), point)
     if (!actor) {
       selectObject(null)
       return
@@ -138,7 +187,6 @@ export function ScenarioCanvas() {
       ...drag,
       offset: { x: point.x - drag.pointerStart.x, y: point.y - drag.pointerStart.y },
     }
-    draw()
   }
 
   const handlePointerUp = () => {
@@ -152,7 +200,6 @@ export function ScenarioCanvas() {
         y: Math.round(drag.origin.y + drag.offset.y),
       })
     }
-    draw()
   }
 
   return (

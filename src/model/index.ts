@@ -7,6 +7,7 @@ export * from './schema'
 export * from './migrations'
 export * from './factory'
 export * from './attributes'
+export * from './methods'
 export { createId } from './ids'
 
 export function createScene(name: string): Scene {

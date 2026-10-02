@@ -93,4 +93,20 @@ describe('useProjectStore', () => {
     useProjectStore.getState().setBackground(sceneId, 'night')
     expect(useProjectStore.getState().project.scenes[0]?.background).toBe('night')
   })
+
+  it('adds and removes scene actions', () => {
+    const sceneId = useProjectStore.getState().project.scenes[0]!.id
+    useProjectStore.getState().addAction(sceneId, 'on_start', {
+      target: 'circle1',
+      method: 'decir',
+      args: { mensaje: 'hola' },
+    })
+
+    const events = useProjectStore.getState().project.scenes[0]!.events
+    expect(events[0]?.actions).toHaveLength(1)
+    expect(events[0]?.actions[0]?.method).toBe('decir')
+
+    useProjectStore.getState().removeAction(sceneId, 'on_start', 0)
+    expect(useProjectStore.getState().project.scenes[0]!.events[0]?.actions).toHaveLength(0)
+  })
 })

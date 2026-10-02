@@ -4,6 +4,7 @@ export const es = {
   },
   bar: {
     run: 'Ejecutar',
+    stop: 'Detener',
     save: 'Guardar',
     open: 'Abrir',
     export: 'Exportar',
@@ -11,12 +12,12 @@ export const es = {
     undo: 'Deshacer',
     redo: 'Rehacer',
     newProject: 'Nuevo',
-    runSoon: 'Disponible en la Fase 2',
   },
   views: {
     scenario: 'Escenario',
     factory: 'Fábrica',
     code: 'Código',
+    actions: 'Acciones',
   },
   factory: {
     title: 'Fábrica',
@@ -51,6 +52,27 @@ export const es = {
     scale: 'Escala',
     color: 'Color',
   },
+  actions: {
+    title: 'Acciones',
+    empty: 'Selecciona un objeto para darle órdenes.',
+    noActions: 'Este objeto todavía no tiene órdenes.',
+    method: 'Orden',
+    add: 'Agregar orden',
+    remove: 'Quitar orden',
+  },
+  methods: {
+    decir: 'Decir',
+    mover: 'Mover',
+    girar: 'Girar',
+    cambiar_escala: 'Cambiar escala',
+  },
+  params: {
+    mensaje: 'Mensaje',
+    x: 'X',
+    y: 'Y',
+    grados: 'Grados',
+    factor: 'Factor',
+  },
   code: {
     title: 'Código',
     subtitle: 'Python generado en vivo desde tu proyecto.',
@@ -65,6 +87,11 @@ export const es = {
     opened: 'Proyecto abierto.',
     objectAdded: 'Objeto agregado.',
     objectRemoved: 'Objeto eliminado.',
+    actionAdded: 'Orden agregada.',
+    actionRemoved: 'Orden quitada.',
+    running: 'Ejecutando el programa…',
+    ready: 'Listo.',
+    loading: 'Preparando Python…',
   },
   dialog: {
     cancel: 'Cancelar',
@@ -80,6 +107,16 @@ export const es = {
   errors: {
     save: 'No se pudo guardar el proyecto.',
     import: 'No se pudo importar el archivo.',
+    runtime: {
+      name: 'Se usó un nombre que no existe.',
+      attribute: 'Se pidió algo que el objeto no tiene.',
+      syntax: 'Hay un error de escritura en el código.',
+      indentation: 'La sangría del código no es correcta.',
+      type: 'Se usó un valor de un tipo incorrecto.',
+      zeroDivision: 'No se puede dividir entre cero.',
+      generic: 'Ocurrió un error al ejecutar el programa.',
+      withLine: '{summary} (línea {line})',
+    },
   },
 } as const
 
