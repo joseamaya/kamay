@@ -36,6 +36,16 @@ describe('projectSchema', () => {
     expect(result.success).toBe(false)
   })
 
+  it('defaults the event source to null', () => {
+    const result = projectSchema.safeParse({
+      ...minimalProject,
+      scenes: [{ id: 's', name: 'Principal', events: [{ type: 'on_start', actions: [] }] }],
+    })
+
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.data.scenes[0]?.events[0]?.source).toBeNull()
+  })
+
   it('rejects a project with a future schema version', () => {
     const result = projectSchema.safeParse({
       ...minimalProject,

@@ -217,6 +217,34 @@ if __name__ == "__main__":
     expect(main?.content).toContain('heroe2.vida = 100')
   })
 
+  it('generates a click handler and registers it', () => {
+    const project = projectSchema.parse({
+      version: 2,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          classes: [{ id: 'class-heroe', name: 'Heroe', inherits: 'Actor' }],
+          objects: [{ id: 'o1', name: 'heroe1', class: 'Heroe' }],
+          events: [
+            {
+              type: 'on_click',
+              source: 'heroe1',
+              actions: [{ target: 'heroe1', method: 'decir', args: { mensaje: 'hola' } }],
+            },
+          ],
+        },
+      ],
+    })
+
+    const main = generatePython(project).files.find((file) => file.path === 'principal.py')!
+    expect(main.content).toContain('from kamay_runtime import registrar')
+    expect(main.content).toContain('def al_hacer_clic_heroe1():')
+    expect(main.content).toContain('heroe1.decir("hola")')
+    expect(main.content).toContain('registrar("click", "heroe1", al_hacer_clic_heroe1)')
+  })
+
   it('imports the base class when inheriting from another class', () => {
     const project = projectSchema.parse({
       version: 1,

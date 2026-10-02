@@ -105,9 +105,14 @@ export const es = {
     title: 'Acciones',
     empty: 'Selecciona un objeto para darle órdenes.',
     noActions: 'Este objeto todavía no tiene órdenes.',
+    trigger: 'Cuándo',
     method: 'Orden',
     add: 'Agregar orden',
     remove: 'Quitar orden',
+  },
+  triggers: {
+    onStart: 'Al iniciar',
+    onClick: 'Al hacer clic',
   },
   methods: {
     decir: 'Decir',

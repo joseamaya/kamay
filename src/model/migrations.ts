@@ -6,7 +6,25 @@ export type SchemaMigration = (data: Record<string, unknown>) => Record<string, 
  * Ordered registry of migrations keyed by the version they upgrade *from*.
  * Example: `migrations[1]` upgrades a v1 project to v2.
  */
-export const migrations: Record<number, SchemaMigration> = {}
+export const migrations: Record<number, SchemaMigration> = {
+  // v1 -> v2: events gained a `source` field for click/collision triggers.
+  1: (data) => {
+    const scenes = Array.isArray(data.scenes) ? (data.scenes as Record<string, unknown>[]) : []
+    return {
+      ...data,
+      version: 2,
+      scenes: scenes.map((scene) => {
+        const events = Array.isArray(scene.events)
+          ? (scene.events as Record<string, unknown>[])
+          : []
+        return {
+          ...scene,
+          events: events.map((event) => ({ source: null, ...event })),
+        }
+      }),
+    }
+  },
+}
 
 export class MigrationError extends Error {
   readonly fromVersion: number

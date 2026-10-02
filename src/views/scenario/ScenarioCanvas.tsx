@@ -10,8 +10,8 @@ import {
   toSceneState,
 } from '../../engine'
 import type { Actor } from '../../engine'
-import { onRuntimeCommand, onRuntimeReset } from '../../runtime'
-import { useActiveScene, useEditorStore, useProjectStore } from '../../store'
+import { emitRuntimeTrigger, onRuntimeCommand, onRuntimeReset } from '../../runtime'
+import { useActiveScene, useEditorStore, useProjectStore, useRuntimeStore } from '../../store'
 
 interface Point {
   x: number
@@ -45,6 +45,7 @@ export function ScenarioCanvas() {
   const selectedObjectId = useEditorStore((state) => state.selectedObjectId)
   const selectObject = useEditorStore((state) => state.selectObject)
   const updateObjectAttributes = useProjectStore((state) => state.updateObjectAttributes)
+  const runtimeStatus = useRuntimeStore((state) => state.status)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -169,6 +170,9 @@ export function ScenarioCanvas() {
     }
 
     selectObject(actor.id)
+    if (runtimeStatus === 'ready' || runtimeStatus === 'running') {
+      emitRuntimeTrigger({ kind: 'click', source: actor.name })
+    }
     dragRef.current = {
       objectId: actor.id,
       pointerStart: point,

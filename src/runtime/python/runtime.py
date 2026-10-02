@@ -1,10 +1,14 @@
 import json
 
-from js import __kamay_emit
+from js import __kamay_emit, __kamay_registrar
 
 
 def _emit(command):
     __kamay_emit(json.dumps(command))
+
+
+def registrar(kind, source, handler):
+    __kamay_registrar(kind, source, handler)
 
 
 class Actor:

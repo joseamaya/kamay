@@ -2,14 +2,14 @@ import { create } from 'zustand'
 
 import {
   addCatalogObject,
-  addSceneAction,
+  addEventAction,
   createEmptyProject,
   duplicateObject as duplicateObjectInScene,
   findCatalogItem,
   instantiateClass as instantiateClassInScene,
   removeClass as removeClassFromScene,
+  removeEventAction,
   removeObject as removeObjectFromScene,
-  removeSceneAction,
   renameProject as renameProjectInProject,
   replaceScene,
   setSceneBackground,
@@ -38,8 +38,13 @@ export interface ProjectState {
   saveClass: (sceneId: string, definition: ClassDefinition) => void
   removeClass: (sceneId: string, classId: string) => void
   instantiateClass: (sceneId: string, classId: string) => void
-  addAction: (sceneId: string, eventType: EventType, action: Action) => void
-  removeAction: (sceneId: string, eventType: EventType, actionIndex: number) => void
+  addAction: (sceneId: string, eventType: EventType, source: string | null, action: Action) => void
+  removeAction: (
+    sceneId: string,
+    eventType: EventType,
+    source: string | null,
+    actionIndex: number,
+  ) => void
   renameProject: (name: string) => void
   undo: () => void
   redo: () => void
@@ -122,15 +127,17 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     )
   },
 
-  addAction: (sceneId, eventType, action) => {
+  addAction: (sceneId, eventType, source, action) => {
     get().updateProject((project) =>
-      updateScene(project, sceneId, (scene) => addSceneAction(scene, eventType, action)),
+      updateScene(project, sceneId, (scene) => addEventAction(scene, eventType, source, action)),
     )
   },
 
-  removeAction: (sceneId, eventType, actionIndex) => {
+  removeAction: (sceneId, eventType, source, actionIndex) => {
     get().updateProject((project) =>
-      updateScene(project, sceneId, (scene) => removeSceneAction(scene, eventType, actionIndex)),
+      updateScene(project, sceneId, (scene) =>
+        removeEventAction(scene, eventType, source, actionIndex),
+      ),
     )
   },
 

@@ -3,8 +3,11 @@ import { describe, expect, it } from 'vitest'
 import {
   ACTOR_CATALOG,
   addCatalogObject,
+  addEventAction,
   createEmptyProject,
   createScene,
+  findEvent,
+  removeEventAction,
   removeObject,
   renameProject,
   setSceneBackground,
@@ -63,6 +66,21 @@ describe('scene operations', () => {
 
   it('sets the background', () => {
     expect(setSceneBackground(createScene('Principal'), 'night').background).toBe('night')
+  })
+})
+
+describe('event actions', () => {
+  const action = { target: 'heroe1', method: 'decir', args: { mensaje: 'hola' } }
+
+  it('keys events by type and source', () => {
+    let scene = addEventAction(createScene('Principal'), 'on_click', 'heroe1', action)
+
+    expect(findEvent(scene, 'on_click', 'heroe1')?.actions).toHaveLength(1)
+    expect(findEvent(scene, 'on_click', 'heroe2')).toBeUndefined()
+    expect(findEvent(scene, 'on_start', null)?.actions ?? []).toHaveLength(0)
+
+    scene = removeEventAction(scene, 'on_click', 'heroe1', 0)
+    expect(findEvent(scene, 'on_click', 'heroe1')?.actions).toHaveLength(0)
   })
 })
 

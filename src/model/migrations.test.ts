@@ -21,4 +21,20 @@ describe('migrateProject', () => {
   it('throws when a required migration is missing', () => {
     expect(() => migrateProject({ version: 0 })).toThrow(MigrationError)
   })
+
+  it('upgrades a v1 project to v2 by adding an event source', () => {
+    const input = {
+      version: 1,
+      meta: { name: 'Demo' },
+      scenes: [{ id: 'scene-1', name: 'Principal', events: [{ type: 'on_click', actions: [] }] }],
+    }
+
+    const result = migrateProject(input) as {
+      version: number
+      scenes: { events: { source: unknown }[] }[]
+    }
+
+    expect(result.version).toBe(2)
+    expect(result.scenes[0]?.events[0]?.source).toBeNull()
+  })
 })

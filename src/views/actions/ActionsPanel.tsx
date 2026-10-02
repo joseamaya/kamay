@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { getMessages } from '../../i18n'
-import { BUILTIN_METHODS } from '../../model'
+import { BUILTIN_METHODS, findEvent } from '../../model'
 import type { Action, AttributeType, BuiltinMethod } from '../../model'
 import { useActiveScene, useEditorStore, useProjectStore, useSelectedObject } from '../../store'
 import { Button } from '../../ui/Button'
@@ -10,7 +10,7 @@ import { Panel } from '../../ui/Panel'
 import { Select } from '../../ui/Select'
 import { TextField } from '../../ui/TextField'
 
-const EVENT_TYPE = 'on_start'
+type Trigger = 'on_start' | 'on_click'
 
 function defaultValue(type: AttributeType): string {
   return type === 'number' ? '0' : ''
@@ -24,6 +24,7 @@ export function ActionsPanel() {
   const removeAction = useProjectStore((state) => state.removeAction)
   const pushLog = useEditorStore((state) => state.pushLog)
 
+  const [trigger, setTrigger] = useState<Trigger>('on_start')
   const [methodName, setMethodName] = useState(BUILTIN_METHODS[0]!.name)
   const [values, setValues] = useState<Record<string, string>>({})
 
@@ -63,7 +64,8 @@ export function ActionsPanel() {
   const method =
     availableMethods.find((candidate) => candidate.name === methodName) ?? availableMethods[0]!
 
-  const event = scene.events.find((candidate) => candidate.type === EVENT_TYPE)
+  const source = trigger === 'on_click' ? object.name : null
+  const event = findEvent(scene, trigger, source)
   const actions = (event?.actions ?? [])
     .map((action, index) => ({ action, index }))
     .filter(({ action }) => action.target === object.name || action.target === object.id)
@@ -75,7 +77,7 @@ export function ActionsPanel() {
       args[parameter.name] = parameter.type === 'number' ? Number(raw) || 0 : raw
     }
     const action: Action = { target: object.name, method: method.name, args }
-    addAction(scene.id, EVENT_TYPE, action)
+    addAction(scene.id, trigger, source, action)
     pushLog(messages.activity.actionAdded)
   }
 
@@ -95,7 +97,7 @@ export function ActionsPanel() {
                   type="button"
                   aria-label={messages.actions.remove}
                   onClick={() => {
-                    removeAction(scene.id, EVENT_TYPE, index)
+                    removeAction(scene.id, trigger, source, index)
                     pushLog(messages.activity.actionRemoved)
                   }}
                   className="text-muted-foreground hover:text-destructive rounded-md px-2 py-1 text-lg leading-none"
@@ -108,6 +110,15 @@ export function ActionsPanel() {
         )}
 
         <div className="border-border flex flex-col gap-2 border-t pt-3">
+          <Select
+            label={messages.actions.trigger}
+            value={trigger}
+            options={[
+              { value: 'on_start', label: messages.triggers.onStart },
+              { value: 'on_click', label: messages.triggers.onClick },
+            ]}
+            onChange={(value) => setTrigger(value as Trigger)}
+          />
           <Select
             label={messages.actions.method}
             value={method.name}
