@@ -207,3 +207,16 @@ test('converts code into blocks and keeps advanced code', async ({ page }) => {
 
   await expect(dialog.getByText('Código avanzado')).toBeVisible()
 })
+
+test('adds a keyboard action', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByLabel('Cuándo').selectOption('on_key')
+  await page.getByLabel(/^Tecla/).selectOption('ArrowUp')
+  await page.getByLabel('Mensaje').fill('arriba')
+  await page.getByRole('button', { name: 'Agregar orden' }).click()
+
+  await expect(codeContent(page)).toContainText('registrar("key", "ArrowUp", al_pulsar_ArrowUp)')
+})

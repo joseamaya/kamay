@@ -180,3 +180,47 @@ test('runs a sequence with a wait with pyodide', async ({ page }) => {
   await page.getByRole('button', { name: 'Ejecutar' }).click()
   await expect(page.getByText('Listo.')).toBeVisible({ timeout: 150_000 })
 })
+
+test('runs a keyboard handler with pyodide', async ({ page }) => {
+  test.skip(!process.env.PYODIDE_E2E, 'set PYODIDE_E2E=1 to run the real Pyodide test')
+  test.setTimeout(180_000)
+
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByLabel('Cuándo').selectOption('on_key')
+  await page.getByLabel(/^Tecla/).selectOption('ArrowUp')
+  await page.getByLabel('Mensaje').fill('arriba')
+  await page.getByRole('button', { name: 'Agregar orden' }).click()
+
+  await page.getByRole('button', { name: 'Ejecutar' }).click()
+  await expect(page.getByText('Listo.')).toBeVisible({ timeout: 150_000 })
+
+  await page.keyboard.press('ArrowUp')
+  await expect(page.getByText('Listo.')).toBeVisible()
+})
+
+test('runs a signal handler with pyodide', async ({ page }) => {
+  test.skip(!process.env.PYODIDE_E2E, 'set PYODIDE_E2E=1 to run the real Pyodide test')
+  test.setTimeout(180_000)
+
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByLabel('Orden').selectOption('emitir')
+  await page.getByLabel('Nombre').fill('boom')
+  await page.getByRole('button', { name: 'Agregar orden' }).click()
+
+  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await page.getByRole('button', { name: 'circle2', exact: true }).click()
+  await page.getByLabel('Cuándo').selectOption('on_signal')
+  await page.getByLabel(/^Señal/).fill('boom')
+  await page.getByLabel('Orden').selectOption('decir')
+  await page.getByLabel('Mensaje').fill('hola')
+  await page.getByRole('button', { name: 'Agregar orden' }).click()
+
+  await page.getByRole('button', { name: 'Ejecutar' }).click()
+  await expect(page.getByText('Listo.')).toBeVisible({ timeout: 150_000 })
+})

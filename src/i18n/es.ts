@@ -142,6 +142,8 @@ export const es = {
     noActions: 'Este objeto todavía no tiene órdenes.',
     trigger: 'Cuándo',
     other: 'Con',
+    key: 'Tecla',
+    signal: 'Señal',
     noOtherObjects: 'Agrega otro objeto para poder chocar.',
     method: 'Orden',
     add: 'Agregar orden',
@@ -151,6 +153,16 @@ export const es = {
     onStart: 'Al iniciar',
     onClick: 'Al hacer clic',
     onCollision: 'Al chocar con',
+    onKey: 'Al pulsar tecla',
+    onSignal: 'Al recibir señal',
+  },
+  keys: {
+    up: 'Arriba',
+    down: 'Abajo',
+    left: 'Izquierda',
+    right: 'Derecha',
+    space: 'Espacio',
+    enter: 'Enter',
   },
   methods: {
     decir: 'Decir',
@@ -158,6 +170,7 @@ export const es = {
     girar: 'Girar',
     cambiar_escala: 'Cambiar escala',
     esperar: 'Esperar',
+    emitir: 'Emitir',
   },
   params: {
     mensaje: 'Mensaje',
@@ -166,6 +179,7 @@ export const es = {
     grados: 'Grados',
     factor: 'Factor',
     segundos: 'Segundos',
+    nombre: 'Nombre',
   },
   code: {
     title: 'Código',

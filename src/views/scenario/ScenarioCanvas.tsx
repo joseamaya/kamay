@@ -113,6 +113,22 @@ export function ScenarioCanvas() {
     controllerRef.current.setReducedMotion(reducedMotion)
   }, [reducedMotion])
 
+  useEffect(() => {
+    if (runtimeStatus !== 'ready' && runtimeStatus !== 'running') return
+    const handleKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      ) {
+        return
+      }
+      emitRuntimeTrigger({ kind: 'key', source: event.key })
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [runtimeStatus])
+
   useEffect(() => onRuntimeCommand((command) => controllerRef.current.apply(command)), [])
 
   useEffect(
@@ -272,6 +288,21 @@ export function ScenarioCanvas() {
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLCanvasElement>) => {
     if (!scene) return
 
+    const running = runtimeStatus === 'ready' || runtimeStatus === 'running'
+
+    // Enter/Space emulate a click on the selected object, even while running.
+    if (running && (event.key === 'Enter' || event.key === ' ')) {
+      const selected = scene.objects.find((candidate) => candidate.id === selectedObjectId)
+      if (selected) {
+        event.preventDefault()
+        emitRuntimeTrigger({ kind: 'click', source: selected.name })
+        return
+      }
+    }
+
+    // While the program runs, the other keys go to its event handlers.
+    if (running) return
+
     if (event.key === 'Escape') {
       selectObject(null)
       return
@@ -294,14 +325,6 @@ export function ScenarioCanvas() {
         x: readNumber(object.attributes, 'x', 0) + dx,
         y: readNumber(object.attributes, 'y', 0) + dy,
       })
-      return
-    }
-
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      if (runtimeStatus === 'ready' || runtimeStatus === 'running') {
-        emitRuntimeTrigger({ kind: 'click', source: object.name })
-      }
     }
   }
 

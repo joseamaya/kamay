@@ -132,13 +132,17 @@ interface EventIdentity {
   eventType: EventType
   source: string | null
   other: string | null
+  key: string | null
+  signal: string | null
 }
 
 function sameTrigger(event: Scene['events'][number], identity: EventIdentity) {
   return (
     event.type === identity.eventType &&
     (event.source ?? null) === (identity.source ?? null) &&
-    (event.other ?? null) === (identity.other ?? null)
+    (event.other ?? null) === (identity.other ?? null) &&
+    (event.key ?? null) === (identity.key ?? null) &&
+    (event.signal ?? null) === (identity.signal ?? null)
   )
 }
 
@@ -147,8 +151,10 @@ export function findEvent(
   eventType: EventType,
   source: string | null,
   other: string | null = null,
+  key: string | null = null,
+  signal: string | null = null,
 ): Scene['events'][number] | undefined {
-  return scene.events.find((event) => sameTrigger(event, { eventType, source, other }))
+  return scene.events.find((event) => sameTrigger(event, { eventType, source, other, key, signal }))
 }
 
 export function addEventAction(
@@ -157,8 +163,10 @@ export function addEventAction(
   source: string | null,
   other: string | null,
   action: Action,
+  key: string | null = null,
+  signal: string | null = null,
 ): Scene {
-  const identity = { eventType, source, other }
+  const identity = { eventType, source, other, key, signal }
   const events = [...scene.events]
   const index = events.findIndex((event) => sameTrigger(event, identity))
   if (index >= 0) {
@@ -169,6 +177,8 @@ export function addEventAction(
       type: eventType,
       source: source ?? null,
       other: other ?? null,
+      key: key ?? null,
+      signal: signal ?? null,
       actions: [action],
     })
   }
@@ -181,8 +191,10 @@ export function removeEventAction(
   source: string | null,
   other: string | null,
   actionIndex: number,
+  key: string | null = null,
+  signal: string | null = null,
 ): Scene {
-  const identity = { eventType, source, other }
+  const identity = { eventType, source, other, key, signal }
   return {
     ...scene,
     events: scene.events.map((event) =>

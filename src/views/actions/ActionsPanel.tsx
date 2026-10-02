@@ -10,7 +10,17 @@ import { Panel } from '../../ui/Panel'
 import { Select } from '../../ui/Select'
 import { TextField } from '../../ui/TextField'
 
-type Trigger = 'on_start' | 'on_click' | 'on_collision'
+type Trigger = 'on_start' | 'on_click' | 'on_collision' | 'on_key' | 'on_signal'
+
+const KEYS = [
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+  ' ',
+  'Enter',
+  ...'abcdefghijklmnopqrstuvwxyz'.split(''),
+]
 
 function defaultValue(type: AttributeType): string {
   return type === 'number' ? '0' : ''
@@ -26,6 +36,8 @@ export function ActionsPanel() {
 
   const [trigger, setTrigger] = useState<Trigger>('on_start')
   const [otherName, setOtherName] = useState('')
+  const [keyName, setKeyName] = useState(KEYS[0]!)
+  const [signalName, setSignalName] = useState('')
   const [methodName, setMethodName] = useState(BUILTIN_METHODS[0]!.name)
   const [values, setValues] = useState<Record<string, string>>({})
 
@@ -34,6 +46,8 @@ export function ActionsPanel() {
     mover: messages.methods.mover,
     girar: messages.methods.girar,
     cambiar_escala: messages.methods.cambiar_escala,
+    esperar: messages.methods.esperar,
+    emitir: messages.methods.emitir,
   }
   const paramLabels: Record<string, string> = {
     mensaje: messages.params.mensaje,
@@ -42,7 +56,17 @@ export function ActionsPanel() {
     grados: messages.params.grados,
     factor: messages.params.factor,
     segundos: messages.params.segundos,
+    nombre: messages.params.nombre,
   }
+  const keyLabels: Record<string, string> = {
+    ArrowUp: messages.keys.up,
+    ArrowDown: messages.keys.down,
+    ArrowLeft: messages.keys.left,
+    ArrowRight: messages.keys.right,
+    ' ': messages.keys.space,
+    Enter: messages.keys.enter,
+  }
+  const keyLabel = (key: string) => keyLabels[key] ?? key.toUpperCase()
 
   if (!scene || !object) {
     return (
@@ -73,20 +97,23 @@ export function ActionsPanel() {
 
   const source = trigger === 'on_start' ? null : object.name
   const other = trigger === 'on_collision' ? selectedOther : null
-  const event = findEvent(scene, trigger, source, other)
+  const key = trigger === 'on_key' ? keyName : null
+  const signal = trigger === 'on_signal' ? signalName.trim() || null : null
+  const event = findEvent(scene, trigger, source, other, key, signal)
   const actions = (event?.actions ?? [])
     .map((action, index) => ({ action, index }))
     .filter(({ action }) => action.target === object.name || action.target === object.id)
 
   const handleAdd = () => {
     if (trigger === 'on_collision' && !selectedOther) return
+    if (trigger === 'on_signal' && !signalName.trim()) return
     const args: Record<string, number | string> = {}
     for (const parameter of method.parameters) {
       const raw = values[parameter.name] ?? defaultValue(parameter.type)
       args[parameter.name] = parameter.type === 'number' ? Number(raw) || 0 : raw
     }
     const action: Action = { target: object.name, method: method.name, args }
-    addAction(scene.id, trigger, source, other, action)
+    addAction(scene.id, trigger, source, other, action, key, signal)
     pushLog(messages.activity.actionAdded)
   }
 
@@ -106,7 +133,7 @@ export function ActionsPanel() {
                   type="button"
                   aria-label={messages.actions.remove}
                   onClick={() => {
-                    removeAction(scene.id, trigger, source, other, index)
+                    removeAction(scene.id, trigger, source, other, index, key, signal)
                     pushLog(messages.activity.actionRemoved)
                   }}
                   className="text-muted-foreground hover:text-destructive rounded-md px-2 py-1 text-lg leading-none"
@@ -126,9 +153,26 @@ export function ActionsPanel() {
               { value: 'on_start', label: messages.triggers.onStart },
               { value: 'on_click', label: messages.triggers.onClick },
               { value: 'on_collision', label: messages.triggers.onCollision },
+              { value: 'on_key', label: messages.triggers.onKey },
+              { value: 'on_signal', label: messages.triggers.onSignal },
             ]}
             onChange={(value) => setTrigger(value as Trigger)}
           />
+          {trigger === 'on_key' ? (
+            <Select
+              label={messages.actions.key}
+              value={keyName}
+              options={KEYS.map((key) => ({ value: key, label: keyLabel(key) }))}
+              onChange={setKeyName}
+            />
+          ) : null}
+          {trigger === 'on_signal' ? (
+            <TextField
+              label={messages.actions.signal}
+              value={signalName}
+              onChange={setSignalName}
+            />
+          ) : null}
           {trigger === 'on_collision' ? (
             otherObjects.length > 0 ? (
               <Select

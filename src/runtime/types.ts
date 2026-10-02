@@ -15,7 +15,7 @@ export interface RuntimeError {
 
 export type RuntimeStatus = 'idle' | 'loading' | 'ready' | 'running' | 'error'
 
-export type TriggerKind = 'click' | 'collision'
+export type TriggerKind = 'click' | 'collision' | 'key'
 
 export interface RuntimeBridge {
   /** Loads Pyodide without blocking the UI. */

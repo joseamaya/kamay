@@ -48,6 +48,8 @@ export interface ProjectState {
     source: string | null,
     other: string | null,
     action: Action,
+    key?: string | null,
+    signal?: string | null,
   ) => void
   removeAction: (
     sceneId: string,
@@ -55,6 +57,8 @@ export interface ProjectState {
     source: string | null,
     other: string | null,
     actionIndex: number,
+    key?: string | null,
+    signal?: string | null,
   ) => void
   renameProject: (name: string) => void
   addScene: () => string
@@ -141,18 +145,18 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     )
   },
 
-  addAction: (sceneId, eventType, source, other, action) => {
+  addAction: (sceneId, eventType, source, other, action, key = null, signal = null) => {
     get().updateProject((project) =>
       updateScene(project, sceneId, (scene) =>
-        addEventAction(scene, eventType, source, other, action),
+        addEventAction(scene, eventType, source, other, action, key, signal),
       ),
     )
   },
 
-  removeAction: (sceneId, eventType, source, other, actionIndex) => {
+  removeAction: (sceneId, eventType, source, other, actionIndex, key = null, signal = null) => {
     get().updateProject((project) =>
       updateScene(project, sceneId, (scene) =>
-        removeEventAction(scene, eventType, source, other, actionIndex),
+        removeEventAction(scene, eventType, source, other, actionIndex, key, signal),
       ),
     )
   },

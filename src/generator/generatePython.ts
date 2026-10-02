@@ -127,16 +127,16 @@ function pushHandler(lines: string[], name: string, actions: string[]): void {
   lines.push(actions.length > 0 ? indent(actions.join('\n')) : '    pass')
 }
 
+function pyIdentifier(value: string): string {
+  const base = value === ' ' ? 'space' : value.replace(/[^A-Za-z0-9_]/g, '_')
+  return /^[A-Za-z_]/.test(base) ? base : `_${base}`
+}
+
 function generateSceneBody(scene: Scene): string[] {
   const lines: string[] = [`# Escena: ${scene.name}`]
 
   for (const object of scene.objects) {
     lines.push(...generateObjectStatements(object))
-  }
-
-  for (const event of scene.events) {
-    if (event.type !== 'on_start') continue
-    for (const action of event.actions) lines.push(generateAction(scene, action))
   }
 
   for (const event of scene.events) {
@@ -164,7 +164,45 @@ function generateSceneBody(scene: Scene): string[] {
     )
   }
 
+  const keyGroups = groupActionsBy(scene, 'on_key', (event) => event.key)
+  for (const [key, actions] of keyGroups) {
+    const name = `al_pulsar_${pyIdentifier(key)}`
+    pushHandler(lines, name, actions)
+    lines.push(`registrar("key", ${pyLiteral(key)}, ${name})`)
+  }
+
+  const signalGroups = groupActionsBy(scene, 'on_signal', (event) => event.signal)
+  for (const [signal, actions] of signalGroups) {
+    const name = `al_recibir_${pyIdentifier(signal)}`
+    pushHandler(lines, name, actions)
+    lines.push(`registrar("signal", ${pyLiteral(signal)}, ${name})`)
+  }
+
+  // Run start actions last so every handler is registered before they fire.
+  for (const event of scene.events) {
+    if (event.type !== 'on_start') continue
+    for (const action of event.actions) lines.push(generateAction(scene, action))
+  }
+
   return lines
+}
+
+/** Groups the generated actions of an event type by a discriminating field. */
+function groupActionsBy(
+  scene: Scene,
+  type: 'on_key' | 'on_signal',
+  pick: (event: Scene['events'][number]) => string | null,
+): Map<string, string[]> {
+  const groups = new Map<string, string[]>()
+  for (const event of scene.events) {
+    if (event.type !== type) continue
+    const value = pick(event)
+    if (!value) continue
+    const actions = groups.get(value) ?? []
+    actions.push(...event.actions.map((action) => generateAction(scene, action)))
+    groups.set(value, actions)
+  }
+  return groups
 }
 
 function generateBootstrap(project: Project, classes: ClassDefinition[]): string {
@@ -179,7 +217,10 @@ function generateBootstrap(project: Project, classes: ClassDefinition[]): string
 
   const needsRegistrar = project.scenes.some((scene) =>
     scene.events.some(
-      (event) => (event.type === 'on_click' || event.type === 'on_collision') && event.source,
+      (event) =>
+        ((event.type === 'on_click' || event.type === 'on_collision') && event.source) ||
+        (event.type === 'on_key' && event.key) ||
+        (event.type === 'on_signal' && event.signal),
     ),
   )
   if (needsRegistrar) imports.push('from kamay_runtime import registrar')

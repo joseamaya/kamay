@@ -8,9 +8,21 @@ def _emit(command):
     __kamay_emit(json.dumps(command))
 
 
+_signals = {}
+
+
 def registrar(kind, source, handler):
+    # Signals stay in Python: emitir() dispatches to them without a round trip.
+    if kind == "signal":
+        _signals.setdefault(source, []).append(handler)
+        return
     # Keep the handler alive beyond the call (borrowed proxies are auto-destroyed).
     __kamay_registrar(kind, source, create_proxy(handler))
+
+
+def _emitir_signal(nombre):
+    for handler in list(_signals.get(str(nombre), [])):
+        handler()
 
 
 class Actor:
@@ -33,3 +45,6 @@ class Actor:
 
     def esperar(self, segundos):
         _emit({"type": "wait", "seconds": float(segundos)})
+
+    def emitir(self, nombre):
+        _emitir_signal(nombre)

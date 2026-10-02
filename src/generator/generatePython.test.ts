@@ -437,6 +437,70 @@ if __name__ == "__main__":
     expect(main?.content).toContain('h1.esperar(1)')
   })
 
+  it('groups keyboard handlers by key', () => {
+    const project = projectSchema.parse({
+      version: 1,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          objects: [{ id: 'h1', name: 'h1', class: 'Heroe' }],
+          events: [
+            {
+              type: 'on_key',
+              source: 'h1',
+              key: 'ArrowUp',
+              actions: [{ target: 'h1', method: 'decir', args: { mensaje: 'arriba' } }],
+            },
+            {
+              type: 'on_key',
+              source: 'h2',
+              key: 'ArrowUp',
+              actions: [{ target: 'h1', method: 'decir', args: { mensaje: 'otro' } }],
+            },
+          ],
+        },
+      ],
+    })
+
+    const main = generatePython(project).files.find((file) => file.path === 'principal.py')
+    expect(main?.content).toContain('registrar("key", "ArrowUp", al_pulsar_ArrowUp)')
+    expect((main?.content.match(/def al_pulsar_ArrowUp\(/g) ?? []).length).toBe(1)
+    expect(main?.content).toContain('h1.decir("arriba")')
+    expect(main?.content).toContain('h1.decir("otro")')
+  })
+
+  it('generates signal handlers and emitir calls', () => {
+    const project = projectSchema.parse({
+      version: 1,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          objects: [{ id: 'h1', name: 'h1', class: 'Heroe' }],
+          events: [
+            {
+              type: 'on_signal',
+              source: 'h1',
+              signal: 'boom',
+              actions: [{ target: 'h1', method: 'decir', args: { mensaje: 'boom' } }],
+            },
+            {
+              type: 'on_start',
+              actions: [{ target: 'h1', method: 'emitir', args: { nombre: 'boom' } }],
+            },
+          ],
+        },
+      ],
+    })
+
+    const main = generatePython(project).files.find((file) => file.path === 'principal.py')
+    expect(main?.content).toContain('registrar("signal", "boom", al_recibir_boom)')
+    expect(main?.content).toContain('h1.emitir("boom")')
+  })
+
   it('is deterministic for the same model', () => {
     const first = generatePython(buildFixture())
     const second = generatePython(buildFixture())
