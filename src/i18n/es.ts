@@ -1,17 +1,17 @@
 export const es = {
   app: {
     name: 'Kamay',
-    tagline: 'Moldea clases, da vida a objetos',
   },
   bar: {
     run: 'Ejecutar',
-    stop: 'Detener',
     save: 'Guardar',
     open: 'Abrir',
+    export: 'Exportar',
+    import: 'Importar',
     undo: 'Deshacer',
     redo: 'Rehacer',
-    theme: 'Tema',
-    runSoon: 'Disponible en la Fase 1',
+    newProject: 'Nuevo',
+    runSoon: 'Disponible en la Fase 2',
   },
   views: {
     scenario: 'Escenario',
@@ -20,13 +20,36 @@ export const es = {
   },
   factory: {
     title: 'Fábrica',
-    empty: 'Arrastra personajes y cosas al escenario para empezar.',
-    buildHint: 'Aquí construirás clases, objetos, atributos y métodos.',
+    catalogTitle: 'Catálogo',
+    objectsTitle: 'Objetos',
+    addObject: 'Agregar {name} al escenario',
+    removeObject: 'Eliminar {name}',
+    empty: 'Agrega objetos desde el catálogo para empezar.',
+  },
+  catalog: {
+    circle: 'Círculo',
+    square: 'Cuadrado',
+    triangle: 'Triángulo',
   },
   scenario: {
     title: 'Escenario',
     empty: 'El escenario está vacío.',
     emptyHint: 'Agrega objetos desde la Fábrica y verás su efecto aquí.',
+  },
+  backgrounds: {
+    grass: 'Pasto',
+    sky: 'Cielo',
+    sunset: 'Atardecer',
+    night: 'Noche',
+  },
+  inspector: {
+    title: 'Propiedades',
+    empty: 'Selecciona un objeto para editar sus propiedades.',
+    positionX: 'X',
+    positionY: 'Y',
+    rotation: 'Rotación',
+    scale: 'Escala',
+    color: 'Color',
   },
   code: {
     title: 'Código',
@@ -36,10 +59,27 @@ export const es = {
   activity: {
     title: 'Actividad',
     idle: 'Sin mensajes por ahora.',
-    ready: 'Proyecto listo.',
+    saved: 'Proyecto guardado.',
+    imported: 'Proyecto importado.',
+    exported: 'Proyecto exportado.',
+    opened: 'Proyecto abierto.',
+    objectAdded: 'Objeto agregado.',
+    objectRemoved: 'Objeto eliminado.',
+  },
+  dialog: {
+    cancel: 'Cancelar',
+    continue: 'Continuar',
+    delete: 'Eliminar',
+    deleteTitle: 'Eliminar objeto',
+    deleteMessage: '¿Seguro que quieres eliminar «{name}»?',
+    openTitle: 'Abrir proyecto',
+    noProjects: 'No hay proyectos guardados.',
+    unsavedTitle: 'Cambios sin guardar',
+    unsavedMessage: 'Tienes cambios sin guardar. Si continúas, se descartarán.',
   },
   errors: {
-    invalidProject: 'El proyecto no es válido.',
+    save: 'No se pudo guardar el proyecto.',
+    import: 'No se pudo importar el archivo.',
   },
 } as const
 

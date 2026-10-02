@@ -1,0 +1,67 @@
+import { describe, expect, it, vi } from 'vitest'
+
+import { backgroundFill, renderScene, sceneToScreen } from './renderer'
+import type { SceneState } from './types'
+
+function createMockContext() {
+  return {
+    clearRect: vi.fn(),
+    fillRect: vi.fn(),
+    save: vi.fn(),
+    restore: vi.fn(),
+    translate: vi.fn(),
+    rotate: vi.fn(),
+    scale: vi.fn(),
+    beginPath: vi.fn(),
+    arc: vi.fn(),
+    rect: vi.fn(),
+    moveTo: vi.fn(),
+    lineTo: vi.fn(),
+    closePath: vi.fn(),
+    fill: vi.fn(),
+    stroke: vi.fn(),
+    setLineDash: vi.fn(),
+    fillStyle: '',
+    strokeStyle: '',
+    lineWidth: 0,
+  }
+}
+
+describe('sceneToScreen', () => {
+  it('maps the origin to the canvas center and flips Y', () => {
+    expect(sceneToScreen({ x: 0, y: 0 }, { width: 100, height: 100 })).toEqual({ x: 50, y: 50 })
+    expect(sceneToScreen({ x: 10, y: 20 }, { width: 100, height: 100 })).toEqual({ x: 60, y: 30 })
+  })
+})
+
+describe('backgroundFill', () => {
+  it('returns known colors and falls back to the first background', () => {
+    expect(backgroundFill('night')).toBe('#2b2f45')
+    expect(backgroundFill('unknown')).toBe(backgroundFill('grass'))
+  })
+})
+
+describe('renderScene', () => {
+  it('paints the background and draws every actor', () => {
+    const ctx = createMockContext()
+    const scene: SceneState = {
+      background: 'grass',
+      actors: [
+        {
+          id: 'a',
+          name: 'a',
+          shape: 'circle',
+          color: '#ff0000',
+          transform: { position: { x: 0, y: 0 }, rotation: 0, scale: 1 },
+          zIndex: 0,
+        },
+      ],
+    }
+
+    renderScene(ctx as unknown as CanvasRenderingContext2D, scene, { width: 100, height: 100 })
+
+    expect(ctx.fillRect).toHaveBeenCalledWith(0, 0, 100, 100)
+    expect(ctx.arc).toHaveBeenCalled()
+    expect(ctx.fill).toHaveBeenCalled()
+  })
+})

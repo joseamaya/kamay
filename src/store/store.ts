@@ -1,7 +1,16 @@
 import { create } from 'zustand'
 
-import { createEmptyProject } from '../model'
-import type { Project } from '../model'
+import {
+  addCatalogObject,
+  createEmptyProject,
+  findCatalogItem,
+  removeObject as removeObjectFromScene,
+  renameProject as renameProjectInProject,
+  replaceScene,
+  setSceneBackground,
+  updateObjectAttributes as updateObjectAttributesOnScene,
+} from '../model'
+import type { Project, Scene } from '../model'
 
 const HISTORY_LIMIT = 50
 
@@ -11,11 +20,26 @@ export interface ProjectState {
   future: Project[]
   loadProject: (project: Project) => void
   updateProject: (updater: (project: Project) => Project) => void
+  addObject: (sceneId: string, catalogItemId: string) => void
+  removeObject: (sceneId: string, objectId: string) => void
+  updateObjectAttributes: (
+    sceneId: string,
+    objectId: string,
+    patch: Record<string, number | string | boolean>,
+  ) => void
+  setBackground: (sceneId: string, background: string) => void
+  renameProject: (name: string) => void
   undo: () => void
   redo: () => void
 }
 
-export const useProjectStore = create<ProjectState>((set) => ({
+function updateScene(project: Project, sceneId: string, updater: (scene: Scene) => Scene): Project {
+  const scene = project.scenes.find((candidate) => candidate.id === sceneId)
+  if (!scene) return project
+  return replaceScene(project, updater(scene))
+}
+
+export const useProjectStore = create<ProjectState>((set, get) => ({
   project: createEmptyProject(),
   past: [],
   future: [],
@@ -32,6 +56,38 @@ export const useProjectStore = create<ProjectState>((set) => ({
         future: [],
       }
     }),
+
+  addObject: (sceneId, catalogItemId) => {
+    const item = findCatalogItem(catalogItemId)
+    if (!item) return
+    get().updateProject((project) =>
+      updateScene(project, sceneId, (scene) => addCatalogObject(scene, item)),
+    )
+  },
+
+  removeObject: (sceneId, objectId) => {
+    get().updateProject((project) =>
+      updateScene(project, sceneId, (scene) => removeObjectFromScene(scene, objectId)),
+    )
+  },
+
+  updateObjectAttributes: (sceneId, objectId, patch) => {
+    get().updateProject((project) =>
+      updateScene(project, sceneId, (scene) =>
+        updateObjectAttributesOnScene(scene, objectId, patch),
+      ),
+    )
+  },
+
+  setBackground: (sceneId, background) => {
+    get().updateProject((project) =>
+      updateScene(project, sceneId, (scene) => setSceneBackground(scene, background)),
+    )
+  },
+
+  renameProject: (name) => {
+    get().updateProject((project) => renameProjectInProject(project, name))
+  },
 
   undo: () =>
     set((state) => {

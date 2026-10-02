@@ -1,0 +1,106 @@
+import { createId } from './ids'
+import type { ClassDefinition, ObjectInstance, Project, Scene } from './schema'
+
+export type ActorShape = 'circle' | 'square' | 'triangle'
+
+export interface CatalogItem {
+  id: string
+  className: string
+  shape: ActorShape
+  color: string
+}
+
+export const ACTOR_CATALOG: CatalogItem[] = [
+  { id: 'circle', className: 'Circle', shape: 'circle', color: '#e2603a' },
+  { id: 'square', className: 'Square', shape: 'square', color: '#e0a23c' },
+  { id: 'triangle', className: 'Triangle', shape: 'triangle', color: '#3f9a86' },
+]
+
+export const BASE_CLASS = 'Actor'
+
+const OBJECT_DEFAULTS = {
+  x: 0,
+  y: 0,
+  rotation: 0,
+  scale: 1,
+}
+
+export function findCatalogItem(id: string): CatalogItem | undefined {
+  return ACTOR_CATALOG.find((item) => item.id === id)
+}
+
+export function isActorShape(value: unknown): value is ActorShape {
+  return value === 'circle' || value === 'square' || value === 'triangle'
+}
+
+export function catalogClass(item: CatalogItem): ClassDefinition {
+  return {
+    id: createId('class'),
+    name: item.className,
+    inherits: BASE_CLASS,
+    image: null,
+    attributes: [
+      { name: 'color', type: 'string', initial: item.color },
+      { name: 'shape', type: 'string', initial: item.shape },
+    ],
+    methods: [],
+  }
+}
+
+function nextObjectName(scene: Scene, className: string): string {
+  const base = className.toLowerCase()
+  let index = 1
+  const names = new Set(scene.objects.map((object) => object.name))
+  while (names.has(`${base}${index}`)) index += 1
+  return `${base}${index}`
+}
+
+export function createObjectFromCatalog(scene: Scene, item: CatalogItem): ObjectInstance {
+  return {
+    id: createId('object'),
+    name: nextObjectName(scene, item.className),
+    class: item.className,
+    attributes: { ...OBJECT_DEFAULTS, color: item.color, shape: item.shape },
+  }
+}
+
+/** Adds the catalog object (and its class if missing) to the scene. */
+export function addCatalogObject(scene: Scene, item: CatalogItem): Scene {
+  const hasClass = scene.classes.some((definition) => definition.name === item.className)
+  const classes = hasClass ? scene.classes : [...scene.classes, catalogClass(item)]
+  return { ...scene, classes, objects: [...scene.objects, createObjectFromCatalog(scene, item)] }
+}
+
+export function removeObject(scene: Scene, objectId: string): Scene {
+  return { ...scene, objects: scene.objects.filter((object) => object.id !== objectId) }
+}
+
+export function updateObjectAttributes(
+  scene: Scene,
+  objectId: string,
+  patch: Record<string, number | string | boolean>,
+): Scene {
+  return {
+    ...scene,
+    objects: scene.objects.map((object) =>
+      object.id === objectId
+        ? { ...object, attributes: { ...object.attributes, ...patch } }
+        : object,
+    ),
+  }
+}
+
+export function setSceneBackground(scene: Scene, background: string): Scene {
+  return { ...scene, background }
+}
+
+export function renameProject(project: Project, name: string): Project {
+  return { ...project, meta: { ...project.meta, name } }
+}
+
+export function replaceScene(project: Project, scene: Scene): Project {
+  return {
+    ...project,
+    scenes: project.scenes.map((current) => (current.id === scene.id ? scene : current)),
+  }
+}

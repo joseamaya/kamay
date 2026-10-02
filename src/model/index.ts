@@ -1,17 +1,13 @@
+import { createId } from './ids'
 import { migrateProject } from './migrations'
 import { CURRENT_SCHEMA_VERSION, projectSchema } from './schema'
 import type { Project, ProjectMeta, Scene } from './schema'
 
 export * from './schema'
 export * from './migrations'
-
-export function createId(prefix = 'id'): string {
-  const random =
-    typeof crypto !== 'undefined' && 'randomUUID' in crypto
-      ? crypto.randomUUID()
-      : Math.random().toString(36).slice(2)
-  return `${prefix}-${random}`
-}
+export * from './factory'
+export * from './attributes'
+export { createId } from './ids'
 
 export function createScene(name: string): Scene {
   return {

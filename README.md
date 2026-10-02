@@ -10,26 +10,32 @@ una clase y se **da vida** a los objetos. Ver [CREDITS.md](CREDITS.md).
 
 ## Estado
 
-El proyecto está en **Fase 0 (Fundaciones)**. La app ya se construye, pasa lint,
-tests y build, y muestra el esqueleto de las tres vistas sincronizadas
-(Escenario, Fábrica y Código). El MVP (Fase 1) aún no está implementado.
+El proyecto está en **Fase 1 (MVP), hito M1 — editor local**. Ya funciona:
 
+- **Fábrica**: agregar y eliminar objetos del catálogo (círculo, cuadrado, triángulo).
+- **Escenario**: motor Canvas 2D con fondo, selección y arrastre de objetos.
+- **Propiedades**: posición, rotación, escala y color.
+- **Código**: Python generado en vivo desde el modelo.
+- **Persistencia**: autoguardado en IndexedDB y export/import `.kamay.json`.
+- **Undo/redo** y mensajes de error en español.
+
+Pendiente (M2–M3): ejecución real con **Pyodide** y la UI de acciones/métodos.
 Consulta la hoja de ruta y el diseño en [`docs/`](docs/README.md).
 
 ## Stack
 
-| Capa             | Tecnología                                  |
-| ---------------- | ------------------------------------------- |
-| UI               | TypeScript + React                          |
-| Build            | Vite                                        |
-| Estado           | Zustand (store central tipado)              |
-| Esquema de datos | JSON versionado validado con Zod            |
-| Estilos          | Tailwind CSS v4                             |
-| Runtime Python   | Pyodide (Fase 1, en Web Worker)             |
-| Motor            | Canvas 2D (Fase 1)                          |
-| Persistencia     | IndexedDB + export/import (Fase 1)          |
-| Tests            | Vitest + React Testing Library + Playwright |
-| Lint / formato   | oxlint + Prettier                           |
+| Capa             | Tecnología                                    |
+| ---------------- | --------------------------------------------- |
+| UI               | TypeScript + React                            |
+| Build            | Vite                                          |
+| Estado           | Zustand (store central tipado)                |
+| Esquema de datos | JSON versionado validado con Zod              |
+| Estilos          | Tailwind CSS v4                               |
+| Runtime Python   | Pyodide (M2, en Web Worker)                   |
+| Motor            | Canvas 2D propio                              |
+| Persistencia     | IndexedDB (idb) + export/import `.kamay.json` |
+| Tests            | Vitest + React Testing Library + Playwright   |
+| Lint / formato   | oxlint + Prettier                             |
 
 ## Requisitos
 
