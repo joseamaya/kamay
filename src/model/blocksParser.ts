@@ -88,7 +88,12 @@ function parseLiteral(raw: string): number | string | boolean | undefined {
   return undefined
 }
 
-function matchCall(text: string, context: ParseContext): Operation | null {
+interface ParsedCall {
+  name: string
+  values: Record<string, unknown>
+}
+
+function parseCall(text: string, context: ParseContext): ParsedCall | null {
   const match = text.match(CALL_PATTERN)
   if (!match) return null
 
@@ -105,10 +110,10 @@ function matchCall(text: string, context: ParseContext): Operation | null {
     if (value === undefined) return null
     values[parameters[index]!.name] = value
   }
-  return createCallBlock(name, values)
+  return { name, values }
 }
 
-function matchSet(text: string, context: ParseContext): Operation | null {
+function parseSet(text: string, context: ParseContext): { name: string; value: unknown } | null {
   const match = text.match(SET_PATTERN)
   if (!match) return null
 
@@ -117,7 +122,17 @@ function matchSet(text: string, context: ParseContext): Operation | null {
 
   const value = parseLiteral(match[2]!)
   if (value === undefined) return null
-  return createSetBlock(name, value)
+  return { name, value }
+}
+
+function matchCall(text: string, context: ParseContext): Operation | null {
+  const parsed = parseCall(text, context)
+  return parsed ? createCallBlock(parsed.name, parsed.values) : null
+}
+
+function matchSet(text: string, context: ParseContext): Operation | null {
+  const parsed = parseSet(text, context)
+  return parsed ? createSetBlock(parsed.name, parsed.value) : null
 }
 
 function matchRepeat(text: string): number | null {
@@ -128,8 +143,8 @@ function matchRepeat(text: string): number | null {
 function isRecognized(text: string, context: ParseContext): boolean {
   return (
     matchRepeat(text) !== null ||
-    matchCall(text, context) !== null ||
-    matchSet(text, context) !== null
+    parseCall(text, context) !== null ||
+    parseSet(text, context) !== null
   )
 }
 
