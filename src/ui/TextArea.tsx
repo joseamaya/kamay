@@ -17,11 +17,11 @@ export function TextArea({ label, value, onValueChange, className, ...props }: T
     <label className={cn('flex flex-col gap-1 text-xs', className)}>
       <span className="text-muted-foreground">{label}</span>
       <textarea
+        {...props}
         value={value}
         onChange={handleChange}
         spellCheck={false}
         className="border-border bg-background focus-visible:ring-ring min-h-20 w-full resize-y rounded-md border p-2 font-mono text-xs focus-visible:ring-2 focus-visible:outline-none"
-        {...props}
       />
     </label>
   )

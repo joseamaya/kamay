@@ -46,7 +46,8 @@ export interface ProjectState {
 function updateScene(project: Project, sceneId: string, updater: (scene: Scene) => Scene): Project {
   const scene = project.scenes.find((candidate) => candidate.id === sceneId)
   if (!scene) return project
-  return replaceScene(project, updater(scene))
+  const next = updater(scene)
+  return next === scene ? project : replaceScene(project, next)
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
