@@ -80,7 +80,20 @@ export function addCatalogObject(scene: Scene, item: CatalogItem): Scene {
 }
 
 export function removeObject(scene: Scene, objectId: string): Scene {
-  return { ...scene, objects: scene.objects.filter((object) => object.id !== objectId) }
+  const target = scene.objects.find((object) => object.id === objectId)
+  if (!target) return scene
+
+  const identifiers = new Set([target.id, target.name])
+  return {
+    ...scene,
+    objects: scene.objects.filter((object) => object.id !== objectId),
+    events: scene.events
+      .map((event) => ({
+        ...event,
+        actions: event.actions.filter((action) => !identifiers.has(action.target)),
+      }))
+      .filter((event) => !(event.source && identifiers.has(event.source))),
+  }
 }
 
 export function updateObjectAttributes(

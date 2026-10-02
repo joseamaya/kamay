@@ -1,6 +1,7 @@
 import json
 
 from js import __kamay_emit, __kamay_registrar
+from pyodide.ffi import create_proxy
 
 
 def _emit(command):
@@ -8,7 +9,8 @@ def _emit(command):
 
 
 def registrar(kind, source, handler):
-    __kamay_registrar(kind, source, handler)
+    # Keep the handler alive beyond the call (borrowed proxies are auto-destroyed).
+    __kamay_registrar(kind, source, create_proxy(handler))
 
 
 class Actor:

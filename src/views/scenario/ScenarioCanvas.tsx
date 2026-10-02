@@ -20,6 +20,7 @@ interface Point {
 
 interface DragState {
   objectId: string
+  name: string
   pointerStart: Point
   origin: Point
   offset: Point
@@ -170,11 +171,9 @@ export function ScenarioCanvas() {
     }
 
     selectObject(actor.id)
-    if (runtimeStatus === 'ready' || runtimeStatus === 'running') {
-      emitRuntimeTrigger({ kind: 'click', source: actor.name })
-    }
     dragRef.current = {
       objectId: actor.id,
+      name: actor.name,
       pointerStart: point,
       origin: { ...actor.transform.position },
       offset: { x: 0, y: 0 },
@@ -198,11 +197,16 @@ export function ScenarioCanvas() {
     dragRef.current = null
     if (!drag) return
 
-    if (scene && (drag.offset.x !== 0 || drag.offset.y !== 0)) {
+    const moved = drag.offset.x !== 0 || drag.offset.y !== 0
+    if (scene && moved) {
       updateObjectAttributes(scene.id, drag.objectId, {
         x: Math.round(drag.origin.x + drag.offset.x),
         y: Math.round(drag.origin.y + drag.offset.y),
       })
+    }
+
+    if (!moved && (runtimeStatus === 'ready' || runtimeStatus === 'running')) {
+      emitRuntimeTrigger({ kind: 'click', source: drag.name })
     }
   }
 

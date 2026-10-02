@@ -67,6 +67,20 @@ describe('scene operations', () => {
   it('sets the background', () => {
     expect(setSceneBackground(createScene('Principal'), 'night').background).toBe('night')
   })
+
+  it('drops the object events and actions when deleting it', () => {
+    let scene = addCatalogObject(createScene('Principal'), circle)
+    const object = scene.objects[0]!
+    const action = { target: object.name, method: 'decir', args: { mensaje: 'hola' } }
+    scene = addEventAction(scene, 'on_click', object.name, action)
+    scene = addEventAction(scene, 'on_start', null, action)
+
+    scene = removeObject(scene, object.id)
+
+    expect(scene.objects).toHaveLength(0)
+    expect(scene.events.find((event) => event.type === 'on_click')).toBeUndefined()
+    expect(findEvent(scene, 'on_start', null)?.actions ?? []).toHaveLength(0)
+  })
 })
 
 describe('event actions', () => {

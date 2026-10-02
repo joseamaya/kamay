@@ -1,6 +1,9 @@
 import type { TriggerKind } from './types'
 
-export type EventHandler = () => void
+export interface EventHandler {
+  (): void
+  destroy?: () => void
+}
 
 function key(kind: TriggerKind, source: string): string {
   return `${kind}:${source}`
@@ -14,6 +17,7 @@ export class EventRegistry {
   private handlers = new Map<string, EventHandler>()
 
   clear(): void {
+    for (const handler of this.handlers.values()) handler.destroy?.()
     this.handlers.clear()
   }
 
