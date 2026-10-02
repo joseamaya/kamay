@@ -46,6 +46,19 @@ describe('FactoryView', () => {
     expect(useProjectStore.getState().project.scenes[0]?.objects[0]?.class).toBe('Heroe')
   })
 
+  it('duplicates an object', async () => {
+    const user = userEvent.setup()
+    const sceneId = useProjectStore.getState().project.scenes[0]!.id
+    useProjectStore.getState().addObject(sceneId, 'circle')
+
+    render(<FactoryView />)
+    await user.click(screen.getByRole('button', { name: 'Duplicar circle1' }))
+
+    const objects = useProjectStore.getState().project.scenes[0]!.objects
+    expect(objects).toHaveLength(2)
+    expect(objects[1]?.name).toBe('circle2')
+  })
+
   it('removes an object after confirming the dialog', async () => {
     const user = userEvent.setup()
     const sceneId = useProjectStore.getState().project.scenes[0]!.id

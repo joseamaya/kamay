@@ -94,6 +94,18 @@ describe('useProjectStore', () => {
     expect(useProjectStore.getState().project.scenes[0]?.background).toBe('night')
   })
 
+  it('duplicates an object with a new name', () => {
+    const sceneId = useProjectStore.getState().project.scenes[0]!.id
+    useProjectStore.getState().addObject(sceneId, 'circle')
+    const objectId = useProjectStore.getState().project.scenes[0]!.objects[0]!.id
+
+    useProjectStore.getState().duplicateObject(sceneId, objectId)
+
+    const objects = useProjectStore.getState().project.scenes[0]!.objects
+    expect(objects).toHaveLength(2)
+    expect(objects[1]?.name).toBe('circle2')
+  })
+
   it('saves a class and instantiates it', () => {
     const sceneId = useProjectStore.getState().project.scenes[0]!.id
     const definition = createClassDraft('Heroe')
