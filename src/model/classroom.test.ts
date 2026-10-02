@@ -4,9 +4,11 @@ import {
   classUsageCount,
   createClassDraft,
   createScene,
+  duplicateObject,
   hasClassDraftErrors,
   instantiateClass,
   removeClass,
+  updateObjectAttributes,
   upsertClass,
   validateClassDraft,
 } from './index'
@@ -75,6 +77,42 @@ describe('instantiateClass', () => {
   })
 })
 
+describe('per-instance state', () => {
+  it('seeds custom attributes when instantiating', () => {
+    const draft = createClassDraft('Heroe')
+    draft.attributes.push({ name: 'vida', type: 'number', initial: 100 })
+
+    const scene = instantiateClass(sceneWithClass(draft), draft.id)
+    expect(scene.objects[0]?.attributes.vida).toBe(100)
+  })
+
+  it('keeps instances independent', () => {
+    const draft = createClassDraft('Heroe')
+    draft.attributes.push({ name: 'vida', type: 'number', initial: 100 })
+
+    let scene = instantiateClass(sceneWithClass(draft), draft.id)
+    scene = instantiateClass(scene, draft.id)
+    scene = updateObjectAttributes(scene, scene.objects[0]!.id, { vida: 50 })
+
+    expect(scene.objects[0]?.attributes.vida).toBe(50)
+    expect(scene.objects[1]?.attributes.vida).toBe(100)
+  })
+
+  it('duplicates an object under a new name', () => {
+    const draft = createClassDraft('Heroe')
+    let scene = instantiateClass(sceneWithClass(draft), draft.id)
+    const source = scene.objects[0]!
+
+    scene = duplicateObject(scene, source.id)
+    const clone = scene.objects[1]!
+
+    expect(scene.objects).toHaveLength(2)
+    expect(clone.id).not.toBe(source.id)
+    expect(clone.name).toBe('heroe2')
+    expect(clone.attributes).toEqual(source.attributes)
+  })
+})
+
 describe('validateClassDraft', () => {
   it('accepts a valid draft', () => {
     expect(
@@ -89,6 +127,12 @@ describe('validateClassDraft', () => {
 
     const duplicate = { ...createClassDraft('Heroe') }
     expect(validateClassDraft(scene, duplicate).nameTaken).toBe(true)
+  })
+
+  it('flags reserved attribute names', () => {
+    const draft = createClassDraft('Heroe')
+    draft.attributes.push({ name: 'x', type: 'number', initial: 0 })
+    expect(validateClassDraft(createScene('Principal'), draft).attributes.some(Boolean)).toBe(true)
   })
 
   it('flags duplicated attributes and invalid parameters', () => {

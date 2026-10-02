@@ -28,6 +28,7 @@ export function FactoryView() {
   const scene = useActiveScene()
   const addObject = useProjectStore((state) => state.addObject)
   const removeObject = useProjectStore((state) => state.removeObject)
+  const duplicateObject = useProjectStore((state) => state.duplicateObject)
   const saveClass = useProjectStore((state) => state.saveClass)
   const removeClass = useProjectStore((state) => state.removeClass)
   const instantiateClass = useProjectStore((state) => state.instantiateClass)
@@ -181,6 +182,17 @@ export function FactoryView() {
                     )}
                   >
                     {object.name}
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={format(messages.factory.duplicateObject, { name: object.name })}
+                    onClick={() => {
+                      duplicateObject(scene.id, object.id)
+                      pushLog(messages.activity.objectDuplicated)
+                    }}
+                    className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md px-1.5 text-sm leading-none"
+                  >
+                    ⧉
                   </button>
                   <button
                     type="button"

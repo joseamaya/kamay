@@ -1,10 +1,14 @@
-import { BASE_CLASS, createObject } from './factory'
+import type { AttributeValue } from './attributes'
+import { BASE_CLASS, createObject, nextObjectName } from './factory'
 import { createId } from './ids'
 import { identifierPattern } from './schema'
-import type { Attribute, ClassDefinition, Scene } from './schema'
+import type { Attribute, ClassDefinition, ObjectInstance, Scene } from './schema'
 
 export const DEFAULT_CLASS_COLOR = '#e2603a'
 export const DEFAULT_CLASS_SHAPE = 'circle'
+
+const VISUAL_ATTRIBUTES = new Set(['color', 'shape'])
+const RESERVED_ATTRIBUTE_NAMES = new Set(['x', 'y', 'rotation', 'scale', 'color', 'shape'])
 
 export interface ClassDraftErrors {
   nameInvalid: boolean
@@ -31,9 +35,18 @@ export function createClassDraft(name = 'MiClase'): ClassDefinition {
   }
 }
 
-function attributeInitial(definition: ClassDefinition, name: string, fallback: string): string {
-  const attribute = definition.attributes.find((candidate) => candidate.name === name)
-  return typeof attribute?.initial === 'string' ? attribute.initial : fallback
+/** Attributes declared by the class beyond the visual `color`/`shape`. */
+export function classCustomAttributes(definition: ClassDefinition): Attribute[] {
+  return definition.attributes.filter((attribute) => !VISUAL_ATTRIBUTES.has(attribute.name))
+}
+
+/** Default values of every class attribute, used to seed new instances. */
+export function classAttributeDefaults(
+  definition: ClassDefinition,
+): Record<string, AttributeValue> {
+  return Object.fromEntries(
+    definition.attributes.map((attribute) => [attribute.name, attribute.initial]),
+  )
 }
 
 export function classUsageCount(scene: Scene, className: string): number {
@@ -72,11 +85,22 @@ export function instantiateClass(scene: Scene, classId: string): Scene {
   const definition = scene.classes.find((candidate) => candidate.id === classId)
   if (!definition) return scene
 
-  const object = createObject(scene, definition.name, {
-    color: attributeInitial(definition, 'color', DEFAULT_CLASS_COLOR),
-    shape: attributeInitial(definition, 'shape', DEFAULT_CLASS_SHAPE),
-  })
+  const object = createObject(scene, definition.name, classAttributeDefaults(definition))
   return { ...scene, objects: [...scene.objects, object] }
+}
+
+/** Clones an object (same class and attributes) under a new id and unique name. */
+export function duplicateObject(scene: Scene, objectId: string): Scene {
+  const source = scene.objects.find((object) => object.id === objectId)
+  if (!source) return scene
+
+  const clone: ObjectInstance = {
+    ...source,
+    id: createId('object'),
+    name: nextObjectName(scene, source.class),
+    attributes: { ...source.attributes },
+  }
+  return { ...scene, objects: [...scene.objects, clone] }
 }
 
 function hasDuplicateNames(names: string[]): boolean {
@@ -95,7 +119,10 @@ export function validateClassDraft(scene: Scene, definition: ClassDefinition): C
       (candidate) => candidate.id !== definition.id && candidate.name === definition.name,
     ),
     attributes: definition.attributes.map(
-      (attribute) => !isIdentifier(attribute.name) || duplicateAttributes,
+      (attribute) =>
+        !isIdentifier(attribute.name) ||
+        duplicateAttributes ||
+        (!VISUAL_ATTRIBUTES.has(attribute.name) && RESERVED_ATTRIBUTE_NAMES.has(attribute.name)),
     ),
     methods: definition.methods.map((method) => {
       const parameterNames = method.parameters.map((parameter) => parameter.name)

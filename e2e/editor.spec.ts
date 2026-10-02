@@ -31,6 +31,26 @@ test('creates a class with a method and instantiates it', async ({ page }) => {
   await expect(page.locator('pre')).toContainText('heroe1 = Heroe("heroe1")')
 })
 
+test('keeps per-instance state for objects of the same class', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Nueva clase' }).click()
+  const dialog = page.getByRole('dialog')
+  await page.getByLabel('Nombre de la clase').fill('Heroe')
+  await dialog.getByRole('button', { name: 'Agregar atributo' }).click()
+  await page.getByLabel('Nombre del atributo').fill('vida')
+  await dialog.getByRole('button', { name: 'Guardar' }).click()
+
+  await page.getByRole('button', { name: 'Crear objeto de Heroe' }).click()
+  await page.getByRole('button', { name: 'Crear objeto de Heroe' }).click()
+
+  await page.getByRole('button', { name: 'heroe1', exact: true }).click()
+  await page.getByLabel('vida', { exact: true }).fill('40')
+
+  await expect(page.locator('pre')).toContainText('heroe1.vida = 40')
+  await expect(page.locator('pre')).toContainText('heroe2.vida = 0')
+})
+
 test('shows every generated file and switches tabs', async ({ page }) => {
   await page.goto('/')
 

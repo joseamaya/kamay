@@ -4,6 +4,7 @@ import {
   addCatalogObject,
   addSceneAction,
   createEmptyProject,
+  duplicateObject as duplicateObjectInScene,
   findCatalogItem,
   instantiateClass as instantiateClassInScene,
   removeClass as removeClassFromScene,
@@ -27,6 +28,7 @@ export interface ProjectState {
   updateProject: (updater: (project: Project) => Project) => void
   addObject: (sceneId: string, catalogItemId: string) => void
   removeObject: (sceneId: string, objectId: string) => void
+  duplicateObject: (sceneId: string, objectId: string) => void
   updateObjectAttributes: (
     sceneId: string,
     objectId: string,
@@ -79,6 +81,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   removeObject: (sceneId, objectId) => {
     get().updateProject((project) =>
       updateScene(project, sceneId, (scene) => removeObjectFromScene(scene, objectId)),
+    )
+  },
+
+  duplicateObject: (sceneId, objectId) => {
+    get().updateProject((project) =>
+      updateScene(project, sceneId, (scene) => duplicateObjectInScene(scene, objectId)),
     )
   },
 

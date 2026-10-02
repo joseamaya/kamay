@@ -188,6 +188,35 @@ if __name__ == "__main__":
     expect(main?.content).toContain('heroe1.saludar("hola")')
   })
 
+  it('emits per-instance attribute assignments', () => {
+    const project = projectSchema.parse({
+      version: 1,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          classes: [
+            {
+              id: 'class-heroe',
+              name: 'Heroe',
+              inherits: 'Actor',
+              attributes: [{ name: 'vida', type: 'number', initial: 100 }],
+            },
+          ],
+          objects: [
+            { id: 'o1', name: 'heroe1', class: 'Heroe', attributes: { vida: 50 } },
+            { id: 'o2', name: 'heroe2', class: 'Heroe', attributes: { vida: 100 } },
+          ],
+        },
+      ],
+    })
+
+    const main = generatePython(project).files.find((file) => file.path === 'principal.py')
+    expect(main?.content).toContain('heroe1.vida = 50')
+    expect(main?.content).toContain('heroe2.vida = 100')
+  })
+
   it('imports the base class when inheriting from another class', () => {
     const project = projectSchema.parse({
       version: 1,
