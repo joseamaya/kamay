@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { PointerEvent as ReactPointerEvent } from 'react'
+import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 
 import {
   ACTOR_SIZE,
@@ -10,9 +10,16 @@ import {
   toSceneState,
 } from '../../engine'
 import type { Actor } from '../../engine'
-import { collisionKey } from '../../model'
+import { getMessages } from '../../i18n'
+import { collisionKey, readNumber } from '../../model'
 import { emitRuntimeTrigger, onRuntimeCommand, onRuntimeReset } from '../../runtime'
-import { useActiveScene, useEditorStore, useProjectStore, useRuntimeStore } from '../../store'
+import {
+  useActiveScene,
+  useEditorStore,
+  usePreferencesStore,
+  useProjectStore,
+  useRuntimeStore,
+} from '../../store'
 
 interface Point {
   x: number
@@ -26,6 +33,9 @@ interface DragState {
   origin: Point
   offset: Point
 }
+
+const MOVE_STEP = 4
+const MOVE_STEP_FAST = 16
 
 function distanceSquared(a: Point, b: Point): number {
   const dx = a.x - b.x
@@ -43,11 +53,13 @@ function hitTest(actors: Actor[], point: Point): Actor | null {
 }
 
 export function ScenarioCanvas() {
+  const messages = getMessages()
   const scene = useActiveScene()
   const selectedObjectId = useEditorStore((state) => state.selectedObjectId)
   const selectObject = useEditorStore((state) => state.selectObject)
   const updateObjectAttributes = useProjectStore((state) => state.updateObjectAttributes)
   const runtimeStatus = useRuntimeStore((state) => state.status)
+  const reducedMotion = usePreferencesStore((state) => state.reducedMotion)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -96,6 +108,10 @@ export function ScenarioCanvas() {
     controllerRef.current.reset(toSceneState(scene))
     collisionsRef.current.clear()
   }, [scene])
+
+  useEffect(() => {
+    controllerRef.current.setReducedMotion(reducedMotion)
+  }, [reducedMotion])
 
   useEffect(() => onRuntimeCommand((command) => controllerRef.current.apply(command)), [])
 
@@ -253,16 +269,56 @@ export function ScenarioCanvas() {
     }
   }
 
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLCanvasElement>) => {
+    if (!scene) return
+
+    if (event.key === 'Escape') {
+      selectObject(null)
+      return
+    }
+
+    const object = scene.objects.find((candidate) => candidate.id === selectedObjectId)
+    if (!object) return
+
+    const step = event.shiftKey ? MOVE_STEP_FAST : MOVE_STEP
+    let dx = 0
+    let dy = 0
+    if (event.key === 'ArrowLeft') dx = -step
+    else if (event.key === 'ArrowRight') dx = step
+    else if (event.key === 'ArrowUp') dy = step
+    else if (event.key === 'ArrowDown') dy = -step
+
+    if (dx !== 0 || dy !== 0) {
+      event.preventDefault()
+      updateObjectAttributes(scene.id, object.id, {
+        x: readNumber(object.attributes, 'x', 0) + dx,
+        y: readNumber(object.attributes, 'y', 0) + dy,
+      })
+      return
+    }
+
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      if (runtimeStatus === 'ready' || runtimeStatus === 'running') {
+        emitRuntimeTrigger({ kind: 'click', source: object.name })
+      }
+    }
+  }
+
   return (
     <div ref={containerRef} className="h-full w-full">
       <canvas
         ref={canvasRef}
-        className="h-full w-full cursor-grab touch-none rounded-md active:cursor-grabbing"
+        tabIndex={0}
+        role="application"
+        aria-label={messages.scenario.canvasLabel}
+        className="focus-visible:ring-ring h-full w-full cursor-grab touch-none rounded-md focus-visible:ring-2 focus-visible:outline-none active:cursor-grabbing"
         style={{ width: `${size.x}px`, height: `${size.y}px` }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
+        onKeyDown={handleKeyDown}
       />
     </div>
   )

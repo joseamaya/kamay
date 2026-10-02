@@ -37,6 +37,16 @@ The project is in **Phase 3 — blocks, scenes and inheritance**. Working today:
 Pending (Phase 3): code ↔ blocks sync (advanced code), richer events and
 optional physics.
 
+## Accessibility
+
+- **Keyboard**: focus the stage and use the arrow keys to move the selected
+  object (`Shift` for bigger steps), `Enter`/`Space` to trigger its click event
+  and `Escape` to deselect. Objects can also be selected from the factory list.
+- **Theme and text size**: light/dark theme and three text sizes, persisted
+  locally; the theme follows the system preference on first load.
+- **Reduced motion**: `prefers-reduced-motion` disables movement animations.
+- Status and errors are announced through a live region.
+
 ## Stack
 
 | Layer          | Technology                                    |

@@ -42,6 +42,18 @@ describe('RuntimeController', () => {
     expect(actor.transform.position.y).toBeCloseTo(-5)
   })
 
+  it('applies movement instantly when reduced motion is on', () => {
+    const controller = new RuntimeController()
+    controller.reset(scene)
+    controller.setReducedMotion(true)
+
+    controller.apply({ type: 'move', target: 'circle1', x: 10, y: -5 })
+
+    const actor = controller.getActors()[0]!
+    expect(actor.transform.position.x).toBe(10)
+    expect(actor.transform.position.y).toBe(-5)
+  })
+
   it('expires bubbles after their lifetime', () => {
     const controller = new RuntimeController()
     controller.reset(scene)

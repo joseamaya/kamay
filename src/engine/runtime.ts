@@ -15,6 +15,11 @@ export class RuntimeController {
   private actors: Actor[] = []
   private bubbles: Bubble[] = []
   private tweens: Tween[] = []
+  private reducedMotion = false
+
+  setReducedMotion(value: boolean): void {
+    this.reducedMotion = value
+  }
 
   reset(scene: SceneState): void {
     this.actors = scene.actors.map((actor) => ({
@@ -41,28 +46,41 @@ export class RuntimeController {
         ]
         break
       case 'move':
-        this.tweens.push(
-          createTween(actor.id, 'x', actor.transform.position.x, command.x, MOVE_DURATION),
-        )
-        this.tweens.push(
-          createTween(actor.id, 'y', actor.transform.position.y, command.y, MOVE_DURATION),
-        )
+        if (this.reducedMotion) {
+          actor.transform.position.x = command.x
+          actor.transform.position.y = command.y
+        } else {
+          this.tweens.push(
+            createTween(actor.id, 'x', actor.transform.position.x, command.x, MOVE_DURATION),
+          )
+          this.tweens.push(
+            createTween(actor.id, 'y', actor.transform.position.y, command.y, MOVE_DURATION),
+          )
+        }
         break
       case 'rotate':
-        this.tweens.push(
-          createTween(
-            actor.id,
-            'rotation',
-            actor.transform.rotation,
-            command.degrees,
-            MOVE_DURATION,
-          ),
-        )
+        if (this.reducedMotion) {
+          actor.transform.rotation = command.degrees
+        } else {
+          this.tweens.push(
+            createTween(
+              actor.id,
+              'rotation',
+              actor.transform.rotation,
+              command.degrees,
+              MOVE_DURATION,
+            ),
+          )
+        }
         break
       case 'scale':
-        this.tweens.push(
-          createTween(actor.id, 'scale', actor.transform.scale, command.factor, MOVE_DURATION),
-        )
+        if (this.reducedMotion) {
+          actor.transform.scale = command.factor
+        } else {
+          this.tweens.push(
+            createTween(actor.id, 'scale', actor.transform.scale, command.factor, MOVE_DURATION),
+          )
+        }
         break
     }
   }

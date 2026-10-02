@@ -1,4 +1,6 @@
 export * from './store'
 export * from './editorStore'
 export * from './runtimeStore'
+export * from './preferencesStore'
+export * from './usePreferencesEffects'
 export * from './selectors'

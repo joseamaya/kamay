@@ -182,6 +182,7 @@ export function FactoryView() {
                 <li key={object.id} className="flex items-center gap-2">
                   <button
                     type="button"
+                    aria-current={object.id === selectedObjectId ? 'true' : undefined}
                     onClick={() => selectObject(object.id)}
                     className={cn(
                       'flex-1 rounded-md border px-2 py-1 text-left text-sm transition',
