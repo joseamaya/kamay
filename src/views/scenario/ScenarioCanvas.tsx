@@ -123,7 +123,8 @@ export function ScenarioCanvas() {
       ) {
         return
       }
-      emitRuntimeTrigger({ kind: 'key', source: event.key })
+      const source = event.key.length === 1 ? event.key.toLowerCase() : event.key
+      emitRuntimeTrigger({ kind: 'key', source })
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
