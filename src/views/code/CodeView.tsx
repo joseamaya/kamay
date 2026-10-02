@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 
 import { generatePython } from '../../generator'
@@ -28,6 +28,7 @@ export function CodeView() {
 
   const [copied, setCopied] = useState(false)
   const dragRef = useRef<{ startY: number; startHeight: number } | null>(null)
+  const panelId = useId()
 
   const activeFile =
     files.find((file) => file.path === codeFile) ??
@@ -91,6 +92,7 @@ export function CodeView() {
           onPointerDown={handleResizePointerDown}
           onPointerMove={handleResizePointerMove}
           onPointerUp={handleResizePointerUp}
+          onPointerCancel={handleResizePointerUp}
           onKeyDown={handleResizeKeyDown}
           className="hover:bg-primary/40 focus-visible:bg-primary/50 h-1.5 flex-none cursor-row-resize focus-visible:outline-none"
         />
@@ -110,6 +112,8 @@ export function CodeView() {
                 key={file.path}
                 type="button"
                 role="tab"
+                id={`${panelId}-tab-${file.path}`}
+                aria-controls={panelId}
                 aria-selected={selected}
                 onClick={() => setCodeFile(file.path)}
                 className={cn(
@@ -143,7 +147,12 @@ export function CodeView() {
       </header>
 
       {codeCollapsed ? null : (
-        <div className="min-h-0 flex-1 overflow-auto">
+        <div
+          id={panelId}
+          role="tabpanel"
+          aria-labelledby={activeFile ? `${panelId}-tab-${activeFile.path}` : undefined}
+          className="min-h-0 flex-1 overflow-auto"
+        >
           {activeFile ? (
             <div className="flex min-w-max font-mono text-xs leading-5">
               <ol
