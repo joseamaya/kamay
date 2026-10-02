@@ -23,6 +23,12 @@ test-results
 .env.*
 !.env.example
 
+# Local design and development notes (kept out of the repository)
+/docs/
+/AGENTS.md
+/CONTRIBUTING.md
+/CREDITS.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
