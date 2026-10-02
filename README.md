@@ -106,6 +106,10 @@ src/
 The `pnpm build` output is **fully static** (`dist/`): deployable to GitHub
 Pages, Netlify or Cloudflare Pages.
 
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for the release history.
+
 ## License
 
 [MIT](LICENSE) © 2026 Jose Amaya.
