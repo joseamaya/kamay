@@ -12,6 +12,5 @@ test('runs the generated program with pyodide', async ({ page }) => {
   await page.getByRole('button', { name: 'Agregar orden' }).click()
 
   await page.getByRole('button', { name: 'Ejecutar' }).click()
-
   await expect(page.getByText('Listo.')).toBeVisible({ timeout: 150_000 })
 })

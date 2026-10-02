@@ -1,8 +1,9 @@
 /// <reference lib="webworker" />
 import { PYODIDE_CDN } from './config'
 import type { WorkerRequest, WorkerResponse } from './protocol'
+import { toRuntimeError } from './pythonError'
 import runtimeSource from './python/runtime.py?raw'
-import type { RuntimeCommand, RuntimeError } from './types'
+import type { RuntimeCommand } from './types'
 
 interface PyodideLike {
   FS: {
@@ -31,17 +32,6 @@ async function ensurePyodide(): Promise<PyodideLike> {
   return pyodidePromise
 }
 
-function toRuntimeError(error: unknown): RuntimeError {
-  const message = error instanceof Error ? error.message : String(error)
-  const lineMatch = message.match(/line (\d+)/)
-  const kindMatch = message.match(/([A-Za-z_]*Error)/)
-  return {
-    kind: kindMatch ? kindMatch[1] : 'Error',
-    message,
-    line: lineMatch ? Number(lineMatch[1]) : null,
-  }
-}
-
 async function run(files: Record<string, string>, entry: string): Promise<void> {
   try {
     const pyodide = await ensurePyodide()
@@ -60,7 +50,12 @@ async function run(files: Record<string, string>, entry: string): Promise<void> 
       pyodide.FS.writeFile(`/kamay/${name}`, content)
     }
 
-    await pyodide.runPythonAsync("import sys; sys.path.insert(0, '/kamay')")
+    await pyodide.runPythonAsync(`import sys
+if '/kamay' not in sys.path:
+    sys.path.insert(0, '/kamay')
+for _name in [name for name, module in list(sys.modules.items()) if getattr(module, '__file__', '').startswith('/kamay')]:
+    del sys.modules[_name]
+`)
     post({ type: 'status', status: 'running' })
 
     const source = files[entry] ?? ''

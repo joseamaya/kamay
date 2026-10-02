@@ -4,7 +4,12 @@ import type { RuntimeBridge, RuntimeCommand, RuntimeError, RuntimeStatus } from 
 export function createRuntimeBridge(): RuntimeBridge {
   let worker: Worker | null = null
   let status: RuntimeStatus = 'idle'
-  let readyResolvers: Array<() => void> = []
+  let readySettlers: Array<{ resolve: () => void; reject: (error: Error) => void }> = []
+
+  const settleReady = (error?: Error) => {
+    readySettlers.forEach((settler) => (error ? settler.reject(error) : settler.resolve()))
+    readySettlers = []
+  }
 
   const commandListeners = new Set<(command: RuntimeCommand) => void>()
   const errorListeners = new Set<(error: RuntimeError) => void>()
@@ -26,10 +31,7 @@ export function createRuntimeBridge(): RuntimeBridge {
         errorListeners.forEach((listener) => listener(message.error))
       else if (message.type === 'status') {
         setStatus(message.status)
-        if (message.status === 'ready') {
-          readyResolvers.forEach((resolve) => resolve())
-          readyResolvers = []
-        }
+        if (message.status === 'ready') settleReady()
       }
     }
     return worker
@@ -39,8 +41,8 @@ export function createRuntimeBridge(): RuntimeBridge {
     preload: () => {
       const current = ensureWorker()
       if (status === 'ready') return Promise.resolve()
-      return new Promise<void>((resolve) => {
-        readyResolvers.push(resolve)
+      return new Promise<void>((resolve, reject) => {
+        readySettlers.push({ resolve, reject })
         current.postMessage({ type: 'preload' } satisfies WorkerRequest)
       })
     },
@@ -50,6 +52,7 @@ export function createRuntimeBridge(): RuntimeBridge {
     stop: () => {
       worker?.terminate()
       worker = null
+      settleReady(new Error('runtime_stopped'))
       setStatus('idle')
     },
     onCommand: (listener) => {

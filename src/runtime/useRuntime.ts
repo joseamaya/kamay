@@ -34,9 +34,10 @@ export function useRuntime(): RuntimeApi {
       generatePython(project).files.map((file) => [file.path, file.content]),
     )
     setError(null)
+    setStatus('loading')
     emitRuntimeReset()
     void bridge.run(files, 'principal.py')
-  }, [bridge, setError])
+  }, [bridge, setError, setStatus])
 
   const stop = useCallback(() => {
     bridge.stop()
