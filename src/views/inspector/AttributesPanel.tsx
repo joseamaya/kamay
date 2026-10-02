@@ -1,5 +1,10 @@
 import { getMessages } from '../../i18n'
-import { classAttributeDefaults, classCustomAttributes, readNumber, readString } from '../../model'
+import {
+  readNumber,
+  readString,
+  resolveAttributeDefaults,
+  resolveCustomAttributes,
+} from '../../model'
 import { useActiveScene, useProjectStore, useSelectedObject } from '../../store'
 import { ColorInput } from '../../ui/ColorInput'
 import { NumberField } from '../../ui/NumberField'
@@ -25,9 +30,8 @@ export function AttributesPanel() {
   const patch = (values: Record<string, number | string | boolean>) =>
     updateObjectAttributes(scene.id, object.id, values)
 
-  const definition = scene.classes.find((candidate) => candidate.name === object.class)
-  const customAttributes = definition ? classCustomAttributes(definition) : []
-  const defaults = definition ? classAttributeDefaults(definition) : {}
+  const customAttributes = resolveCustomAttributes(scene, object.class)
+  const defaults = resolveAttributeDefaults(scene, object.class)
 
   return (
     <Panel title={messages.inspector.title} className="min-h-0">

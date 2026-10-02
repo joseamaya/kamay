@@ -9,6 +9,8 @@ import {
   hasClassDraftErrors,
   instantiateClass,
   removeClass,
+  resolveAttributeDefaults,
+  resolveCustomAttributes,
   resolveMethods,
   updateObjectAttributes,
   upsertClass,
@@ -140,6 +142,21 @@ describe('inheritance', () => {
 
   it('keeps a class that still has subclasses', () => {
     expect(removeClass(sceneWithFamily(), personaje.id).classes).toHaveLength(2)
+  })
+
+  it('resolves inherited attributes, own definitions first', () => {
+    const scene = upsertClass(sceneWithFamily(), {
+      ...personaje,
+      attributes: [
+        { name: 'color', type: 'string', initial: '#fff' },
+        { name: 'shape', type: 'string', initial: 'circle' },
+        { name: 'vida', type: 'number', initial: 100 },
+      ],
+    })
+    expect(resolveCustomAttributes(scene, 'Heroe').map((attribute) => attribute.name)).toEqual([
+      'vida',
+    ])
+    expect(resolveAttributeDefaults(scene, 'Heroe').vida).toBe(100)
   })
 
   it('resolves inherited methods, own definitions first', () => {

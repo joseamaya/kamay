@@ -131,6 +131,46 @@ export function resolveMethods(scene: Scene, className: string): Method[] {
   return result
 }
 
+/** Own attributes plus inherited ones (nearest definition wins). */
+export function resolveAttributes(scene: Scene, className: string): Attribute[] {
+  const result: Attribute[] = []
+  const seen = new Set<string>()
+  const visited = new Set<string>()
+  let current: string | null = className
+
+  while (current && !visited.has(current)) {
+    visited.add(current)
+    const definition = scene.classes.find((candidate) => candidate.name === current)
+    if (!definition) break
+    for (const attribute of definition.attributes) {
+      if (!seen.has(attribute.name)) {
+        seen.add(attribute.name)
+        result.push(attribute)
+      }
+    }
+    current = definition.inherits
+  }
+
+  return result
+}
+
+/** Inherited and own attributes excluding the visual `color`/`shape`. */
+export function resolveCustomAttributes(scene: Scene, className: string): Attribute[] {
+  return resolveAttributes(scene, className).filter(
+    (attribute) => !VISUAL_ATTRIBUTES.has(attribute.name),
+  )
+}
+
+/** Default values of every resolved attribute, used to reset instances. */
+export function resolveAttributeDefaults(
+  scene: Scene,
+  className: string,
+): Record<string, AttributeValue> {
+  return Object.fromEntries(
+    resolveAttributes(scene, className).map((attribute) => [attribute.name, attribute.initial]),
+  )
+}
+
 /** Adds a new class or replaces an existing one (by id), keeping object references in sync. */
 export function upsertClass(scene: Scene, definition: ClassDefinition): Scene {
   const existing = scene.classes.find((candidate) => candidate.id === definition.id)

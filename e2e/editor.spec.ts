@@ -118,6 +118,8 @@ test('creates a class that inherits from another class', async ({ page }) => {
   await page.getByRole('button', { name: 'Nueva clase' }).click()
   let dialog = page.getByRole('dialog')
   await page.getByLabel('Nombre de la clase').fill('Personaje')
+  await dialog.getByRole('button', { name: 'Agregar atributo' }).click()
+  await page.getByLabel('Nombre del atributo').fill('vida')
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
   await page.getByRole('button', { name: 'Nueva clase' }).click()
@@ -132,4 +134,8 @@ test('creates a class that inherits from another class', async ({ page }) => {
 
   await page.getByRole('tab', { name: 'Personaje.py' }).click()
   await expect(codeContent(page)).toContainText('class Personaje(Actor):')
+
+  await page.getByRole('button', { name: 'Crear objeto de Heroe' }).click()
+  await page.getByRole('button', { name: 'heroe1', exact: true }).click()
+  await expect(page.getByLabel('vida', { exact: true })).toBeVisible()
 })
