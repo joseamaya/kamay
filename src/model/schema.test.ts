@@ -36,6 +36,14 @@ describe('projectSchema', () => {
     expect(result.success).toBe(false)
   })
 
+  it('rejects a project with a future schema version', () => {
+    const result = projectSchema.safeParse({
+      ...minimalProject,
+      version: CURRENT_SCHEMA_VERSION + 1,
+    })
+    expect(result.success).toBe(false)
+  })
+
   it('rejects an unknown attribute type', () => {
     const result = projectSchema.safeParse({
       ...minimalProject,

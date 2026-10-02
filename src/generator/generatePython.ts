@@ -110,14 +110,40 @@ function generateClassFile(definition: ClassDefinition): string {
   return `${lines.join('\n')}\n`
 }
 
+function findObject(scene: Scene, target: string): ObjectInstance | undefined {
+  return scene.objects.find((object) => object.id === target || object.name === target)
+}
+
 function resolveVariableName(scene: Scene, target: string): string {
-  const found = scene.objects.find((object) => object.id === target || object.name === target)
+  const found = findObject(scene, target)
   return found ? found.name : target
+}
+
+/**
+ * Orders action arguments by the method's declared parameter order. Unknown
+ * arguments are appended in their recorded order so nothing is dropped.
+ */
+function orderedArgs(scene: Scene, action: Action): unknown[] {
+  const object = findObject(scene, action.target)
+  const definition = object
+    ? scene.classes.find((candidate) => candidate.name === object.class)
+    : undefined
+  const method = definition?.methods.find((candidate) => candidate.name === action.method)
+  if (!method) return Object.values(action.args)
+
+  const byParameter = method.parameters
+    .filter((parameter) => parameter.name in action.args)
+    .map((parameter) => action.args[parameter.name])
+  const extras = Object.entries(action.args)
+    .filter(([name]) => !method.parameters.some((parameter) => parameter.name === name))
+    .map(([, value]) => value)
+
+  return [...byParameter, ...extras]
 }
 
 function generateAction(scene: Scene, action: Action): string {
   const variable = resolveVariableName(scene, action.target)
-  const args = Object.values(action.args).map(pyLiteral)
+  const args = orderedArgs(scene, action).map(pyLiteral)
   return `${variable}.${action.method}(${args.join(', ')})`
 }
 

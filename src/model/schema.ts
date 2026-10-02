@@ -90,11 +90,21 @@ export const projectMetaSchema = z.object({
   created: z.string().default(() => new Date().toISOString()),
 })
 
-export const projectSchema = z.object({
-  version: z.number().int().positive(),
-  meta: projectMetaSchema,
-  scenes: z.array(sceneSchema).min(1),
-})
+export const projectSchema = z
+  .object({
+    version: z.number().int().positive(),
+    meta: projectMetaSchema,
+    scenes: z.array(sceneSchema).min(1),
+  })
+  .superRefine((project, ctx) => {
+    if (project.version > CURRENT_SCHEMA_VERSION) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'unsupported_schema_version',
+        path: ['version'],
+      })
+    }
+  })
 
 export type AttributeType = z.infer<typeof attributeTypeSchema>
 export type Parameter = z.infer<typeof parameterSchema>

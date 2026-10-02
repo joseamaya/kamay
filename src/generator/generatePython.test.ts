@@ -81,6 +81,44 @@ if __name__ == "__main__":
 `)
   })
 
+  it('orders action arguments by the method parameter order', () => {
+    const project = projectSchema.parse({
+      version: 1,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          classes: [
+            {
+              id: 'class-heroe',
+              name: 'Heroe',
+              methods: [
+                {
+                  name: 'mover',
+                  parameters: [
+                    { name: 'x', type: 'number' },
+                    { name: 'y', type: 'number' },
+                  ],
+                },
+              ],
+            },
+          ],
+          objects: [{ id: 'h1', name: 'h1', class: 'Heroe' }],
+          events: [
+            {
+              type: 'on_start',
+              actions: [{ target: 'h1', method: 'mover', args: { y: 2, x: 1 } }],
+            },
+          ],
+        },
+      ],
+    })
+
+    const main = generatePython(project).files.find((file) => file.path === 'principal.py')
+    expect(main?.content).toContain('h1.mover(1, 2)')
+  })
+
   it('is deterministic for the same model', () => {
     const first = generatePython(buildFixture())
     const second = generatePython(buildFixture())
