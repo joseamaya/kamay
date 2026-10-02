@@ -59,6 +59,16 @@ describe('RuntimeController', () => {
     expect(controller.getBubbles()[0]?.message).toBe('adios')
   })
 
+  it('ignores negative waits', () => {
+    const controller = new RuntimeController()
+    controller.reset(scene)
+
+    controller.apply({ type: 'wait', seconds: -5 })
+    controller.apply({ type: 'say', target: 'circle1', message: 'hola' })
+
+    expect(controller.getBubbles()[0]?.message).toBe('hola')
+  })
+
   it('applies movement instantly when reduced motion is on', () => {
     const controller = new RuntimeController()
     controller.reset(scene)

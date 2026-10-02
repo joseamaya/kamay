@@ -44,7 +44,7 @@ export class RuntimeController {
 
   apply(command: RuntimeCommand): void {
     if (command.type === 'wait') {
-      this.delay += command.seconds
+      this.delay = Math.max(0, this.delay + command.seconds)
       return
     }
     if (this.delay > 0) {
