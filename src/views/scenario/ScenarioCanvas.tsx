@@ -10,6 +10,7 @@ import {
   toSceneState,
 } from '../../engine'
 import type { Actor } from '../../engine'
+import { collisionKey } from '../../model'
 import { emitRuntimeTrigger, onRuntimeCommand, onRuntimeReset } from '../../runtime'
 import { useActiveScene, useEditorStore, useProjectStore, useRuntimeStore } from '../../store'
 
@@ -128,7 +129,7 @@ export function ScenarioCanvas() {
         const dy = first.transform.position.y - second.transform.position.y
         if (dx * dx + dy * dy > radius * radius) continue
 
-        const key = [first.name, second.name].sort().join('|')
+        const key = collisionKey(first.name, second.name)
         colliding.add(key)
         if (!collisionsRef.current.has(key)) {
           emitRuntimeTrigger({ kind: 'collision', source: key })

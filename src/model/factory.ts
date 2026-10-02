@@ -18,6 +18,11 @@ export const ACTOR_CATALOG: CatalogItem[] = [
 
 export const BASE_CLASS = 'Actor'
 
+/** Order-independent key for a pair of objects that can collide. */
+export function collisionKey(a: string, b: string): string {
+  return [a, b].sort().join('|')
+}
+
 export const OBJECT_DEFAULTS = {
   x: 0,
   y: 0,

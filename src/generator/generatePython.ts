@@ -1,4 +1,4 @@
-import { findBuiltinMethod } from '../model'
+import { collisionKey, findBuiltinMethod } from '../model'
 import type {
   Action,
   Attribute,
@@ -158,10 +158,6 @@ function generateObjectStatements(object: ObjectInstance): string[] {
     lines.push(`${object.name}.${key} = ${pyLiteral(value)}`)
   }
   return lines
-}
-
-export function collisionKey(a: string, b: string): string {
-  return [a, b].sort().join('|')
 }
 
 function pushHandler(lines: string[], name: string, actions: string[]): void {
