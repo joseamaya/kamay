@@ -111,3 +111,25 @@ test('saves and reopens a project from local storage', async ({ page }) => {
   await page.getByRole('button', { name: 'Proyecto sin título' }).click()
   await expect(page.getByRole('button', { name: 'square1', exact: true })).toBeVisible()
 })
+
+test('creates a class that inherits from another class', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Nueva clase' }).click()
+  let dialog = page.getByRole('dialog')
+  await page.getByLabel('Nombre de la clase').fill('Personaje')
+  await dialog.getByRole('button', { name: 'Guardar' }).click()
+
+  await page.getByRole('button', { name: 'Nueva clase' }).click()
+  dialog = page.getByRole('dialog')
+  await page.getByLabel('Nombre de la clase').fill('Heroe')
+  await page.getByLabel('Hereda de').selectOption('Personaje')
+  await dialog.getByRole('button', { name: 'Guardar' }).click()
+
+  await page.getByRole('tab', { name: 'Heroe.py' }).click()
+  await expect(codeContent(page)).toContainText('from Personaje import Personaje')
+  await expect(codeContent(page)).toContainText('class Heroe(Personaje):')
+
+  await page.getByRole('tab', { name: 'Personaje.py' }).click()
+  await expect(codeContent(page)).toContainText('class Personaje(Actor):')
+})

@@ -13,19 +13,24 @@ English.
 
 ## Status
 
-The project is in **Phase 1 (MVP), milestone M2 — execution**. Working today:
+The project is in **Phase 2 — own classes and editable code**. Working today:
 
 - **Factory**: add and remove objects from the catalog (circle, square, triangle).
+- **Classes**: create your own classes with attributes and methods, instantiate
+  several objects from them and inherit from another class.
 - **Stage**: custom Canvas 2D engine with background, selection and drag.
 - **Properties**: position, rotation, scale and color.
-- **Actions**: give objects orders (`decir`, `mover`, `girar`, `cambiar_escala`).
-- **Code**: Python generated live from the model.
+- **Actions**: orders (`decir`, `mover`, `girar`, `cambiar_escala`) plus
+  user-defined methods, triggered on start, click or collision.
+- **Code**: Python generated live, shown in a CodeMirror view (read-only) with
+  editable method bodies.
 - **Execution**: run the program with **Pyodide** (Web Worker) and see the
-  objects talk and move; errors are shown in Spanish.
+  objects talk and move; runtime errors are translated to Spanish and marked
+  inline in the generated code.
 - **Persistence**: autosave to IndexedDB and `.kamay.json` export/import.
 - **Undo/redo** and error messages in Spanish.
 
-Pending (M3): richer methods, class bodies and blocks.
+Pending (Phase 3): blocks (blocks → code) and multiple scenes.
 
 ## Stack
 
@@ -71,12 +76,12 @@ pnpm test:e2e     # Playwright (requires: pnpm exec playwright install)
 
 ```
 src/
-  model/         # versioned Zod schema, types and migrations
+  model/         # versioned Zod schema, types, migrations, catalog and actions
   store/         # central state (Zustand) with undo/redo
   generator/     # JSON model -> deterministic Python code
-  runtime/       # Pyodide worker, bridge and error translation
+  runtime/       # Pyodide worker, bridge, command bus and error translation
   engine/        # Canvas 2D engine and runtime commands
-  views/         # stage, factory, actions, code and top bar
+  views/         # stage, factory, actions, inspector, classes, code and bar
   persistence/   # IndexedDB and export/import
   i18n/          # Spanish UI strings
   ui/            # reusable components and design system

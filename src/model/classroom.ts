@@ -2,7 +2,7 @@ import type { AttributeValue } from './attributes'
 import { BASE_CLASS, createObject, nextObjectName } from './factory'
 import { createId } from './ids'
 import { identifierPattern } from './schema'
-import type { Attribute, ClassDefinition, ObjectInstance, Scene } from './schema'
+import type { Attribute, ClassDefinition, Method, ObjectInstance, Scene } from './schema'
 
 export const DEFAULT_CLASS_COLOR = '#e2603a'
 export const DEFAULT_CLASS_SHAPE = 'circle'
@@ -13,6 +13,7 @@ const RESERVED_ATTRIBUTE_NAMES = new Set(['x', 'y', 'rotation', 'scale', 'color'
 export interface ClassDraftErrors {
   nameInvalid: boolean
   nameTaken: boolean
+  inheritsInvalid: boolean
   attributes: boolean[]
   methods: { nameInvalid: boolean; nameTaken: boolean; invalidParameters: boolean }[]
 }
@@ -53,31 +54,116 @@ export function classUsageCount(scene: Scene, className: string): number {
   return scene.objects.filter((object) => object.class === className).length
 }
 
+/** Number of classes that inherit from the given class. */
+export function classInheritanceUsageCount(scene: Scene, className: string): number {
+  return scene.classes.filter((definition) => definition.inherits === className).length
+}
+
+/** Every class that transitively inherits from the given class (by id). */
+export function descendantNames(scene: Scene, classId: string): Set<string> {
+  const root = scene.classes.find((candidate) => candidate.id === classId)
+  if (!root) return new Set()
+
+  const children = (name: string) =>
+    scene.classes
+      .filter((candidate) => candidate.inherits === name)
+      .map((candidate) => candidate.name)
+
+  const result = new Set<string>()
+  const queue = [root.name]
+  while (queue.length > 0) {
+    for (const child of children(queue.shift()!)) {
+      if (!result.has(child)) {
+        result.add(child)
+        queue.push(child)
+      }
+    }
+  }
+  return result
+}
+
+/** Base classes the draft may inherit from: Actor plus non-descendant classes. */
+export function availableBaseClasses(scene: Scene, draft: ClassDefinition): string[] {
+  const existing = scene.classes.find((candidate) => candidate.id === draft.id)
+  const excluded = new Set<string>([
+    draft.name,
+    existing?.name ?? '',
+    ...descendantNames(scene, draft.id),
+  ])
+  return [
+    BASE_CLASS,
+    ...scene.classes.map((candidate) => candidate.name).filter((name) => !excluded.has(name)),
+  ]
+}
+
+function isValidBase(scene: Scene, definition: ClassDefinition): boolean {
+  const base = definition.inherits
+  if (base === null || base === BASE_CLASS) return true
+
+  const selfNames = new Set([definition.name])
+  const existing = scene.classes.find((candidate) => candidate.id === definition.id)
+  if (existing) selfNames.add(existing.name)
+  if (selfNames.has(base) || descendantNames(scene, definition.id).has(base)) return false
+
+  return scene.classes.some((candidate) => candidate.name === base)
+}
+
+/** Own methods plus inherited ones (nearest definition wins). */
+export function resolveMethods(scene: Scene, className: string): Method[] {
+  const result: Method[] = []
+  const seen = new Set<string>()
+  const visited = new Set<string>()
+  let current: string | null = className
+
+  while (current && !visited.has(current)) {
+    visited.add(current)
+    const definition = scene.classes.find((candidate) => candidate.name === current)
+    if (!definition) break
+    for (const method of definition.methods) {
+      if (!seen.has(method.name)) {
+        seen.add(method.name)
+        result.push(method)
+      }
+    }
+    current = definition.inherits
+  }
+
+  return result
+}
+
 /** Adds a new class or replaces an existing one (by id), keeping object references in sync. */
 export function upsertClass(scene: Scene, definition: ClassDefinition): Scene {
   const existing = scene.classes.find((candidate) => candidate.id === definition.id)
   if (!existing) return { ...scene, classes: [...scene.classes, definition] }
 
-  const objects =
-    existing.name !== definition.name
-      ? scene.objects.map((object) =>
-          object.class === existing.name ? { ...object, class: definition.name } : object,
-        )
-      : scene.objects
+  const renamed = existing.name !== definition.name
+  const objects = renamed
+    ? scene.objects.map((object) =>
+        object.class === existing.name ? { ...object, class: definition.name } : object,
+      )
+    : scene.objects
 
   return {
     ...scene,
-    classes: scene.classes.map((candidate) =>
-      candidate.id === definition.id ? definition : candidate,
-    ),
+    classes: scene.classes.map((candidate) => {
+      if (candidate.id === definition.id) return definition
+      if (renamed && candidate.inherits === existing.name) {
+        return { ...candidate, inherits: definition.name }
+      }
+      return candidate
+    }),
     objects,
   }
 }
 
-/** Removes a class only when no object instantiates it; otherwise returns the scene unchanged. */
+/**
+ * Removes a class only when nothing depends on it (no instances and no
+ * subclasses); otherwise returns the scene unchanged.
+ */
 export function removeClass(scene: Scene, classId: string): Scene {
   const target = scene.classes.find((candidate) => candidate.id === classId)
   if (!target || classUsageCount(scene, target.name) > 0) return scene
+  if (classInheritanceUsageCount(scene, target.name) > 0) return scene
   return { ...scene, classes: scene.classes.filter((candidate) => candidate.id !== classId) }
 }
 
@@ -118,6 +204,7 @@ export function validateClassDraft(scene: Scene, definition: ClassDefinition): C
     nameTaken: scene.classes.some(
       (candidate) => candidate.id !== definition.id && candidate.name === definition.name,
     ),
+    inheritsInvalid: !isValidBase(scene, definition),
     attributes: definition.attributes.map(
       (attribute) =>
         !isIdentifier(attribute.name) ||
@@ -141,6 +228,7 @@ export function hasClassDraftErrors(errors: ClassDraftErrors): boolean {
   return (
     errors.nameInvalid ||
     errors.nameTaken ||
+    errors.inheritsInvalid ||
     errors.attributes.some(Boolean) ||
     errors.methods.some(
       (method) => method.nameInvalid || method.nameTaken || method.invalidParameters,

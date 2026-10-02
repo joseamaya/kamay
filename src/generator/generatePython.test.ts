@@ -298,6 +298,31 @@ if __name__ == "__main__":
     expect(perro?.content).toContain('class Perro(Animal):')
   })
 
+  it('chains inheritance across three levels', () => {
+    const project = projectSchema.parse({
+      version: 1,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          classes: [
+            { id: 'class-personaje', name: 'Personaje', inherits: 'Actor' },
+            { id: 'class-heroe', name: 'Heroe', inherits: 'Personaje' },
+          ],
+        },
+      ],
+    })
+
+    const files = generatePython(project).files
+    const personaje = files.find((file) => file.path === 'Personaje.py')
+    const heroe = files.find((file) => file.path === 'Heroe.py')
+
+    expect(personaje?.content).toContain('class Personaje(Actor):')
+    expect(heroe?.content).toContain('from Personaje import Personaje')
+    expect(heroe?.content).toContain('class Heroe(Personaje):')
+  })
+
   it('is deterministic for the same model', () => {
     const first = generatePython(buildFixture())
     const second = generatePython(buildFixture())
