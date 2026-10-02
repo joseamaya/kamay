@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
 
+import { codeContent } from './helpers'
+
 test('loads the three synchronized views', async ({ page }) => {
   await page.goto('/')
 
@@ -11,5 +13,5 @@ test('loads the three synchronized views', async ({ page }) => {
 
 test('shows the Python generated from the project', async ({ page }) => {
   await page.goto('/')
-  await expect(page.locator('pre')).toContainText('def main():')
+  await expect(codeContent(page)).toContainText('def main():')
 })

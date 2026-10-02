@@ -19,8 +19,8 @@ import type {
 import { Button } from '../../ui/Button'
 import { ColorInput } from '../../ui/ColorInput'
 import { Dialog } from '../../ui/Dialog'
+import { LazyCodeEditor } from '../../ui/LazyCodeEditor'
 import { Select } from '../../ui/Select'
-import { TextArea } from '../../ui/TextArea'
 
 const INPUT_CLASS =
   'border-border bg-background focus-visible:ring-ring h-8 w-full rounded-md border px-2 text-sm focus-visible:ring-2 focus-visible:outline-none'
@@ -395,15 +395,18 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
                 ) : null}
               </div>
 
-              <TextArea
-                label={messages.classEditor.body}
-                value={methodCode(method)}
-                onValueChange={(code) =>
-                  updateMethod(methodIndex, { body: { kind: 'code', code } })
-                }
-                className="mt-2"
-                rows={3}
-              />
+              <div className="mt-2 flex flex-col gap-1 text-xs">
+                <span className="text-muted-foreground">{messages.classEditor.body}</span>
+                <div className="border-border h-28 overflow-hidden rounded-md border">
+                  <LazyCodeEditor
+                    value={methodCode(method)}
+                    onValueChange={(code) =>
+                      updateMethod(methodIndex, { body: { kind: 'code', code } })
+                    }
+                    ariaLabel={messages.classEditor.body}
+                  />
+                </div>
+              </div>
             </div>
           ))}
         </section>
