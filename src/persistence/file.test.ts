@@ -33,4 +33,9 @@ describe('projectFileName', () => {
     const project = createEmptyProject({ name: '  ¡Hola, Mundo!  ' })
     expect(projectFileName(project)).toBe(`hola-mundo${PROJECT_FILE_EXTENSION}`)
   })
+
+  it('strips diacritics from the project name', () => {
+    const project = createEmptyProject({ name: 'Canción del Sur' })
+    expect(projectFileName(project)).toBe(`cancion-del-sur${PROJECT_FILE_EXTENSION}`)
+  })
 })

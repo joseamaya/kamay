@@ -4,11 +4,11 @@ import {
   addCatalogObject,
   createEmptyProject,
   findCatalogItem,
-  removeObject,
-  renameProject,
+  removeObject as removeObjectFromScene,
+  renameProject as renameProjectInProject,
   replaceScene,
   setSceneBackground,
-  updateObjectAttributes,
+  updateObjectAttributes as updateObjectAttributesOnScene,
 } from '../model'
 import type { Project, Scene } from '../model'
 
@@ -67,13 +67,15 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   removeObject: (sceneId, objectId) => {
     get().updateProject((project) =>
-      updateScene(project, sceneId, (scene) => removeObject(scene, objectId)),
+      updateScene(project, sceneId, (scene) => removeObjectFromScene(scene, objectId)),
     )
   },
 
   updateObjectAttributes: (sceneId, objectId, patch) => {
     get().updateProject((project) =>
-      updateScene(project, sceneId, (scene) => updateObjectAttributes(scene, objectId, patch)),
+      updateScene(project, sceneId, (scene) =>
+        updateObjectAttributesOnScene(scene, objectId, patch),
+      ),
     )
   },
 
@@ -84,7 +86,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   },
 
   renameProject: (name) => {
-    get().updateProject((project) => renameProject(project, name))
+    get().updateProject((project) => renameProjectInProject(project, name))
   },
 
   undo: () =>

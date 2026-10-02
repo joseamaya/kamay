@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 
 import { getMessages } from '../../i18n'
 import type { PersistenceApi, ProjectRecord } from '../../persistence'
@@ -8,17 +8,32 @@ export interface OpenProjectDialogProps {
   open: boolean
   persistence: PersistenceApi
   onClose: () => void
-  onOpened: () => void
+  onSelect: (id: string) => void
 }
 
 export function OpenProjectDialog({
   open,
   persistence,
   onClose,
-  onOpened,
+  onSelect,
 }: OpenProjectDialogProps) {
   const messages = getMessages()
+  const titleId = useId()
+  const containerRef = useRef<HTMLDivElement>(null)
   const [records, setRecords] = useState<ProjectRecord[]>([])
+
+  useEffect(() => {
+    if (open) containerRef.current?.focus()
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [open, onClose])
 
   useEffect(() => {
     if (!open) return
@@ -33,20 +48,19 @@ export function OpenProjectDialog({
 
   if (!open) return null
 
-  const handleOpen = async (id: string) => {
-    await persistence.openProject(id)
-    onOpened()
-  }
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div
+        ref={containerRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
-        aria-label={messages.dialog.openTitle}
-        className="border-border bg-card text-card-foreground w-full max-w-md rounded-lg border p-4 shadow-lg"
+        aria-labelledby={titleId}
+        className="border-border bg-card text-card-foreground w-full max-w-md rounded-lg border p-4 shadow-lg focus:outline-none"
       >
-        <h2 className="text-base font-semibold">{messages.dialog.openTitle}</h2>
+        <h2 id={titleId} className="text-base font-semibold">
+          {messages.dialog.openTitle}
+        </h2>
         {records.length === 0 ? (
           <p className="text-muted-foreground mt-2 text-sm">{messages.dialog.noProjects}</p>
         ) : (
@@ -55,7 +69,7 @@ export function OpenProjectDialog({
               <li key={record.id}>
                 <button
                   type="button"
-                  onClick={() => void handleOpen(record.id)}
+                  onClick={() => onSelect(record.id)}
                   className="border-border hover:bg-muted w-full rounded-md border px-3 py-2 text-left text-sm"
                 >
                   {record.name}

@@ -14,11 +14,20 @@ export function App() {
   const project = useProjectStore((state) => state.project)
   const activeSceneId = useEditorStore((state) => state.activeSceneId)
   const setActiveSceneId = useEditorStore((state) => state.setActiveSceneId)
+  const setDirty = useEditorStore((state) => state.setDirty)
 
   useEffect(() => {
     const exists = project.scenes.some((scene) => scene.id === activeSceneId)
     if (!exists) setActiveSceneId(project.scenes[0]?.id ?? null)
   }, [project, activeSceneId, setActiveSceneId])
+
+  useEffect(
+    () =>
+      useProjectStore.subscribe((state, previous) => {
+        if (state.project !== previous.project) setDirty(true)
+      }),
+    [setDirty],
+  )
 
   return (
     <div className="flex h-screen flex-col">

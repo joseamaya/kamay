@@ -1,11 +1,9 @@
 export const es = {
   app: {
     name: 'Kamay',
-    tagline: 'Moldea clases, da vida a objetos',
   },
   bar: {
     run: 'Ejecutar',
-    stop: 'Detener',
     save: 'Guardar',
     open: 'Abrir',
     export: 'Exportar',
@@ -14,13 +12,11 @@ export const es = {
     redo: 'Rehacer',
     newProject: 'Nuevo',
     runSoon: 'Disponible en la Fase 2',
-    projectNameLabel: 'Nombre del proyecto',
   },
   views: {
     scenario: 'Escenario',
     factory: 'Fábrica',
     code: 'Código',
-    inspector: 'Propiedades',
   },
   factory: {
     title: 'Fábrica',
@@ -29,7 +25,6 @@ export const es = {
     addObject: 'Agregar {name} al escenario',
     removeObject: 'Eliminar {name}',
     empty: 'Agrega objetos desde el catálogo para empezar.',
-    noObjects: 'Todavía no hay objetos en la escena.',
   },
   catalog: {
     circle: 'Círculo',
@@ -40,7 +35,6 @@ export const es = {
     title: 'Escenario',
     empty: 'El escenario está vacío.',
     emptyHint: 'Agrega objetos desde la Fábrica y verás su efecto aquí.',
-    backgroundLabel: 'Fondo',
   },
   backgrounds: {
     grass: 'Pasto',
@@ -74,18 +68,18 @@ export const es = {
   },
   dialog: {
     cancel: 'Cancelar',
+    continue: 'Continuar',
     delete: 'Eliminar',
     deleteTitle: 'Eliminar objeto',
     deleteMessage: '¿Seguro que quieres eliminar «{name}»?',
     openTitle: 'Abrir proyecto',
-    openConfirm: 'Abrir',
     noProjects: 'No hay proyectos guardados.',
+    unsavedTitle: 'Cambios sin guardar',
+    unsavedMessage: 'Tienes cambios sin guardar. Si continúas, se descartarán.',
   },
   errors: {
-    invalidProject: 'El proyecto no es válido.',
-    import: 'No se pudo importar el archivo.',
     save: 'No se pudo guardar el proyecto.',
-    open: 'No se pudo abrir el proyecto.',
+    import: 'No se pudo importar el archivo.',
   },
 } as const
 

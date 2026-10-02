@@ -22,6 +22,8 @@ export function projectFileName(project: Project): string {
     project.meta.name
       .trim()
       .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
       .replace(/[^a-z0-9]+/gi, '-')
       .replace(/^-+|-+$/g, '') || 'proyecto'
   return `${base}${PROJECT_FILE_EXTENSION}`

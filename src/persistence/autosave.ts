@@ -33,7 +33,11 @@ export function createAutosave(repository: ProjectRepository, delay = 600): Auto
   })
 
   return {
-    saveNow: persist,
+    saveNow: async () => {
+      if (timer) clearTimeout(timer)
+      timer = null
+      await persist()
+    },
     flush: async () => {
       if (timer) clearTimeout(timer)
       timer = null

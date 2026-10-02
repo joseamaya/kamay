@@ -6,6 +6,7 @@ import { createEmptyProject, createId } from '../../model'
 import type { PersistenceApi } from '../../persistence'
 import { canRedo, canUndo, useEditorStore, useProjectStore } from '../../store'
 import { Button } from '../../ui/Button'
+import { Dialog } from '../../ui/Dialog'
 import { OpenProjectDialog } from './OpenProjectDialog'
 
 export interface TopBarProps {
@@ -25,22 +26,33 @@ export function TopBar({ persistence }: TopBarProps) {
   const selectObject = useEditorStore((state) => state.selectObject)
   const pushLog = useEditorStore((state) => state.pushLog)
   const clearLog = useEditorStore((state) => state.clearLog)
+  const dirty = useEditorStore((state) => state.dirty)
+  const setDirty = useEditorStore((state) => state.setDirty)
 
   const [openDialog, setOpenDialog] = useState(false)
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleNew = () => {
-    loadProject(createEmptyProject())
-    setProjectId(createId('project'))
-    selectObject(null)
-    clearLog()
+  const guard = (run: () => void) => {
+    if (dirty) setPendingAction(() => run)
+    else run()
   }
 
+  const handleNew = () =>
+    guard(() => {
+      loadProject(createEmptyProject())
+      setProjectId(createId('project'))
+      selectObject(null)
+      clearLog()
+      setDirty(false)
+    })
+
   const handleSave = async () => {
-    try {
-      await persistence.save()
+    const saved = await persistence.save()
+    if (saved) {
+      setDirty(false)
       pushLog(messages.activity.saved)
-    } catch {
+    } else {
       pushLog(messages.errors.save, 'error')
     }
   }
@@ -50,33 +62,60 @@ export function TopBar({ persistence }: TopBarProps) {
     pushLog(messages.activity.exported)
   }
 
-  const handleImportFile: ChangeEventHandler<HTMLInputElement> = async (event) => {
+  const requestOpen = (id: string) => {
+    setOpenDialog(false)
+    guard(() => {
+      void persistence.openProject(id).then(() => {
+        selectObject(null)
+        setDirty(false)
+        pushLog(messages.activity.opened)
+      })
+    })
+  }
+
+  const handleImportFile: ChangeEventHandler<HTMLInputElement> = (event) => {
     const file = event.target.files?.[0]
     event.target.value = ''
     if (!file) return
-    try {
-      await persistence.importFile(file)
-      pushLog(messages.activity.imported)
-    } catch {
-      pushLog(messages.errors.import, 'error')
-    }
+    guard(() => {
+      void persistence
+        .importFile(file)
+        .then(() => {
+          setDirty(false)
+          pushLog(messages.activity.imported)
+        })
+        .catch(() => pushLog(messages.errors.import, 'error'))
+    })
   }
 
   return (
     <header className="border-border bg-card flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2">
       <div className="flex items-baseline gap-3">
         <span className="text-primary text-lg font-bold">{messages.app.name}</span>
-        <span className="text-muted-foreground hidden text-sm sm:inline">{projectName}</span>
+        <span className="text-muted-foreground hidden text-sm sm:inline">
+          {projectName}
+          {dirty ? ' •' : ''}
+        </span>
       </div>
 
       <div className="flex flex-wrap items-center gap-1">
         <Button variant="ghost" size="sm" onClick={handleNew}>
           {messages.bar.newProject}
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => setOpenDialog(true)}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setOpenDialog(true)}
+          disabled={!persistence.ready}
+        >
           {messages.bar.open}
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => void handleSave()}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => void handleSave()}
+          disabled={!persistence.ready}
+        >
           {messages.bar.save}
         </Button>
         <Button variant="ghost" size="sm" onClick={handleExport}>
@@ -111,12 +150,23 @@ export function TopBar({ persistence }: TopBarProps) {
         open={openDialog}
         persistence={persistence}
         onClose={() => setOpenDialog(false)}
-        onOpened={() => {
-          setOpenDialog(false)
-          selectObject(null)
-          pushLog(messages.activity.opened)
-        }}
+        onSelect={requestOpen}
       />
+
+      <Dialog
+        open={pendingAction !== null}
+        title={messages.dialog.unsavedTitle}
+        confirmLabel={messages.dialog.continue}
+        cancelLabel={messages.dialog.cancel}
+        onCancel={() => setPendingAction(null)}
+        onConfirm={() => {
+          const action = pendingAction
+          setPendingAction(null)
+          action?.()
+        }}
+      >
+        {messages.dialog.unsavedMessage}
+      </Dialog>
     </header>
   )
 }

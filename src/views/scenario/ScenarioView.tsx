@@ -24,7 +24,6 @@ export function ScenarioView() {
 
   const actions = scene ? (
     <Select
-      label=""
       value={scene.background}
       options={options}
       className="w-40"
