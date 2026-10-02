@@ -72,6 +72,7 @@ export function SceneManager() {
           >
             <button
               type="button"
+              aria-current={scene.id === activeId ? 'true' : undefined}
               onClick={() => setActiveSceneId(scene.id)}
               className="flex-1 truncate text-left text-sm"
             >
