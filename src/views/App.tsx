@@ -35,15 +35,17 @@ export function App() {
   return (
     <div className="flex h-screen flex-col">
       <TopBar persistence={persistence} runtime={runtime} />
-      <main className="grid flex-1 grid-cols-1 gap-3 overflow-auto p-3 lg:grid-cols-[18rem_1fr_26rem] lg:overflow-hidden">
-        <FactoryView />
-        <ScenarioView />
-        <div className="flex min-h-0 flex-col gap-3 overflow-auto">
-          <AttributesPanel />
-          <ActionsPanel />
-          <CodeView />
-        </div>
-      </main>
+      <div className="flex min-h-0 flex-1 flex-col gap-3 p-3">
+        <main className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-auto lg:grid-cols-[18rem_minmax(0,1fr)_22rem] lg:overflow-hidden">
+          <FactoryView />
+          <ScenarioView />
+          <div className="flex min-h-0 flex-col gap-3 overflow-auto">
+            <AttributesPanel />
+            <ActionsPanel />
+          </div>
+        </main>
+        <CodeView />
+      </div>
       <ActivityPanel />
     </div>
   )

@@ -10,18 +10,26 @@ export interface LogEntry {
   level: LogLevel
 }
 
+export const CODE_MIN_HEIGHT = 120
+
 export interface EditorState {
   projectId: string
   activeSceneId: string | null
   selectedObjectId: string | null
   running: boolean
   dirty: boolean
+  codeHeight: number
+  codeCollapsed: boolean
+  codeFile: string | null
   log: LogEntry[]
   setProjectId: (projectId: string) => void
   setActiveSceneId: (sceneId: string | null) => void
   selectObject: (objectId: string | null) => void
   setRunning: (running: boolean) => void
   setDirty: (dirty: boolean) => void
+  setCodeHeight: (height: number) => void
+  setCodeCollapsed: (collapsed: boolean) => void
+  setCodeFile: (file: string | null) => void
   pushLog: (text: string, level?: LogLevel) => void
   clearLog: () => void
 }
@@ -32,6 +40,9 @@ export const useEditorStore = create<EditorState>((set) => ({
   selectedObjectId: null,
   running: false,
   dirty: false,
+  codeHeight: 240,
+  codeCollapsed: false,
+  codeFile: null,
   log: [],
 
   setProjectId: (projectId) => set({ projectId }),
@@ -39,6 +50,9 @@ export const useEditorStore = create<EditorState>((set) => ({
   selectObject: (selectedObjectId) => set({ selectedObjectId }),
   setRunning: (running) => set({ running }),
   setDirty: (dirty) => set({ dirty }),
+  setCodeHeight: (codeHeight) => set({ codeHeight }),
+  setCodeCollapsed: (codeCollapsed) => set({ codeCollapsed }),
+  setCodeFile: (codeFile) => set({ codeFile }),
   pushLog: (text, level = 'info') =>
     set((state) => ({ log: [{ id: createId('log'), text, level }, ...state.log].slice(0, 20) })),
   clearLog: () => set({ log: [] }),

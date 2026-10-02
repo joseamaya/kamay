@@ -10,6 +10,18 @@ test('adds an object and reflects it in the code view', async ({ page }) => {
   await expect(page.locator('pre')).toContainText('from Circle import Circle')
 })
 
+test('shows every generated file and switches tabs', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+
+  await page.getByRole('tab', { name: 'Circle.py' }).click()
+  await expect(page.locator('pre')).toContainText('class Circle(Actor):')
+
+  await page.getByRole('tab', { name: 'principal.py' }).click()
+  await expect(page.locator('pre')).toContainText('circle1 = Circle("circle1")')
+})
+
 test('adds an action and reflects it in the code view', async ({ page }) => {
   await page.goto('/')
 
