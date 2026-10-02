@@ -192,3 +192,18 @@ test('builds a method body with blocks', async ({ page }) => {
   await expect(codeContent(page)).toContainText('def saludar(self):')
   await expect(codeContent(page)).toContainText('self.decir("hola")')
 })
+
+test('converts code into blocks and keeps advanced code', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Nueva clase' }).click()
+  const dialog = page.getByRole('dialog')
+  await page.getByLabel('Nombre de la clase').fill('Heroe')
+  await dialog.getByRole('button', { name: 'Agregar método' }).click()
+  await page.getByLabel('Nombre del método').fill('saludar')
+  await useCodeBody(page)
+  await methodBody(page).fill('self.decir("hola")\nif True:\n    self.decir("x")')
+  await dialog.getByRole('button', { name: 'Convertir a bloques' }).click()
+
+  await expect(dialog.getByText('Código avanzado')).toBeVisible()
+})

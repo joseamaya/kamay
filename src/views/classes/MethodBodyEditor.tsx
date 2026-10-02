@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import type { ReactNode } from 'react'
 
 import { blocksToCode } from '../../generator'
@@ -6,6 +5,7 @@ import { getMessages } from '../../i18n'
 import {
   availableBlockAttributes,
   availableBlockMethods,
+  codeToBlocks,
   createCallBlock,
   createRepeatBlock,
   createSetBlock,
@@ -22,7 +22,6 @@ import type {
   Scene,
 } from '../../model'
 import { Button } from '../../ui/Button'
-import { Dialog } from '../../ui/Dialog'
 import { LazyCodeEditor } from '../../ui/LazyCodeEditor'
 import { NumberField } from '../../ui/NumberField'
 import { Select } from '../../ui/Select'
@@ -160,6 +159,14 @@ function BlockCard({
     )
   }
 
+  if (op.op === 'code') {
+    return (
+      <pre className="border-border bg-muted/40 overflow-auto rounded-md border p-2 font-mono text-xs whitespace-pre">
+        {String(op.args.code ?? '')}
+      </pre>
+    )
+  }
+
   return (
     <NumberField
       label={messages.classEditor.blockTimes}
@@ -173,6 +180,7 @@ function opLabel(op: Operation): string {
   const messages = getMessages().classEditor
   if (op.op === 'call') return messages.blockCall
   if (op.op === 'set') return messages.blockSet
+  if (op.op === 'code') return messages.advancedCode
   return messages.blockRepeat
 }
 
@@ -281,7 +289,6 @@ export interface MethodBodyEditorProps {
 
 export function MethodBodyEditor({ scene, definition, method, onChange }: MethodBodyEditorProps) {
   const messages = getMessages()
-  const [confirmReset, setConfirmReset] = useState(false)
 
   const body = method.body
   const methods = availableBlockMethods(scene, definition)
@@ -314,10 +321,12 @@ export function MethodBodyEditor({ scene, definition, method, onChange }: Method
             </span>
             <button
               type="button"
-              onClick={() => setConfirmReset(true)}
+              onClick={() =>
+                onChange({ kind: 'blocks', ops: codeToBlocks(scene, definition, body.code) })
+              }
               className="text-primary text-xs font-medium hover:underline"
             >
-              {messages.classEditor.backToBlocks}
+              {messages.classEditor.convertToBlocks}
             </button>
           </div>
         )}
@@ -394,20 +403,6 @@ export function MethodBodyEditor({ scene, definition, method, onChange }: Method
           />
         </div>
       )}
-
-      <Dialog
-        open={confirmReset}
-        title={messages.classEditor.backToBlocks}
-        confirmLabel={messages.dialog.continue}
-        cancelLabel={messages.dialog.cancel}
-        onCancel={() => setConfirmReset(false)}
-        onConfirm={() => {
-          setConfirmReset(false)
-          onChange({ kind: 'blocks', ops: [] })
-        }}
-      >
-        {messages.classEditor.backToBlocksMessage}
-      </Dialog>
     </section>
   )
 }

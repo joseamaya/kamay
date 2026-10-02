@@ -19,6 +19,11 @@ export function createRepeatBlock(times = 3): Operation {
   return { id: createId('block'), op: 'repeat', args: { times }, children: [] }
 }
 
+/** Raw Python that the visual editor cannot represent ("advanced code"). */
+export function createCodeBlock(code: string): Operation {
+  return { id: createId('block'), op: 'code', args: { code }, children: [] }
+}
+
 export function defaultValueFor(type: AttributeType): number | string | boolean {
   if (type === 'number') return 0
   if (type === 'boolean') return false

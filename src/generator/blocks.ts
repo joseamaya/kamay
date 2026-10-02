@@ -34,6 +34,11 @@ function blockToLines(scene: Scene, definition: ClassDefinition, op: Operation):
     return [`self.${name} = ${pyLiteral(op.args.value)}`]
   }
 
+  if (op.op === 'code') {
+    const code = String(op.args.code ?? '')
+    return code.length > 0 ? code.split('\n') : []
+  }
+
   if (op.op === 'repeat') {
     const times = Number(op.args.times) || 0
     const children = blocksToLines(scene, definition, op.children)
