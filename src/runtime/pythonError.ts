@@ -1,19 +1,61 @@
 import type { RuntimeError } from './types'
 
+export interface TracebackFrame {
+  file: string
+  line: number
+  func: string | null
+}
+
+const FRAME_PATTERN = /File "([^"]+)", line (\d+)(?:, in (.+))?/g
+const KIND_PATTERN = /([A-Za-z_]*Error)/
+
+/** Strips the Pyodide mount prefix so frames match generated file paths. */
+export function normalizeFile(path: string): string {
+  const prefix = '/kamay/'
+  return path.startsWith(prefix) ? path.slice(prefix.length) : path
+}
+
+/** Lists traceback frames from outermost to innermost. */
+export function parseFrames(message: string): TracebackFrame[] {
+  const frames: TracebackFrame[] = []
+  for (const match of message.matchAll(FRAME_PATTERN)) {
+    frames.push({
+      file: normalizeFile(match[1] ?? ''),
+      line: Number(match[2]),
+      func: match[3] ?? null,
+    })
+  }
+  return frames
+}
+
 /**
- * Turns a Pyodide error into a structured runtime error. The traceback lists
- * frames from outermost to innermost, so the reported line is the last one
- * (where the error actually happened).
+ * Picks the frame to report: the innermost one that belongs to a generated
+ * file, so errors raised inside the runtime or the standard library still
+ * point at the student's code. Falls back to the innermost frame.
  */
-export function toRuntimeError(error: unknown): RuntimeError {
+export function selectFrame(
+  frames: TracebackFrame[],
+  knownFiles?: ReadonlySet<string>,
+): TracebackFrame | null {
+  if (frames.length === 0) return null
+  if (knownFiles && knownFiles.size > 0) {
+    for (let index = frames.length - 1; index >= 0; index -= 1) {
+      const frame = frames[index]!
+      if (knownFiles.has(frame.file)) return frame
+    }
+  }
+  return frames.at(-1)!
+}
+
+export function toRuntimeError(error: unknown, knownFiles?: ReadonlySet<string>): RuntimeError {
   const message = error instanceof Error ? error.message : String(error)
-  const lines = [...message.matchAll(/line (\d+)/g)]
-  const lastLine = lines.at(-1)
-  const kindMatch = message.match(/([A-Za-z_]*Error)/)
+  const frame = selectFrame(parseFrames(message), knownFiles)
+  const kindMatch = message.match(KIND_PATTERN)
 
   return {
-    kind: kindMatch ? kindMatch[1] : 'Error',
+    kind: kindMatch ? kindMatch[1]! : 'Error',
     message,
-    line: lastLine ? Number(lastLine[1]) : null,
+    file: frame?.file ?? null,
+    line: frame?.line ?? null,
   }
 }

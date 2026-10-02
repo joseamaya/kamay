@@ -1,9 +1,9 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createEmptyProject } from '../../model'
-import { useEditorStore, useProjectStore } from '../../store'
+import { useEditorStore, useProjectStore, useRuntimeStore } from '../../store'
 import { CodeView } from './CodeView'
 
 function editorText(container: HTMLElement): string {
@@ -13,6 +13,7 @@ function editorText(container: HTMLElement): string {
 beforeEach(() => {
   useProjectStore.setState({ project: createEmptyProject({ name: 'Demo' }), past: [], future: [] })
   useEditorStore.setState({ codeFile: null, codeCollapsed: false, codeHeight: 240 })
+  useRuntimeStore.setState({ status: 'idle', error: null })
 })
 
 describe('CodeView', () => {
@@ -32,6 +33,31 @@ describe('CodeView', () => {
 
     expect(screen.getByRole('tab', { name: 'Circle.py' })).toHaveAttribute('aria-selected', 'true')
     await waitFor(() => expect(editorText(container)).toContain('class Circle(Actor):'))
+  })
+
+  it('opens the offending file when a runtime error points at generated code', async () => {
+    const sceneId = useProjectStore.getState().project.scenes[0]!.id
+    useProjectStore.getState().addObject(sceneId, 'circle')
+
+    render(<CodeView />)
+    expect(screen.getByRole('tab', { name: 'principal.py' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+
+    act(() => {
+      useRuntimeStore.setState({
+        status: 'error',
+        error: { kind: 'NameError', message: 'NameError: ...', file: 'Circle.py', line: 3 },
+      })
+    })
+
+    await waitFor(() =>
+      expect(screen.getByRole('tab', { name: 'Circle.py' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      ),
+    )
   })
 
   it('copies the active file', async () => {

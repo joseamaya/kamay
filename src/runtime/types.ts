@@ -7,6 +7,8 @@ export type RuntimeCommand =
 export interface RuntimeError {
   kind: string
   message: string
+  /** Generated file where the error happened, normalized to its path. */
+  file: string | null
   line: number | null
 }
 
