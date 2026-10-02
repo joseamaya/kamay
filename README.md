@@ -13,7 +13,7 @@ English.
 
 ## Status
 
-The project is in **Phase 2 — own classes and editable code**. Working today:
+The project is in **Phase 3 — blocks, scenes and inheritance**. Working today:
 
 - **Factory**: add and remove objects from the catalog (circle, square, triangle).
 - **Classes**: create your own classes with attributes and methods, instantiate
@@ -105,6 +105,10 @@ src/
 
 The `pnpm build` output is **fully static** (`dist/`): deployable to GitHub
 Pages, Netlify or Cloudflare Pages.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for the release history.
 
 ## License
 
