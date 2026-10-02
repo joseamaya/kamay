@@ -75,8 +75,13 @@ export const es = {
   },
   code: {
     title: 'Código',
-    subtitle: 'Python generado en vivo desde tu proyecto.',
     empty: 'Aún no hay código que mostrar.',
+    files: 'Archivos generados',
+    copy: 'Copiar',
+    copied: 'Copiado',
+    collapse: 'Ocultar',
+    expand: 'Mostrar',
+    resize: 'Redimensionar el panel de código',
   },
   activity: {
     title: 'Actividad',
