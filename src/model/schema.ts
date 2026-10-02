@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /** Current version of the persisted project model. Bump when the shape changes. */
-export const CURRENT_SCHEMA_VERSION = 2
+export const CURRENT_SCHEMA_VERSION = 3
 
 /** Identifier pattern shared by class and variable names in the generated Python. */
 export const identifierPattern = /^[A-Za-z_][A-Za-z0-9_]*$/
@@ -74,6 +74,8 @@ export const eventSchema = z.object({
   type: eventTypeSchema,
   /** Object id or name that triggers the event (click/collision); null for on_start. */
   source: z.string().nullable().default(null),
+  /** Second object of a collision; null otherwise. */
+  other: z.string().nullable().default(null),
   actions: z.array(actionSchema).default([]),
 })
 

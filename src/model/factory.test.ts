@@ -72,8 +72,8 @@ describe('scene operations', () => {
     let scene = addCatalogObject(createScene('Principal'), circle)
     const object = scene.objects[0]!
     const action = { target: object.name, method: 'decir', args: { mensaje: 'hola' } }
-    scene = addEventAction(scene, 'on_click', object.name, action)
-    scene = addEventAction(scene, 'on_start', null, action)
+    scene = addEventAction(scene, 'on_click', object.name, null, action)
+    scene = addEventAction(scene, 'on_start', null, null, action)
 
     scene = removeObject(scene, object.id)
 
@@ -87,13 +87,13 @@ describe('event actions', () => {
   const action = { target: 'heroe1', method: 'decir', args: { mensaje: 'hola' } }
 
   it('keys events by type and source', () => {
-    let scene = addEventAction(createScene('Principal'), 'on_click', 'heroe1', action)
+    let scene = addEventAction(createScene('Principal'), 'on_click', 'heroe1', null, action)
 
     expect(findEvent(scene, 'on_click', 'heroe1')?.actions).toHaveLength(1)
     expect(findEvent(scene, 'on_click', 'heroe2')).toBeUndefined()
     expect(findEvent(scene, 'on_start', null)?.actions ?? []).toHaveLength(0)
 
-    scene = removeEventAction(scene, 'on_click', 'heroe1', 0)
+    scene = removeEventAction(scene, 'on_click', 'heroe1', null, 0)
     expect(findEvent(scene, 'on_click', 'heroe1')?.actions).toHaveLength(0)
   })
 })

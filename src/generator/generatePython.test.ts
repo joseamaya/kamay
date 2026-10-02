@@ -245,6 +245,38 @@ if __name__ == "__main__":
     expect(main.content).toContain('registrar("click", "heroe1", al_hacer_clic_heroe1)')
   })
 
+  it('generates a collision handler with a sorted pair key', () => {
+    const project = projectSchema.parse({
+      version: 3,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          classes: [{ id: 'class-circle', name: 'Circle', inherits: 'Actor' }],
+          objects: [
+            { id: 'o1', name: 'circle1', class: 'Circle' },
+            { id: 'o2', name: 'circle2', class: 'Circle' },
+          ],
+          events: [
+            {
+              type: 'on_collision',
+              source: 'circle2',
+              other: 'circle1',
+              actions: [{ target: 'circle1', method: 'decir', args: { mensaje: 'choque' } }],
+            },
+          ],
+        },
+      ],
+    })
+
+    const main = generatePython(project).files.find((file) => file.path === 'principal.py')!
+    expect(main.content).toContain('def al_colisionar_circle1_circle2():')
+    expect(main.content).toContain(
+      'registrar("collision", "circle1|circle2", al_colisionar_circle1_circle2)',
+    )
+  })
+
   it('imports the base class when inheriting from another class', () => {
     const project = projectSchema.parse({
       version: 1,

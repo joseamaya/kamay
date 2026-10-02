@@ -160,8 +160,13 @@ function generateObjectStatements(object: ObjectInstance): string[] {
   return lines
 }
 
-function clickHandlerName(source: string): string {
-  return `al_hacer_clic_${source}`
+export function collisionKey(a: string, b: string): string {
+  return [a, b].sort().join('|')
+}
+
+function pushHandler(lines: string[], name: string, actions: string[]): void {
+  lines.push(`def ${name}():`)
+  lines.push(actions.length > 0 ? indent(actions.join('\n')) : '    pass')
 }
 
 function generateSceneBody(scene: Scene): string[] {
@@ -172,22 +177,33 @@ function generateSceneBody(scene: Scene): string[] {
   }
 
   for (const event of scene.events) {
-    if (event.type === 'on_start') {
-      for (const action of event.actions) {
-        lines.push(generateAction(scene, action))
-      }
-    } else if (event.type === 'on_collision') {
-      lines.push('# TODO: colisiones (siguiente hito)')
-    }
+    if (event.type !== 'on_start') continue
+    for (const action of event.actions) lines.push(generateAction(scene, action))
   }
 
   for (const event of scene.events) {
     if (event.type !== 'on_click' || !event.source) continue
-    const name = clickHandlerName(event.source)
-    const body = event.actions.map((action) => generateAction(scene, action))
-    lines.push(`def ${name}():`)
-    lines.push(body.length > 0 ? indent(body.join('\n')) : '    pass')
+    const name = `al_hacer_clic_${event.source}`
+    pushHandler(
+      lines,
+      name,
+      event.actions.map((action) => generateAction(scene, action)),
+    )
     lines.push(`registrar("click", ${pyLiteral(event.source)}, ${name})`)
+  }
+
+  for (const event of scene.events) {
+    if (event.type !== 'on_collision' || !event.source || !event.other) continue
+    const [first, second] = [event.source, event.other].sort()
+    const name = `al_colisionar_${first}_${second}`
+    pushHandler(
+      lines,
+      name,
+      event.actions.map((action) => generateAction(scene, action)),
+    )
+    lines.push(
+      `registrar("collision", ${pyLiteral(collisionKey(event.source, event.other))}, ${name})`,
+    )
   }
 
   return lines
@@ -204,7 +220,9 @@ function generateBootstrap(project: Project, classes: ClassDefinition[]): string
     .map((definition) => `from ${definition.name} import ${definition.name}`)
 
   const needsRegistrar = project.scenes.some((scene) =>
-    scene.events.some((event) => event.type === 'on_click' && event.source),
+    scene.events.some(
+      (event) => (event.type === 'on_click' || event.type === 'on_collision') && event.source,
+    ),
   )
   if (needsRegistrar) imports.push('from kamay_runtime import registrar')
 

@@ -129,7 +129,7 @@ describe('useProjectStore', () => {
 
   it('adds and removes scene actions', () => {
     const sceneId = useProjectStore.getState().project.scenes[0]!.id
-    useProjectStore.getState().addAction(sceneId, 'on_start', null, {
+    useProjectStore.getState().addAction(sceneId, 'on_start', null, null, {
       target: 'circle1',
       method: 'decir',
       args: { mensaje: 'hola' },
@@ -139,7 +139,7 @@ describe('useProjectStore', () => {
     expect(events[0]?.actions).toHaveLength(1)
     expect(events[0]?.actions[0]?.method).toBe('decir')
 
-    useProjectStore.getState().removeAction(sceneId, 'on_start', null, 0)
+    useProjectStore.getState().removeAction(sceneId, 'on_start', null, null, 0)
     expect(useProjectStore.getState().project.scenes[0]!.events[0]?.actions).toHaveLength(0)
   })
 })

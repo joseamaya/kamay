@@ -106,6 +106,8 @@ export const es = {
     empty: 'Selecciona un objeto para darle órdenes.',
     noActions: 'Este objeto todavía no tiene órdenes.',
     trigger: 'Cuándo',
+    other: 'Con',
+    noOtherObjects: 'Agrega otro objeto para poder chocar.',
     method: 'Orden',
     add: 'Agregar orden',
     remove: 'Quitar orden',
@@ -113,6 +115,7 @@ export const es = {
   triggers: {
     onStart: 'Al iniciar',
     onClick: 'Al hacer clic',
+    onCollision: 'Al chocar con',
   },
   methods: {
     decir: 'Decir',

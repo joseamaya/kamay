@@ -43,7 +43,10 @@ describe('projectSchema', () => {
     })
 
     expect(result.success).toBe(true)
-    if (result.success) expect(result.data.scenes[0]?.events[0]?.source).toBeNull()
+    if (result.success) {
+      expect(result.data.scenes[0]?.events[0]?.source).toBeNull()
+      expect(result.data.scenes[0]?.events[0]?.other).toBeNull()
+    }
   })
 
   it('rejects a project with a future schema version', () => {
