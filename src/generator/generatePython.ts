@@ -81,6 +81,8 @@ function generateClassFile(definition: ClassDefinition): string {
 
   if (definition.inherits === 'Actor') {
     lines.push('', 'from kamay_runtime import Actor')
+  } else if (definition.inherits) {
+    lines.push('', `from ${definition.inherits} import ${definition.inherits}`)
   }
 
   lines.push('', `class ${definition.name}${bases}:`)

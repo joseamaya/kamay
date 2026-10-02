@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
 import { getMessages } from '../../i18n'
-import { BUILTIN_METHODS, findBuiltinMethod } from '../../model'
-import type { Action, AttributeType } from '../../model'
+import { BUILTIN_METHODS } from '../../model'
+import type { Action, AttributeType, BuiltinMethod } from '../../model'
 import { useActiveScene, useEditorStore, useProjectStore, useSelectedObject } from '../../store'
 import { Button } from '../../ui/Button'
 import { NumberField } from '../../ui/NumberField'
@@ -27,15 +27,6 @@ export function ActionsPanel() {
   const [methodName, setMethodName] = useState(BUILTIN_METHODS[0]!.name)
   const [values, setValues] = useState<Record<string, string>>({})
 
-  if (!scene || !object) {
-    return (
-      <Panel title={messages.actions.title} className="min-h-0">
-        <p className="text-muted-foreground text-sm">{messages.actions.empty}</p>
-      </Panel>
-    )
-  }
-
-  const method = findBuiltinMethod(methodName) ?? BUILTIN_METHODS[0]!
   const methodLabels: Record<string, string> = {
     decir: messages.methods.decir,
     mover: messages.methods.mover,
@@ -50,15 +41,32 @@ export function ActionsPanel() {
     factor: messages.params.factor,
   }
 
+  if (!scene || !object) {
+    return (
+      <Panel title={messages.actions.title} className="min-h-0">
+        <p className="text-muted-foreground text-sm">{messages.actions.empty}</p>
+      </Panel>
+    )
+  }
+
+  const definition = scene.classes.find((candidate) => candidate.name === object.class)
+  const customMethods: BuiltinMethod[] = (definition?.methods ?? []).map((method) => ({
+    name: method.name,
+    parameters: method.parameters,
+  }))
+  const availableMethods: BuiltinMethod[] = [
+    ...BUILTIN_METHODS.filter(
+      (builtin) => !customMethods.some((custom) => custom.name === builtin.name),
+    ),
+    ...customMethods,
+  ]
+  const method =
+    availableMethods.find((candidate) => candidate.name === methodName) ?? availableMethods[0]!
+
   const event = scene.events.find((candidate) => candidate.type === EVENT_TYPE)
   const actions = (event?.actions ?? [])
     .map((action, index) => ({ action, index }))
     .filter(({ action }) => action.target === object.name || action.target === object.id)
-
-  const changeMethod = (name: string) => {
-    setMethodName(name)
-    setValues({})
-  }
 
   const handleAdd = () => {
     const args: Record<string, number | string> = {}
@@ -102,12 +110,12 @@ export function ActionsPanel() {
         <div className="border-border flex flex-col gap-2 border-t pt-3">
           <Select
             label={messages.actions.method}
-            value={methodName}
-            options={BUILTIN_METHODS.map((item) => ({
-              value: item.name,
-              label: methodLabels[item.name] ?? item.name,
+            value={method.name}
+            options={availableMethods.map((candidate) => ({
+              value: candidate.name,
+              label: methodLabels[candidate.name] ?? candidate.name,
             }))}
-            onChange={changeMethod}
+            onChange={setMethodName}
           />
           {method.parameters.map((parameter) =>
             parameter.type === 'number' ? (

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { createEmptyProject } from '../model'
+import { createClassDraft, createEmptyProject } from '../model'
 import { canRedo, canUndo, useProjectStore } from './store'
 
 function resetStore() {
@@ -92,6 +92,27 @@ describe('useProjectStore', () => {
     const sceneId = useProjectStore.getState().project.scenes[0]!.id
     useProjectStore.getState().setBackground(sceneId, 'night')
     expect(useProjectStore.getState().project.scenes[0]?.background).toBe('night')
+  })
+
+  it('saves a class and instantiates it', () => {
+    const sceneId = useProjectStore.getState().project.scenes[0]!.id
+    const definition = createClassDraft('Heroe')
+
+    useProjectStore.getState().saveClass(sceneId, definition)
+    expect(useProjectStore.getState().project.scenes[0]?.classes).toHaveLength(1)
+
+    useProjectStore.getState().instantiateClass(sceneId, definition.id)
+    expect(useProjectStore.getState().project.scenes[0]?.objects[0]?.class).toBe('Heroe')
+  })
+
+  it('does not remove a class that still has instances', () => {
+    const sceneId = useProjectStore.getState().project.scenes[0]!.id
+    const definition = createClassDraft('Heroe')
+    useProjectStore.getState().saveClass(sceneId, definition)
+    useProjectStore.getState().instantiateClass(sceneId, definition.id)
+
+    useProjectStore.getState().removeClass(sceneId, definition.id)
+    expect(useProjectStore.getState().project.scenes[0]?.classes).toHaveLength(1)
   })
 
   it('adds and removes scene actions', () => {

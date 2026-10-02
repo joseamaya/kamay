@@ -145,6 +145,70 @@ if __name__ == "__main__":
     expect(main?.content).toContain('h1.mover(1, 2)')
   })
 
+  it('generates a user class with a code method and its call', () => {
+    const project = projectSchema.parse({
+      version: 1,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          classes: [
+            {
+              id: 'class-heroe',
+              name: 'Heroe',
+              inherits: 'Actor',
+              attributes: [{ name: 'vida', type: 'number', initial: 100 }],
+              methods: [
+                {
+                  name: 'saludar',
+                  parameters: [{ name: 'mensaje', type: 'string' }],
+                  body: { kind: 'code', code: 'self.decir(mensaje)' },
+                },
+              ],
+            },
+          ],
+          objects: [{ id: 'o1', name: 'heroe1', class: 'Heroe' }],
+          events: [
+            {
+              type: 'on_start',
+              actions: [{ target: 'heroe1', method: 'saludar', args: { mensaje: 'hola' } }],
+            },
+          ],
+        },
+      ],
+    })
+
+    const files = generatePython(project).files
+    const heroe = files.find((file) => file.path === 'Heroe.py')
+    expect(heroe?.content).toContain('def saludar(self, mensaje: str):')
+    expect(heroe?.content).toContain('self.decir(mensaje)')
+
+    const main = files.find((file) => file.path === 'principal.py')
+    expect(main?.content).toContain('heroe1.saludar("hola")')
+  })
+
+  it('imports the base class when inheriting from another class', () => {
+    const project = projectSchema.parse({
+      version: 1,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          classes: [
+            { id: 'class-animal', name: 'Animal' },
+            { id: 'class-perro', name: 'Perro', inherits: 'Animal' },
+          ],
+        },
+      ],
+    })
+
+    const perro = generatePython(project).files.find((file) => file.path === 'Perro.py')
+    expect(perro?.content).toContain('from Animal import Animal')
+    expect(perro?.content).toContain('class Perro(Animal):')
+  })
+
   it('is deterministic for the same model', () => {
     const first = generatePython(buildFixture())
     const second = generatePython(buildFixture())

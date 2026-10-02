@@ -1,12 +1,13 @@
 import { useState } from 'react'
 
 import { format, getMessages } from '../../i18n'
-import { ACTOR_CATALOG } from '../../model'
-import type { ActorShape, CatalogItem } from '../../model'
+import { ACTOR_CATALOG, classUsageCount } from '../../model'
+import type { ActorShape, CatalogItem, ClassDefinition } from '../../model'
 import { useActiveScene, useEditorStore, useProjectStore } from '../../store'
 import { cn } from '../../ui/cn'
 import { Dialog } from '../../ui/Dialog'
 import { Panel } from '../../ui/Panel'
+import { ClassEditorDialog } from '../classes/ClassEditorDialog'
 
 function ShapePreview({ shape, color }: { shape: ActorShape; color: string }) {
   const style = { backgroundColor: color }
@@ -27,10 +28,17 @@ export function FactoryView() {
   const scene = useActiveScene()
   const addObject = useProjectStore((state) => state.addObject)
   const removeObject = useProjectStore((state) => state.removeObject)
+  const saveClass = useProjectStore((state) => state.saveClass)
+  const removeClass = useProjectStore((state) => state.removeClass)
+  const instantiateClass = useProjectStore((state) => state.instantiateClass)
   const selectedObjectId = useEditorStore((state) => state.selectedObjectId)
   const selectObject = useEditorStore((state) => state.selectObject)
   const pushLog = useEditorStore((state) => state.pushLog)
+
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+  const [pendingDeleteClass, setPendingDeleteClass] = useState<ClassDefinition | null>(null)
+  const [blockedClass, setBlockedClass] = useState<ClassDefinition | null>(null)
+  const [editorClass, setEditorClass] = useState<ClassDefinition | null | undefined>(undefined)
 
   const catalogLabels: Record<string, string> = {
     circle: messages.catalog.circle,
@@ -52,6 +60,23 @@ export function FactoryView() {
     if (selectedObjectId === pendingDelete.id) selectObject(null)
     pushLog(messages.activity.objectRemoved)
     setPendingDeleteId(null)
+  }
+
+  const handleInstantiate = (definition: ClassDefinition) => {
+    instantiateClass(scene.id, definition.id)
+    pushLog(messages.activity.objectAdded)
+  }
+
+  const requestDeleteClass = (definition: ClassDefinition) => {
+    if (classUsageCount(scene, definition.name) > 0) setBlockedClass(definition)
+    else setPendingDeleteClass(definition)
+  }
+
+  const confirmDeleteClass = () => {
+    if (!pendingDeleteClass) return
+    removeClass(scene.id, pendingDeleteClass.id)
+    pushLog(messages.activity.classRemoved)
+    setPendingDeleteClass(null)
   }
 
   return (
@@ -78,6 +103,61 @@ export function FactoryView() {
               )
             })}
           </div>
+        </div>
+
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+              {messages.factory.classesTitle}
+            </h3>
+            <button
+              type="button"
+              onClick={() => setEditorClass(null)}
+              className="text-primary text-xs font-medium hover:underline"
+            >
+              {messages.factory.newClass}
+            </button>
+          </div>
+          {scene.classes.length === 0 ? (
+            <p className="text-muted-foreground text-sm">{messages.factory.noClasses}</p>
+          ) : (
+            <ul className="flex flex-col gap-1">
+              {scene.classes.map((definition) => (
+                <li
+                  key={definition.id}
+                  className="border-border flex items-center gap-1 rounded-md border px-2 py-1"
+                >
+                  <span className="flex-1 truncate text-sm">{definition.name}</span>
+                  <button
+                    type="button"
+                    aria-label={format(messages.factory.newObjectOfClass, {
+                      name: definition.name,
+                    })}
+                    onClick={() => handleInstantiate(definition)}
+                    className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md px-1.5 text-base leading-none"
+                  >
+                    +
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={format(messages.factory.editClass, { name: definition.name })}
+                    onClick={() => setEditorClass(definition)}
+                    className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md px-1.5 text-sm leading-none"
+                  >
+                    ✎
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={format(messages.factory.deleteClass, { name: definition.name })}
+                    onClick={() => requestDeleteClass(definition)}
+                    className="text-muted-foreground hover:text-destructive rounded-md px-1.5 text-lg leading-none"
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col">
@@ -127,6 +207,45 @@ export function FactoryView() {
       >
         {pendingDelete ? format(messages.dialog.deleteMessage, { name: pendingDelete.name }) : null}
       </Dialog>
+
+      <Dialog
+        open={pendingDeleteClass !== null}
+        title={messages.dialog.deleteClassTitle}
+        confirmLabel={messages.dialog.delete}
+        cancelLabel={messages.dialog.cancel}
+        onCancel={() => setPendingDeleteClass(null)}
+        onConfirm={confirmDeleteClass}
+      >
+        {pendingDeleteClass
+          ? format(messages.dialog.deleteMessage, { name: pendingDeleteClass.name })
+          : null}
+      </Dialog>
+
+      <Dialog
+        open={blockedClass !== null}
+        title={messages.dialog.deleteClassTitle}
+        confirmLabel={messages.dialog.accept}
+        cancelLabel={messages.dialog.cancel}
+        onCancel={() => setBlockedClass(null)}
+        onConfirm={() => setBlockedClass(null)}
+      >
+        {blockedClass
+          ? format(messages.factory.deleteClassBlocked, { name: blockedClass.name })
+          : null}
+      </Dialog>
+
+      {editorClass !== undefined ? (
+        <ClassEditorDialog
+          scene={scene}
+          initial={editorClass}
+          onClose={() => setEditorClass(undefined)}
+          onSave={(definition) => {
+            saveClass(scene.id, definition)
+            pushLog(messages.activity.classSaved)
+            setEditorClass(undefined)
+          }}
+        />
+      ) : null}
     </Panel>
   )
 }
