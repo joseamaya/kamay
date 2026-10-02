@@ -10,6 +10,7 @@ import {
   toSceneState,
 } from '../../engine'
 import type { Actor } from '../../engine'
+import { collisionKey } from '../../model'
 import { emitRuntimeTrigger, onRuntimeCommand, onRuntimeReset } from '../../runtime'
 import { useActiveScene, useEditorStore, useProjectStore, useRuntimeStore } from '../../store'
 
@@ -58,6 +59,8 @@ export function ScenarioCanvas() {
   const selectedRef = useRef(selectedObjectId)
   const sizeRef = useRef(size)
   const lastSizeRef = useRef<Point>({ x: 0, y: 0 })
+  const runtimeStatusRef = useRef(runtimeStatus)
+  const collisionsRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     sceneRef.current = scene
@@ -70,6 +73,10 @@ export function ScenarioCanvas() {
   useEffect(() => {
     sizeRef.current = size
   }, [size])
+
+  useEffect(() => {
+    runtimeStatusRef.current = runtimeStatus
+  }, [runtimeStatus])
 
   useEffect(() => {
     const element = containerRef.current
@@ -85,7 +92,9 @@ export function ScenarioCanvas() {
   }, [])
 
   useEffect(() => {
-    if (scene) controllerRef.current.reset(toSceneState(scene))
+    if (!scene) return
+    controllerRef.current.reset(toSceneState(scene))
+    collisionsRef.current.clear()
   }, [scene])
 
   useEffect(() => onRuntimeCommand((command) => controllerRef.current.apply(command)), [])
@@ -95,9 +104,40 @@ export function ScenarioCanvas() {
       onRuntimeReset(() => {
         const current = sceneRef.current
         if (current) controllerRef.current.reset(toSceneState(current))
+        collisionsRef.current.clear()
       }),
     [],
   )
+
+  const detectCollisions = useCallback(() => {
+    // Only detect once the program finished registering its handlers.
+    if (runtimeStatusRef.current !== 'ready') {
+      collisionsRef.current.clear()
+      return
+    }
+
+    const actors = controllerRef.current.getActors()
+    const colliding = new Set<string>()
+    for (let i = 0; i < actors.length; i += 1) {
+      for (let j = i + 1; j < actors.length; j += 1) {
+        const first = actors[i]!
+        const second = actors[j]!
+        const radius =
+          (ACTOR_SIZE / 2) * Math.max(first.transform.scale, 0.2) +
+          (ACTOR_SIZE / 2) * Math.max(second.transform.scale, 0.2)
+        const dx = first.transform.position.x - second.transform.position.x
+        const dy = first.transform.position.y - second.transform.position.y
+        if (dx * dx + dy * dy > radius * radius) continue
+
+        const key = collisionKey(first.name, second.name)
+        colliding.add(key)
+        if (!collisionsRef.current.has(key)) {
+          emitRuntimeTrigger({ kind: 'collision', source: key })
+        }
+      }
+    }
+    collisionsRef.current = colliding
+  }, [])
 
   const render = useCallback(() => {
     const canvas = canvasRef.current
@@ -142,12 +182,15 @@ export function ScenarioCanvas() {
 
   useEffect(() => {
     const loop = createLoop({
-      update: (delta) => controllerRef.current.update(delta),
+      update: (delta) => {
+        controllerRef.current.update(delta)
+        detectCollisions()
+      },
       render,
     })
     loop.start()
     return () => loop.stop()
-  }, [render])
+  }, [render, detectCollisions])
 
   const toScenePoint = (event: ReactPointerEvent<HTMLCanvasElement>): Point | null => {
     const canvas = canvasRef.current

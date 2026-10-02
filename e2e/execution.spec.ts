@@ -35,6 +35,27 @@ test('runs a click handler with pyodide', async ({ page }) => {
   await expect(page.getByText('Listo.')).toBeVisible()
 })
 
+test('runs a collision handler with pyodide', async ({ page }) => {
+  test.skip(!process.env.PYODIDE_E2E, 'set PYODIDE_E2E=1 to run the real Pyodide test')
+  test.setTimeout(180_000)
+
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByLabel('Cuándo').selectOption('on_collision')
+  await page.getByLabel('Mensaje').fill('boom')
+  await page.getByRole('button', { name: 'Agregar orden' }).click()
+
+  await page.getByRole('button', { name: 'Ejecutar' }).click()
+  await expect(page.getByText('Listo.')).toBeVisible({ timeout: 150_000 })
+
+  // Both circles start overlapping, so the collision fires once the run is ready.
+  await page.waitForTimeout(500)
+  await expect(page.getByText('Listo.')).toBeVisible()
+})
+
 test('runs a user-defined method with pyodide', async ({ page }) => {
   test.skip(!process.env.PYODIDE_E2E, 'set PYODIDE_E2E=1 to run the real Pyodide test')
   test.setTimeout(180_000)

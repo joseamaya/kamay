@@ -65,6 +65,26 @@ describe('ActionsPanel', () => {
     expect(clickEvent?.actions[0]).toMatchObject({ method: 'decir', args: { mensaje: 'hola' } })
   })
 
+  it('adds a collision action with the other object', async () => {
+    const user = userEvent.setup()
+    const sceneId = useProjectStore.getState().project.scenes[0]!.id
+    useProjectStore.getState().addObject(sceneId, 'circle')
+    useProjectStore.getState().addObject(sceneId, 'circle')
+    const objects = useProjectStore.getState().project.scenes[0]!.objects
+    useEditorStore.setState({ selectedObjectId: objects[0]!.id })
+
+    render(<ActionsPanel />)
+    await user.selectOptions(screen.getByLabelText('Cuándo'), 'on_collision')
+    await user.type(screen.getByLabelText('Mensaje'), 'boom')
+    await user.click(screen.getByRole('button', { name: 'Agregar orden' }))
+
+    const event = useProjectStore
+      .getState()
+      .project.scenes[0]!.events.find((candidate) => candidate.type === 'on_collision')
+    expect(event?.source).toBe('circle1')
+    expect(event?.other).toBe('circle2')
+  })
+
   it('adds an action for the selected object', async () => {
     const user = userEvent.setup()
     const sceneId = useProjectStore.getState().project.scenes[0]!.id

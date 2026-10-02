@@ -22,7 +22,7 @@ describe('migrateProject', () => {
     expect(() => migrateProject({ version: 0 })).toThrow(MigrationError)
   })
 
-  it('upgrades a v1 project to v2 by adding an event source', () => {
+  it('upgrades a v1 project to the current version', () => {
     const input = {
       version: 1,
       meta: { name: 'Demo' },
@@ -31,10 +31,29 @@ describe('migrateProject', () => {
 
     const result = migrateProject(input) as {
       version: number
-      scenes: { events: { source: unknown }[] }[]
+      scenes: { events: { source: unknown; other: unknown }[] }[]
     }
 
-    expect(result.version).toBe(2)
+    expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
     expect(result.scenes[0]?.events[0]?.source).toBeNull()
+    expect(result.scenes[0]?.events[0]?.other).toBeNull()
+  })
+
+  it('upgrades a v2 project by adding the collision other', () => {
+    const input = {
+      version: 2,
+      meta: { name: 'Demo' },
+      scenes: [
+        { id: 'scene-1', name: 'Principal', events: [{ type: 'on_collision', source: 'a' }] },
+      ],
+    }
+
+    const result = migrateProject(input) as {
+      version: number
+      scenes: { events: { other: unknown }[] }[]
+    }
+
+    expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
+    expect(result.scenes[0]?.events[0]?.other).toBeNull()
   })
 })

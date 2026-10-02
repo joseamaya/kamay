@@ -10,7 +10,7 @@ import { Panel } from '../../ui/Panel'
 import { Select } from '../../ui/Select'
 import { TextField } from '../../ui/TextField'
 
-type Trigger = 'on_start' | 'on_click'
+type Trigger = 'on_start' | 'on_click' | 'on_collision'
 
 function defaultValue(type: AttributeType): string {
   return type === 'number' ? '0' : ''
@@ -25,6 +25,7 @@ export function ActionsPanel() {
   const pushLog = useEditorStore((state) => state.pushLog)
 
   const [trigger, setTrigger] = useState<Trigger>('on_start')
+  const [otherName, setOtherName] = useState('')
   const [methodName, setMethodName] = useState(BUILTIN_METHODS[0]!.name)
   const [values, setValues] = useState<Record<string, string>>({})
 
@@ -64,20 +65,28 @@ export function ActionsPanel() {
   const method =
     availableMethods.find((candidate) => candidate.name === methodName) ?? availableMethods[0]!
 
-  const source = trigger === 'on_click' ? object.name : null
-  const event = findEvent(scene, trigger, source)
+  const otherObjects = scene.objects.filter((candidate) => candidate.id !== object.id)
+  const selectedOther =
+    otherObjects.find((candidate) => candidate.name === otherName)?.name ??
+    otherObjects[0]?.name ??
+    null
+
+  const source = trigger === 'on_start' ? null : object.name
+  const other = trigger === 'on_collision' ? selectedOther : null
+  const event = findEvent(scene, trigger, source, other)
   const actions = (event?.actions ?? [])
     .map((action, index) => ({ action, index }))
     .filter(({ action }) => action.target === object.name || action.target === object.id)
 
   const handleAdd = () => {
+    if (trigger === 'on_collision' && !selectedOther) return
     const args: Record<string, number | string> = {}
     for (const parameter of method.parameters) {
       const raw = values[parameter.name] ?? defaultValue(parameter.type)
       args[parameter.name] = parameter.type === 'number' ? Number(raw) || 0 : raw
     }
     const action: Action = { target: object.name, method: method.name, args }
-    addAction(scene.id, trigger, source, action)
+    addAction(scene.id, trigger, source, other, action)
     pushLog(messages.activity.actionAdded)
   }
 
@@ -97,7 +106,7 @@ export function ActionsPanel() {
                   type="button"
                   aria-label={messages.actions.remove}
                   onClick={() => {
-                    removeAction(scene.id, trigger, source, index)
+                    removeAction(scene.id, trigger, source, other, index)
                     pushLog(messages.activity.actionRemoved)
                   }}
                   className="text-muted-foreground hover:text-destructive rounded-md px-2 py-1 text-lg leading-none"
@@ -116,9 +125,25 @@ export function ActionsPanel() {
             options={[
               { value: 'on_start', label: messages.triggers.onStart },
               { value: 'on_click', label: messages.triggers.onClick },
+              { value: 'on_collision', label: messages.triggers.onCollision },
             ]}
             onChange={(value) => setTrigger(value as Trigger)}
           />
+          {trigger === 'on_collision' ? (
+            otherObjects.length > 0 ? (
+              <Select
+                label={messages.actions.other}
+                value={selectedOther ?? ''}
+                options={otherObjects.map((candidate) => ({
+                  value: candidate.name,
+                  label: candidate.name,
+                }))}
+                onChange={setOtherName}
+              />
+            ) : (
+              <p className="text-muted-foreground text-xs">{messages.actions.noOtherObjects}</p>
+            )
+          ) : null}
           <Select
             label={messages.actions.method}
             value={method.name}

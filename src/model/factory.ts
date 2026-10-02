@@ -18,6 +18,11 @@ export const ACTOR_CATALOG: CatalogItem[] = [
 
 export const BASE_CLASS = 'Actor'
 
+/** Order-independent key for a pair of objects that can collide. */
+export function collisionKey(a: string, b: string): string {
+  return [a, b].sort().join('|')
+}
+
 export const OBJECT_DEFAULTS = {
   x: 0,
   y: 0,
@@ -92,7 +97,11 @@ export function removeObject(scene: Scene, objectId: string): Scene {
         ...event,
         actions: event.actions.filter((action) => !identifiers.has(action.target)),
       }))
-      .filter((event) => !(event.source && identifiers.has(event.source))),
+      .filter(
+        (event) =>
+          !(event.source && identifiers.has(event.source)) &&
+          !(event.other && identifiers.has(event.other)),
+      ),
   }
 }
 
@@ -119,31 +128,49 @@ export function renameProject(project: Project, name: string): Project {
   return { ...project, meta: { ...project.meta, name } }
 }
 
-function sameTrigger(event: Scene['events'][number], eventType: EventType, source: string | null) {
-  return event.type === eventType && (event.source ?? null) === (source ?? null)
+interface EventIdentity {
+  eventType: EventType
+  source: string | null
+  other: string | null
+}
+
+function sameTrigger(event: Scene['events'][number], identity: EventIdentity) {
+  return (
+    event.type === identity.eventType &&
+    (event.source ?? null) === (identity.source ?? null) &&
+    (event.other ?? null) === (identity.other ?? null)
+  )
 }
 
 export function findEvent(
   scene: Scene,
   eventType: EventType,
   source: string | null,
+  other: string | null = null,
 ): Scene['events'][number] | undefined {
-  return scene.events.find((event) => sameTrigger(event, eventType, source))
+  return scene.events.find((event) => sameTrigger(event, { eventType, source, other }))
 }
 
 export function addEventAction(
   scene: Scene,
   eventType: EventType,
   source: string | null,
+  other: string | null,
   action: Action,
 ): Scene {
+  const identity = { eventType, source, other }
   const events = [...scene.events]
-  const index = events.findIndex((event) => sameTrigger(event, eventType, source))
+  const index = events.findIndex((event) => sameTrigger(event, identity))
   if (index >= 0) {
     const event = events[index]!
     events[index] = { ...event, actions: [...event.actions, action] }
   } else {
-    events.push({ type: eventType, source: source ?? null, actions: [action] })
+    events.push({
+      type: eventType,
+      source: source ?? null,
+      other: other ?? null,
+      actions: [action],
+    })
   }
   return { ...scene, events }
 }
@@ -152,12 +179,14 @@ export function removeEventAction(
   scene: Scene,
   eventType: EventType,
   source: string | null,
+  other: string | null,
   actionIndex: number,
 ): Scene {
+  const identity = { eventType, source, other }
   return {
     ...scene,
     events: scene.events.map((event) =>
-      sameTrigger(event, eventType, source)
+      sameTrigger(event, identity)
         ? { ...event, actions: event.actions.filter((_, index) => index !== actionIndex) }
         : event,
     ),
