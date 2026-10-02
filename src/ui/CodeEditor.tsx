@@ -6,6 +6,7 @@ import {
 } from '@codemirror/language'
 import { python } from '@codemirror/lang-python'
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
+import { setDiagnostics } from '@codemirror/lint'
 import { EditorState } from '@codemirror/state'
 import {
   drawSelection,
@@ -20,6 +21,8 @@ import { tags } from '@lezer/highlight'
 import { useEffect, useRef } from 'react'
 
 import { cn } from './cn'
+import { toDiagnostics } from './diagnostics'
+import type { CodeDiagnostic } from './diagnostics'
 
 const theme = EditorView.theme({
   '&': {
@@ -81,6 +84,7 @@ export interface CodeEditorProps {
   readOnly?: boolean
   ariaLabel?: string
   className?: string
+  diagnostics?: CodeDiagnostic[]
 }
 
 export default function CodeEditor({
@@ -89,6 +93,7 @@ export default function CodeEditor({
   readOnly = false,
   ariaLabel,
   className,
+  diagnostics,
 }: CodeEditorProps) {
   const hostRef = useRef<HTMLDivElement | null>(null)
   const viewRef = useRef<EditorView | null>(null)
@@ -145,6 +150,12 @@ export default function CodeEditor({
       view.dispatch({ changes: { from: 0, to: current.length, insert: value } })
     }
   }, [value])
+
+  useEffect(() => {
+    const view = viewRef.current
+    if (!view) return
+    view.dispatch(setDiagnostics(view.state, toDiagnostics(view.state.doc, diagnostics ?? [])))
+  }, [diagnostics, readOnly, ariaLabel])
 
   return <div ref={hostRef} className={cn('h-full overflow-hidden', className)} />
 }

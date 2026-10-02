@@ -3,7 +3,8 @@ import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerE
 
 import { generatePython } from '../../generator'
 import { getMessages } from '../../i18n'
-import { CODE_MIN_HEIGHT, useEditorStore, useProjectStore } from '../../store'
+import { translateRuntimeError } from '../../runtime'
+import { CODE_MIN_HEIGHT, useEditorStore, useProjectStore, useRuntimeStore } from '../../store'
 import { cn } from '../../ui/cn'
 import { LazyCodeEditor } from '../../ui/LazyCodeEditor'
 
@@ -26,6 +27,7 @@ export function CodeView() {
   const setCodeCollapsed = useEditorStore((state) => state.setCodeCollapsed)
   const codeFile = useEditorStore((state) => state.codeFile)
   const setCodeFile = useEditorStore((state) => state.setCodeFile)
+  const error = useRuntimeStore((state) => state.error)
 
   const [copied, setCopied] = useState(false)
   const dragRef = useRef<{ startY: number; startHeight: number } | null>(null)
@@ -39,6 +41,18 @@ export function CodeView() {
   useEffect(() => {
     if (codeFile && !files.some((file) => file.path === codeFile)) setCodeFile(null)
   }, [files, codeFile, setCodeFile])
+
+  useEffect(() => {
+    if (!error?.file) return
+    if (!files.some((file) => file.path === error.file)) return
+    setCodeFile(error.file)
+    setCodeCollapsed(false)
+  }, [error, files, setCodeFile, setCodeCollapsed])
+
+  const diagnostics = useMemo(() => {
+    if (!error?.line || !error.file || error.file !== activeFile?.path) return []
+    return [{ line: error.line, message: translateRuntimeError(error) }]
+  }, [error, activeFile?.path])
 
   const handleCopy = async () => {
     if (!activeFile) return
@@ -157,6 +171,7 @@ export function CodeView() {
               readOnly
               value={activeFile.content}
               ariaLabel={`${messages.code.title}: ${activeFile.path}`}
+              diagnostics={diagnostics}
             />
           ) : (
             <p className="text-muted-foreground p-4 text-sm">{messages.code.empty}</p>

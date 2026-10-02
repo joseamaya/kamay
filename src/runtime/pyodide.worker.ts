@@ -15,6 +15,7 @@ interface PyodideLike {
 }
 
 let pyodidePromise: Promise<PyodideLike> | null = null
+let knownFiles: ReadonlySet<string> = new Set()
 const registry = new EventRegistry()
 
 function post(message: WorkerResponse): void {
@@ -38,11 +39,12 @@ function handleTrigger(kind: TriggerKind, source: string): void {
   try {
     registry.dispatch(kind, source)
   } catch (error) {
-    post({ type: 'error', error: toRuntimeError(error) })
+    post({ type: 'error', error: toRuntimeError(error, knownFiles) })
   }
 }
 
 async function run(files: Record<string, string>, entry: string): Promise<void> {
+  knownFiles = new Set(Object.keys(files))
   try {
     const pyodide = await ensurePyodide()
 
@@ -83,7 +85,7 @@ for _name in [name for name, module in list(sys.modules.items()) if getattr(modu
 
     post({ type: 'status', status: 'ready' })
   } catch (error) {
-    post({ type: 'error', error: toRuntimeError(error) })
+    post({ type: 'error', error: toRuntimeError(error, knownFiles) })
     post({ type: 'status', status: 'error' })
   }
 }
