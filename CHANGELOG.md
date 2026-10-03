@@ -20,10 +20,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   own class, inheritance, physics).
 - **Projector mode**: high-contrast theme with larger text, persisted with the
   other accessibility preferences.
+- **Portfolio**: rename the project, browse saved projects with dates, and
+  export or delete each one.
+- **Delivery**: export a bundle with the project, the generated Python and the
+  completed missions.
 
 ### Planned
 
-- Classroom features (project portfolio).
+- Phase 5: optional 3D, real-time collaboration, more asset catalogs and worlds,
+  and translations.
 
 ## [0.1.0] - 2026-10-02
 

@@ -13,7 +13,7 @@ English.
 
 ## Status
 
-The project is in **Phase 3 — blocks, scenes, inheritance, events and physics**. Working today:
+The project has completed **Phase 4 — classroom and gamification**. Working today:
 
 - **Factory**: add and remove objects from the catalog: geometric shapes
   (circle, square, triangle, rectangle, diamond, pentagon, hexagon, heart,
@@ -46,9 +46,13 @@ The project is in **Phase 3 — blocks, scenes, inheritance, events and physics*
   own class, inheritance, physics).
 - **Projector mode**: high-contrast theme with larger text for explaining in
   class.
+- **Portfolio**: rename the project, browse saved projects with their dates,
+  export or delete each one, and **deliver** a bundle with the project, the
+  generated Python and the completed missions.
 - **Undo/redo** and error messages in Spanish.
 
-Pending (Phase 4): a project portfolio.
+Pending (Phase 5): optional 3D, real-time collaboration, more asset catalogs and
+worlds, and translations.
 
 ## Accessibility
 

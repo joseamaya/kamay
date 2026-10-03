@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { MISSIONS } from '../missions'
 import { createId } from '../model'
 import type { Project } from '../model'
-import { useEditorStore, useProjectStore } from '../store'
+import { useEditorStore, useProgressStore, useProjectStore } from '../store'
 import type { Autosave } from './autosave'
 import { createAutosave } from './autosave'
 import { openKamayDb } from './db'
+import { buildDelivery, deliveryFileName, exportDelivery } from './delivery'
 import { exportProject, projectFileName, readProjectFile } from './file'
 import { createRepository } from './repository'
 import { encodeShareUrl } from './share'
@@ -18,9 +20,11 @@ export interface PersistenceApi {
   openProject: (id: string) => Promise<void>
   removeProject: (id: string) => Promise<void>
   exportFile: () => void
+  exportRecord: (record: ProjectRecord) => void
   importFile: (file: File) => Promise<void>
   shareLink: () => Promise<string>
   openShared: (project: Project) => Promise<void>
+  deliver: () => void
 }
 
 function download(blob: Blob, filename: string): void {
@@ -77,6 +81,17 @@ export function usePersistence(): PersistenceApi {
       exportFile: () => {
         const project = useProjectStore.getState().project
         download(exportProject(project), projectFileName(project))
+      },
+      exportRecord: (record) => {
+        download(exportProject(record.project), projectFileName(record.project))
+      },
+      deliver: () => {
+        const project = useProjectStore.getState().project
+        const completed = useProgressStore.getState().completed
+        download(
+          exportDelivery(buildDelivery(project, completed, MISSIONS.length)),
+          deliveryFileName(project),
+        )
       },
       importFile: async (file) => {
         const project = await readProjectFile(file)

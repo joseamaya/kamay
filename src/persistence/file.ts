@@ -17,8 +17,8 @@ export function exportProject(project: Project): Blob {
   return new Blob([`${JSON.stringify(project, null, 2)}\n`], { type: 'application/json' })
 }
 
-export function projectFileName(project: Project): string {
-  const base =
+export function projectSlug(project: Project): string {
+  return (
     project.meta.name
       .trim()
       .toLowerCase()
@@ -26,7 +26,11 @@ export function projectFileName(project: Project): string {
       .replace(/\p{Diacritic}/gu, '')
       .replace(/[^a-z0-9]+/gi, '-')
       .replace(/^-+|-+$/g, '') || 'proyecto'
-  return `${base}${PROJECT_FILE_EXTENSION}`
+  )
+}
+
+export function projectFileName(project: Project): string {
+  return `${projectSlug(project)}${PROJECT_FILE_EXTENSION}`
 }
 
 export function importProject(source: string): Project {
