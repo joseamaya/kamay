@@ -18,7 +18,6 @@ export type BadgeId = 'objects' | 'orders' | 'classes' | 'inheritance' | 'events
 
 export interface Mission {
   id: MissionId
-  badge: BadgeId
   isComplete: (project: Project) => boolean
 }
 
@@ -56,44 +55,36 @@ function saysSomething(action: Action): boolean {
 export const MISSIONS: Mission[] = [
   {
     id: 'first_object',
-    badge: 'objects',
     isComplete: (project) => objects(project).length > 0,
   },
   {
     id: 'give_order',
-    badge: 'orders',
     isComplete: (project) => actions(project).length > 0,
   },
   {
     id: 'say_hello',
-    badge: 'orders',
     isComplete: (project) => actions(project).some(saysSomething),
   },
   {
     id: 'move_it',
-    badge: 'orders',
     isComplete: (project) => actions(project).some((action) => action.method === 'mover'),
   },
   {
     id: 'own_class',
-    badge: 'classes',
     isComplete: (project) => customClasses(project).length > 0,
   },
   {
     id: 'own_attribute',
-    badge: 'classes',
     isComplete: (project) =>
       customClasses(project).some((definition) => classCustomAttributes(definition).length > 0),
   },
   {
     id: 'own_method',
-    badge: 'classes',
     isComplete: (project) =>
       customClasses(project).some((definition) => definition.methods.length > 0),
   },
   {
     id: 'inherit',
-    badge: 'inheritance',
     isComplete: (project) =>
       classes(project).some(
         (definition) => definition.inherits != null && definition.inherits !== BASE_CLASS,
@@ -101,17 +92,14 @@ export const MISSIONS: Mission[] = [
   },
   {
     id: 'wait_sequence',
-    badge: 'sequences',
     isComplete: (project) => actions(project).some((action) => action.method === 'esperar'),
   },
   {
     id: 'collision',
-    badge: 'events',
     isComplete: (project) => events(project).some((event) => event.type === 'on_collision'),
   },
   {
     id: 'signal',
-    badge: 'events',
     isComplete: (project) =>
       events(project).some((event) => event.type === 'on_signal') ||
       actions(project).some((action) => action.method === 'emitir'),
