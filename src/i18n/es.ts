@@ -10,6 +10,7 @@ export const es = {
     export: 'Exportar',
     import: 'Importar',
     share: 'Compartir',
+    missions: 'Misiones {done}/{total}',
     undo: 'Deshacer',
     redo: 'Rehacer',
     newProject: 'Nuevo',
@@ -155,6 +156,68 @@ export const es = {
   physics: {
     toggle: 'Física',
     gravity: 'Gravedad',
+  },
+  missions: {
+    title: 'Misiones',
+    completed: '¡Misión completada: {title}!',
+    reset: 'Reiniciar progreso',
+    badgesTitle: 'Insignias',
+    locked: 'Bloqueada',
+    unlocked: 'Conseguida',
+    list: {
+      first_object: {
+        title: 'Pon algo en el escenario',
+        description: 'Agrega al menos un objeto desde la Fábrica.',
+      },
+      give_order: {
+        title: 'Da una orden',
+        description: 'Agrega una orden a un objeto.',
+      },
+      say_hello: {
+        title: 'Haz que salude',
+        description: 'Usa la orden «Decir» con un mensaje.',
+      },
+      move_it: {
+        title: 'Muévelo',
+        description: 'Usa la orden «Mover».',
+      },
+      own_class: {
+        title: 'Crea tu propia clase',
+        description: 'Crea una clase con «Nueva clase».',
+      },
+      own_attribute: {
+        title: 'Dale un atributo propio',
+        description: 'Agrega un atributo a tu clase.',
+      },
+      own_method: {
+        title: 'Dale un método propio',
+        description: 'Agrega un método a tu clase.',
+      },
+      inherit: {
+        title: 'Hereda',
+        description: 'Haz que una clase herede de otra.',
+      },
+      wait_sequence: {
+        title: 'Haz una pausa',
+        description: 'Usa la orden «Esperar».',
+      },
+      collision: {
+        title: 'Provoca un choque',
+        description: 'Crea una acción «Al chocar con».',
+      },
+      signal: {
+        title: 'Envía una señal',
+        description: 'Usa una señal (emitir o al recibir señal).',
+      },
+    },
+    badges: {
+      objects: { title: 'Objetos', description: 'Pones objetos en el escenario.' },
+      orders: { title: 'Órdenes', description: 'Les das órdenes a los objetos.' },
+      classes: { title: 'Mi clase', description: 'Creas tus propias clases.' },
+      inheritance: { title: 'Herencia', description: 'Reutilizas una clase como base.' },
+      events: { title: 'Eventos', description: 'Reaccionas a choques y señales.' },
+      sequences: { title: 'Secuencias', description: 'Encadenas acciones con pausas.' },
+    },
   },
   inspector: {
     title: 'Propiedades',
