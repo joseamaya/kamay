@@ -18,6 +18,7 @@ export function createScene(name: string): Scene {
     id: createId('scene'),
     name,
     background: 'grass',
+    physics: { enabled: false, gravityY: -9.8 },
     classes: [],
     objects: [],
     events: [],

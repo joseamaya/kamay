@@ -17,6 +17,7 @@ import {
   renameScene as renameSceneInProject,
   replaceScene,
   setSceneBackground,
+  setScenePhysics,
   updateObjectAttributes as updateObjectAttributesOnScene,
   upsertClass,
 } from '../model'
@@ -39,6 +40,7 @@ export interface ProjectState {
     patch: Record<string, number | string | boolean>,
   ) => void
   setBackground: (sceneId: string, background: string) => void
+  setPhysics: (sceneId: string, patch: Partial<Scene['physics']>) => void
   saveClass: (sceneId: string, definition: ClassDefinition) => void
   removeClass: (sceneId: string, classId: string) => void
   instantiateClass: (sceneId: string, classId: string) => void
@@ -124,6 +126,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   setBackground: (sceneId, background) => {
     get().updateProject((project) =>
       updateScene(project, sceneId, (scene) => setSceneBackground(scene, background)),
+    )
+  },
+
+  setPhysics: (sceneId, patch) => {
+    get().updateProject((project) =>
+      updateScene(project, sceneId, (scene) => setScenePhysics(scene, patch)),
     )
   },
 

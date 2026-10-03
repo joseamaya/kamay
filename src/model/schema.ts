@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /** Current version of the persisted project model. Bump when the shape changes. */
-export const CURRENT_SCHEMA_VERSION = 4
+export const CURRENT_SCHEMA_VERSION = 5
 
 /** Identifier pattern shared by class and variable names in the generated Python. */
 export const identifierPattern = /^[A-Za-z_][A-Za-z0-9_]*$/
@@ -89,10 +89,16 @@ export const eventSchema = z.object({
   actions: z.array(actionSchema).default([]),
 })
 
+export const physicsSchema = z.object({
+  enabled: z.boolean().default(false),
+  gravityY: z.number().default(-9.8),
+})
+
 export const sceneSchema = z.object({
   id: z.string(),
   name: z.string().min(1),
   background: z.string().default('grass'),
+  physics: physicsSchema.default({ enabled: false, gravityY: -9.8 }),
   classes: z.array(classSchema).default([]),
   objects: z.array(objectSchema).default([]),
   events: z.array(eventSchema).default([]),
@@ -130,6 +136,7 @@ export type ObjectInstance = z.infer<typeof objectSchema>
 export type Action = z.infer<typeof actionSchema>
 export type EventType = z.infer<typeof eventTypeSchema>
 export type SceneEvent = z.infer<typeof eventSchema>
+export type PhysicsConfig = z.infer<typeof physicsSchema>
 export type Scene = z.infer<typeof sceneSchema>
 export type ProjectMeta = z.infer<typeof projectMetaSchema>
 export type Project = z.infer<typeof projectSchema>

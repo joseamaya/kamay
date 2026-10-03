@@ -1,4 +1,5 @@
 import type { RuntimeCommand } from '../runtime/types'
+import { PhysicsController } from './physics'
 import { advanceTweens, createTween } from './tween'
 import type { Tween } from './tween'
 import type { Actor, Bubble, SceneState } from './types'
@@ -21,6 +22,7 @@ export class RuntimeController {
   private clock = 0
   private delay = 0
   private pending: { command: ActorCommand; at: number }[] = []
+  private physics = new PhysicsController()
 
   setReducedMotion(value: boolean): void {
     this.reducedMotion = value
@@ -36,6 +38,7 @@ export class RuntimeController {
     this.clock = 0
     this.delay = 0
     this.pending = []
+    this.physics.reset(scene.physics, this.actors)
   }
 
   private find(target: string): Actor | undefined {
@@ -66,7 +69,11 @@ export class RuntimeController {
         ]
         break
       case 'move':
-        if (this.reducedMotion) {
+        if (this.physics.isActive()) {
+          this.physics.teleport(actor.id, command.x, command.y)
+          actor.transform.position.x = command.x
+          actor.transform.position.y = command.y
+        } else if (this.reducedMotion) {
           actor.transform.position.x = command.x
           actor.transform.position.y = command.y
         } else {
@@ -79,7 +86,10 @@ export class RuntimeController {
         }
         break
       case 'rotate':
-        if (this.reducedMotion) {
+        if (this.physics.isActive()) {
+          this.physics.setAngle(actor.id, command.degrees)
+          actor.transform.rotation = command.degrees
+        } else if (this.reducedMotion) {
           actor.transform.rotation = command.degrees
         } else {
           this.tweens.push(
@@ -94,7 +104,7 @@ export class RuntimeController {
         }
         break
       case 'scale':
-        if (this.reducedMotion) {
+        if (this.physics.isActive() || this.reducedMotion) {
           actor.transform.scale = command.factor
         } else {
           this.tweens.push(
@@ -113,18 +123,27 @@ export class RuntimeController {
       for (const item of due) this.applyNow(item.command)
     }
 
-    this.tweens = advanceTweens(this.tweens, delta, ({ objectId, property, value }) => {
-      const actor = this.actors.find((candidate) => candidate.id === objectId)
-      if (!actor) return
-      if (property === 'x') actor.transform.position.x = value
-      else if (property === 'y') actor.transform.position.y = value
-      else if (property === 'rotation') actor.transform.rotation = value
-      else actor.transform.scale = value
-    })
+    if (this.physics.isActive()) {
+      this.physics.step(delta, this.actors)
+    } else {
+      this.tweens = advanceTweens(this.tweens, delta, ({ objectId, property, value }) => {
+        const actor = this.actors.find((candidate) => candidate.id === objectId)
+        if (!actor) return
+        if (property === 'x') actor.transform.position.x = value
+        else if (property === 'y') actor.transform.position.y = value
+        else if (property === 'rotation') actor.transform.rotation = value
+        else actor.transform.scale = value
+      })
+    }
 
     this.bubbles = this.bubbles
       .map((bubble) => ({ ...bubble, ttl: bubble.ttl - delta }))
       .filter((bubble) => bubble.ttl > 0)
+  }
+
+  /** Current colliding pairs when physics is on; null when it is off. */
+  getCollisions(): Set<string> | null {
+    return this.physics.isActive() ? this.physics.getCollisions() : null
   }
 
   getActors(): Actor[] {

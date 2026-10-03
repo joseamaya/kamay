@@ -39,6 +39,22 @@ describe('migrateProject', () => {
     expect(result.scenes[0]?.events[0]?.other).toBeNull()
   })
 
+  it('upgrades a v4 project by adding physics settings', () => {
+    const input = {
+      version: 4,
+      meta: { name: 'Demo' },
+      scenes: [{ id: 'scene-1', name: 'Principal' }],
+    }
+
+    const result = migrateProject(input) as {
+      version: number
+      scenes: { physics: { enabled: boolean; gravityY: number } }[]
+    }
+
+    expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
+    expect(result.scenes[0]?.physics).toEqual({ enabled: false, gravityY: -9.8 })
+  })
+
   it('upgrades a v3 project by adding key and signal', () => {
     const input = {
       version: 3,

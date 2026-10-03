@@ -124,6 +124,10 @@ export function setSceneBackground(scene: Scene, background: string): Scene {
   return { ...scene, background }
 }
 
+export function setScenePhysics(scene: Scene, patch: Partial<Scene['physics']>): Scene {
+  return { ...scene, physics: { ...scene.physics, ...patch } }
+}
+
 export function renameProject(project: Project, name: string): Project {
   return { ...project, meta: { ...project.meta, name } }
 }
