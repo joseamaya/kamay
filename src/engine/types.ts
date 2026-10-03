@@ -17,6 +17,7 @@ export interface Actor {
   name: string
   shape: ActorShape
   glyph?: string
+  image?: string
   color: string
   transform: Transform
   zIndex: number
@@ -38,4 +39,5 @@ export interface RenderOptions {
   width: number
   height: number
   selectedId?: string | null
+  images?: Map<string, CanvasImageSource>
 }

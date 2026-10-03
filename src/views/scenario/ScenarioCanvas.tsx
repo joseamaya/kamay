@@ -71,6 +71,16 @@ function hitTest(actors: Actor[], point: Point): Actor | null {
   return null
 }
 
+function ensureImages(cache: Map<string, HTMLImageElement>, actors: Actor[]): void {
+  for (const actor of actors) {
+    const source = actor.image
+    if (!source || !source.startsWith('data:image/') || cache.has(source)) continue
+    const image = new Image()
+    image.src = source
+    cache.set(source, image)
+  }
+}
+
 export function ScenarioCanvas() {
   const messages = getMessages()
   const scene = useActiveScene()
@@ -84,6 +94,7 @@ export function ScenarioCanvas() {
   const containerRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<DragState | null>(null)
   const controllerRef = useRef(new RuntimeController())
+  const imageCacheRef = useRef(new Map<string, HTMLImageElement>())
   const [size, setSize] = useState<Point>({ x: 0, y: 0 })
 
   const sceneRef = useRef(scene)
@@ -221,7 +232,13 @@ export function ScenarioCanvas() {
       )
     }
 
-    const options = { width, height, selectedId: selectedRef.current }
+    ensureImages(imageCacheRef.current, actors)
+    const options = {
+      width,
+      height,
+      selectedId: selectedRef.current,
+      images: imageCacheRef.current,
+    }
     renderScene(ctx, { background, actors }, options)
     renderBubbles(ctx, controllerRef.current.getBubbles(), actors, options)
   }, [])

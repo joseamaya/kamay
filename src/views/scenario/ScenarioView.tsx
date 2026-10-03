@@ -13,12 +13,7 @@ export function ScenarioView() {
   const setBackground = useProjectStore((state) => state.setBackground)
   const setPhysics = useProjectStore((state) => state.setPhysics)
 
-  const backgroundLabels: Record<string, string> = {
-    grass: messages.backgrounds.grass,
-    sky: messages.backgrounds.sky,
-    sunset: messages.backgrounds.sunset,
-    night: messages.backgrounds.night,
-  }
+  const backgroundLabels: Record<string, string> = messages.backgrounds
 
   const options = BACKGROUNDS.map((background) => ({
     value: background.id,
@@ -27,6 +22,7 @@ export function ScenarioView() {
 
   const actions = scene ? (
     <Select
+      ariaLabel={messages.scenario.background}
       value={scene.background}
       options={options}
       className="w-40"
