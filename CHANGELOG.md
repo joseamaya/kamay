@@ -24,11 +24,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   export or delete each one.
 - **Delivery**: export a bundle with the project, the generated Python and the
   completed missions.
+- **Sprites**: upload an image for a class (downscaled to 128 px and embedded in
+  the project); it renders on the stage without appearing in the generated code.
+- **Themed worlds**: procedural backgrounds (forest, desert, space, city) on top
+  of the flat colors.
 
 ### Planned
 
-- Phase 5: optional 3D, real-time collaboration, more asset catalogs and worlds,
-  and translations.
+- Phase 5: optional 3D and more asset catalogs/worlds.
 
 ## [0.1.0] - 2026-10-02
 

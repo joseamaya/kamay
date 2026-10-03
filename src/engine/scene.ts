@@ -5,7 +5,11 @@ import type { Actor, SceneState } from './types'
 export const DEFAULT_SHAPE = 'circle'
 export const DEFAULT_COLOR = '#e2603a'
 
-export function toActor(object: ObjectInstance, zIndex: number): Actor {
+export function toActor(
+  object: ObjectInstance,
+  zIndex: number,
+  image: string | null = null,
+): Actor {
   const shape = object.attributes.shape
   const glyph = readString(object.attributes, 'glyph', '')
   return {
@@ -13,6 +17,7 @@ export function toActor(object: ObjectInstance, zIndex: number): Actor {
     name: object.name,
     shape: isActorShape(shape) ? shape : DEFAULT_SHAPE,
     glyph: glyph || undefined,
+    image: image ?? undefined,
     color: readString(object.attributes, 'color', DEFAULT_COLOR),
     transform: {
       position: {
@@ -27,9 +32,12 @@ export function toActor(object: ObjectInstance, zIndex: number): Actor {
 }
 
 export function toSceneState(scene: Scene): SceneState {
+  const images = new Map(scene.classes.map((definition) => [definition.name, definition.image]))
   return {
     background: scene.background,
-    actors: scene.objects.map((object, index) => toActor(object, index)),
+    actors: scene.objects.map((object, index) =>
+      toActor(object, index, images.get(object.class) ?? null),
+    ),
     physics: { enabled: scene.physics.enabled, gravityY: scene.physics.gravityY },
   }
 }

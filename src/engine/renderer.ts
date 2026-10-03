@@ -13,10 +13,109 @@ export const BACKGROUNDS: BackgroundOption[] = [
   { id: 'sky', color: '#dbeaf7' },
   { id: 'sunset', color: '#f7e3cd' },
   { id: 'night', color: '#2b2f45' },
+  { id: 'forest', color: '#8fbf87' },
+  { id: 'desert', color: '#e0b06a' },
+  { id: 'space', color: '#2b2f52' },
+  { id: 'city', color: '#7d6b8a' },
 ]
 
 export function backgroundFill(id: string): string {
   return BACKGROUNDS.find((background) => background.id === id)?.color ?? BACKGROUNDS[0]!.color
+}
+
+interface ThemedBackground {
+  from: string
+  to: string
+  decorate?: (ctx: CanvasRenderingContext2D, width: number, height: number) => void
+}
+
+const STARS: [number, number][] = [
+  [0.12, 0.2],
+  [0.3, 0.12],
+  [0.48, 0.28],
+  [0.62, 0.1],
+  [0.78, 0.24],
+  [0.88, 0.42],
+  [0.2, 0.44],
+  [0.4, 0.5],
+  [0.7, 0.48],
+]
+
+function drawHills(ctx: CanvasRenderingContext2D, width: number, height: number): void {
+  ctx.fillStyle = '#6fa86a'
+  ctx.beginPath()
+  ctx.arc(width * 0.3, height + height * 0.1, height * 0.4, Math.PI, 0)
+  ctx.fill()
+  ctx.fillStyle = '#5c9a58'
+  ctx.beginPath()
+  ctx.arc(width * 0.74, height + height * 0.15, height * 0.5, Math.PI, 0)
+  ctx.fill()
+}
+
+function drawSun(ctx: CanvasRenderingContext2D, width: number, height: number): void {
+  ctx.fillStyle = '#ffd27a'
+  ctx.beginPath()
+  ctx.arc(width * 0.82, height * 0.22, Math.min(width, height) * 0.09, 0, Math.PI * 2)
+  ctx.fill()
+}
+
+function drawStars(ctx: CanvasRenderingContext2D, width: number, height: number): void {
+  ctx.fillStyle = '#f4f1d0'
+  for (const [x, y] of STARS) {
+    ctx.beginPath()
+    ctx.arc(x * width, y * height, 1.6, 0, Math.PI * 2)
+    ctx.fill()
+  }
+}
+
+function drawBuildings(ctx: CanvasRenderingContext2D, width: number, height: number): void {
+  const columns = [0.05, 0.18, 0.3, 0.46, 0.6, 0.75, 0.88]
+  const buildingWidth = width * 0.12
+  const heights = columns.map((x) => height * (0.3 + ((x * 7) % 0.3)))
+  ctx.fillStyle = '#3d3a52'
+  columns.forEach((x, index) => {
+    ctx.fillRect(x * width, height - heights[index]!, buildingWidth, heights[index]!)
+  })
+  ctx.fillStyle = '#ffd98a'
+  columns.forEach((x, index) => {
+    for (let row = 0; row < 3; row += 1) {
+      const y = height - heights[index]! + 12 + row * 16
+      ctx.fillRect(x * width + buildingWidth * 0.2, y, buildingWidth * 0.22, 6)
+      ctx.fillRect(x * width + buildingWidth * 0.58, y, buildingWidth * 0.22, 6)
+    }
+  })
+}
+
+const THEMED_BACKGROUNDS: Record<string, ThemedBackground> = {
+  forest: { from: '#dcead3', to: '#8fbf87', decorate: drawHills },
+  desert: { from: '#f7e2b8', to: '#e0b06a', decorate: drawSun },
+  space: { from: '#10122a', to: '#2b2f52', decorate: drawStars },
+  city: { from: '#f6c9a8', to: '#7d6b8a', decorate: drawBuildings },
+}
+
+export function paintBackground(
+  ctx: CanvasRenderingContext2D,
+  id: string,
+  width: number,
+  height: number,
+): void {
+  const themed = THEMED_BACKGROUNDS[id]
+  if (!themed) {
+    ctx.fillStyle = backgroundFill(id)
+    ctx.fillRect(0, 0, width, height)
+    return
+  }
+
+  let fill: string | CanvasGradient = themed.from
+  if (typeof ctx.createLinearGradient === 'function') {
+    const gradient = ctx.createLinearGradient(0, 0, 0, height)
+    gradient.addColorStop(0, themed.from)
+    gradient.addColorStop(1, themed.to)
+    fill = gradient
+  }
+  ctx.fillStyle = fill
+  ctx.fillRect(0, 0, width, height)
+  themed.decorate?.(ctx, width, height)
 }
 
 /** Scene coordinates: origin at the center, Y pointing up. */
@@ -96,14 +195,27 @@ function drawShape(ctx: CanvasRenderingContext2D, shape: ActorShape, size: numbe
   ctx.fill()
 }
 
+function drawSprite(ctx: CanvasRenderingContext2D, image: CanvasImageSource, size: number): void {
+  const source = image as { width?: number; height?: number }
+  const naturalWidth = source.width || size
+  const naturalHeight = source.height || size
+  const scale = Math.min(size / naturalWidth, size / naturalHeight)
+  const width = naturalWidth * scale
+  const height = naturalHeight * scale
+  ctx.drawImage(image, -width / 2, -height / 2, width, height)
+}
+
 function renderActor(ctx: CanvasRenderingContext2D, actor: Actor, options: RenderOptions): void {
   const screen = sceneToScreen(actor.transform.position, options)
+  const image = actor.image ? options.images?.get(actor.image) : undefined
   ctx.save()
   ctx.translate(screen.x, screen.y)
   ctx.rotate((-actor.transform.rotation * Math.PI) / 180)
   ctx.scale(actor.transform.scale, actor.transform.scale)
   ctx.fillStyle = actor.color
-  if (actor.glyph) {
+  if (image) {
+    drawSprite(ctx, image, ACTOR_SIZE)
+  } else if (actor.glyph) {
     ctx.font = `${ACTOR_SIZE}px ${GLYPH_FONT}`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
@@ -132,8 +244,7 @@ export function renderScene(
   options: RenderOptions,
 ): void {
   ctx.clearRect(0, 0, options.width, options.height)
-  ctx.fillStyle = backgroundFill(scene.background)
-  ctx.fillRect(0, 0, options.width, options.height)
+  paintBackground(ctx, scene.background, options.width, options.height)
 
   const actors = [...scene.actors].sort((a, b) => a.zIndex - b.zIndex)
   for (const actor of actors) renderActor(ctx, actor, options)

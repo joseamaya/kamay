@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import type { ChangeEventHandler } from 'react'
 
 import { getMessages } from '../../i18n'
 import {
@@ -21,6 +22,7 @@ import type {
 import { Button } from '../../ui/Button'
 import { ColorInput } from '../../ui/ColorInput'
 import { Dialog } from '../../ui/Dialog'
+import { fileToSpriteDataUrl } from '../../ui/image'
 import { Select } from '../../ui/Select'
 import { MethodBodyEditor } from './MethodBodyEditor'
 
@@ -43,6 +45,7 @@ export interface ClassEditorDialogProps {
 export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEditorDialogProps) {
   const messages = getMessages()
   const [draft, setDraft] = useState<ClassDefinition>(() => initial ?? createClassDraft())
+  const [imageError, setImageError] = useState(false)
 
   const errors = useMemo(() => validateClassDraft(scene, draft), [scene, draft])
   const invalid = hasClassDraftErrors(errors)
@@ -73,6 +76,19 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
         attribute.name === name ? { ...attribute, initial: value } : attribute,
       ),
     }))
+  }
+
+  const handleImage: ChangeEventHandler<HTMLInputElement> = async (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    try {
+      const image = await fileToSpriteDataUrl(file)
+      setDraft((current) => ({ ...current, image }))
+      setImageError(false)
+    } catch {
+      setImageError(true)
+    }
   }
 
   const customAttributes = draft.attributes
@@ -190,6 +206,34 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
               options={shapeOptions}
               onChange={(value) => setVisual('shape', value)}
             />
+            <div className="flex flex-col gap-1">
+              <span className="text-muted-foreground text-xs">{messages.classEditor.image}</span>
+              <div className="flex items-center gap-2">
+                {draft.image ? (
+                  <img
+                    src={draft.image}
+                    alt={messages.classEditor.imagePreview}
+                    className="border-border h-10 w-10 rounded-md border object-contain"
+                  />
+                ) : null}
+                <label className="border-border hover:bg-muted cursor-pointer rounded-md border px-2 py-1 text-xs">
+                  {messages.classEditor.uploadImage}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImage} />
+                </label>
+                {draft.image ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setDraft((current) => ({ ...current, image: null }))}
+                  >
+                    {messages.classEditor.removeImage}
+                  </Button>
+                ) : null}
+              </div>
+              {imageError ? (
+                <span className="text-destructive text-xs">{messages.classEditor.imageError}</span>
+              ) : null}
+            </div>
           </div>
         </div>
 

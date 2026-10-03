@@ -40,6 +40,16 @@ describe('toActor', () => {
     expect(actor.transform.scale).toBe(2)
     expect(actor.zIndex).toBe(3)
   })
+
+  it('carries the class image', () => {
+    const actor = toActor(
+      { id: 'a', name: 'a', class: 'Heroe', attributes: { shape: 'circle' } },
+      0,
+      'data:image/png;base64,abc',
+    )
+
+    expect(actor.image).toBe('data:image/png;base64,abc')
+  })
 })
 
 describe('toSceneState', () => {
@@ -52,5 +62,19 @@ describe('toSceneState', () => {
 
     expect(state.background).toBe('grass')
     expect(state.actors.map((actor) => actor.zIndex)).toEqual([0, 1])
+  })
+
+  it('propagates the class image to its objects', () => {
+    let scene = createScene('Principal')
+    scene = addCatalogObject(scene, ACTOR_CATALOG[0]!)
+    scene = {
+      ...scene,
+      classes: scene.classes.map((definition) => ({
+        ...definition,
+        image: 'data:image/png;base64,abc',
+      })),
+    }
+
+    expect(toSceneState(scene).actors[0]?.image).toBe('data:image/png;base64,abc')
   })
 })

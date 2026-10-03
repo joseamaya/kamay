@@ -21,6 +21,8 @@ function createMockContext() {
     fill: vi.fn(),
     stroke: vi.fn(),
     fillText: vi.fn(),
+    drawImage: vi.fn(),
+    createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
     setLineDash: vi.fn(),
     fillStyle: '',
     strokeStyle: '',
@@ -90,6 +92,44 @@ describe('renderScene', () => {
 
     expect(ctx.fillText).toHaveBeenCalledWith('🐱', 0, 0)
     expect(ctx.arc).not.toHaveBeenCalled()
+  })
+
+  it('draws a sprite when its image is available', () => {
+    const ctx = createMockContext()
+    const scene: SceneState = {
+      background: 'grass',
+      actors: [
+        {
+          id: 'a',
+          name: 'a',
+          shape: 'circle',
+          image: 'data:image/png;base64,abc',
+          color: '#ffffff',
+          transform: { position: { x: 0, y: 0 }, rotation: 0, scale: 1 },
+          zIndex: 0,
+        },
+      ],
+    }
+    const image = { width: 64, height: 32 } as unknown as CanvasImageSource
+
+    renderScene(ctx as unknown as CanvasRenderingContext2D, scene, {
+      width: 100,
+      height: 100,
+      images: new Map([['data:image/png;base64,abc', image]]),
+    })
+
+    expect(ctx.drawImage).toHaveBeenCalled()
+    expect(ctx.arc).not.toHaveBeenCalled()
+  })
+
+  it('paints themed backgrounds with a gradient', () => {
+    const ctx = createMockContext()
+    const scene: SceneState = { background: 'space', actors: [] }
+
+    renderScene(ctx as unknown as CanvasRenderingContext2D, scene, { width: 100, height: 100 })
+
+    expect(ctx.createLinearGradient).toHaveBeenCalled()
+    expect(ctx.arc).toHaveBeenCalled()
   })
 
   it('draws polygon-based shapes', () => {

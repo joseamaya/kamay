@@ -46,6 +46,9 @@ The project has completed **Phase 4 — classroom and gamification**. Working to
   own class, inheritance, physics).
 - **Projector mode**: high-contrast theme with larger text for explaining in
   class.
+- **Sprites and worlds**: upload an image for a class (downscaled and stored in
+  the project) and it renders on the stage, plus themed backgrounds (forest,
+  desert, space, city). The generated Python stays clean.
 - **Portfolio**: rename the project, browse saved projects with their dates,
   export or delete each one, and **deliver** a bundle with the project, the
   generated Python and the completed missions.
