@@ -91,6 +91,13 @@ describe('RuntimeController', () => {
     expect(controller.getBubbles()).toHaveLength(0)
   })
 
+  it('exposes collisions only when physics is on', () => {
+    const controller = new RuntimeController()
+    controller.reset(scene)
+
+    expect(controller.getCollisions()).toBeNull()
+  })
+
   it('ignores commands for unknown targets', () => {
     const controller = new RuntimeController()
     controller.reset(scene)

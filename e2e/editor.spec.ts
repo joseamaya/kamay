@@ -220,3 +220,15 @@ test('adds a keyboard action', async ({ page }) => {
 
   await expect(codeContent(page)).toContainText('registrar("key", "ArrowUp", al_pulsar_ArrowUp)')
 })
+
+test('toggles physics for a scene', async ({ page }) => {
+  await page.goto('/')
+
+  const toggle = page.getByRole('button', { name: 'Física' })
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+
+  await toggle.click()
+
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByLabel('Gravedad')).toBeVisible()
+})

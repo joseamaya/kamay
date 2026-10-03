@@ -28,5 +28,6 @@ export function toSceneState(scene: Scene): SceneState {
   return {
     background: scene.background,
     actors: scene.objects.map((object, index) => toActor(object, index)),
+    physics: { enabled: scene.physics.enabled, gravityY: scene.physics.gravityY },
   }
 }

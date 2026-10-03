@@ -20,6 +20,7 @@ describe('projectSchema', () => {
     expect(result.data.scenes[0]?.objects).toEqual([])
     expect(result.data.scenes[0]?.events).toEqual([])
     expect(result.data.scenes[0]?.background).toBe('grass')
+    expect(result.data.scenes[0]?.physics).toEqual({ enabled: false, gravityY: -9.8 })
   })
 
   it('rejects a class name that is not a valid identifier', () => {

@@ -22,6 +22,15 @@ function mapEvents(
   }
 }
 
+function mapScenes(
+  data: Record<string, unknown>,
+  version: number,
+  mapper: (scene: Record<string, unknown>) => Record<string, unknown>,
+): Record<string, unknown> {
+  const scenes = Array.isArray(data.scenes) ? (data.scenes as Record<string, unknown>[]) : []
+  return { ...data, version, scenes: scenes.map(mapper) }
+}
+
 export const migrations: Record<number, SchemaMigration> = {
   // v1 -> v2: events gained a `source` field for click/collision triggers.
   1: (data) => mapEvents(data, 2, (event) => ({ source: null, ...event })),
@@ -29,6 +38,9 @@ export const migrations: Record<number, SchemaMigration> = {
   2: (data) => mapEvents(data, 3, (event) => ({ other: null, ...event })),
   // v3 -> v4: events gained `key` (keyboard) and `signal` fields.
   3: (data) => mapEvents(data, 4, (event) => ({ key: null, signal: null, ...event })),
+  // v4 -> v5: scenes gained optional physics settings.
+  4: (data) =>
+    mapScenes(data, 5, (scene) => ({ physics: { enabled: false, gravityY: -9.8 }, ...scene })),
 }
 
 export class MigrationError extends Error {

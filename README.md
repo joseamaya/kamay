@@ -13,7 +13,7 @@ English.
 
 ## Status
 
-The project is in **Phase 3 — blocks, scenes and inheritance**. Working today:
+The project is in **Phase 3 — blocks, scenes, inheritance, events and physics**. Working today:
 
 - **Factory**: add and remove objects from the catalog (circle, square, triangle).
 - **Classes**: create your own classes with attributes and methods, instantiate
@@ -21,6 +21,8 @@ The project is in **Phase 3 — blocks, scenes and inheritance**. Working today:
 - **Scenes**: create, rename, switch and delete scenes; the stage and the
   generated code follow the active scene.
 - **Stage**: custom Canvas 2D engine with background, selection and drag.
+- **Physics**: optional per scene (toggle + gravity); objects fall and collide
+  for real with planck.js.
 - **Properties**: position, rotation, scale and color.
 - **Actions**: orders (`decir`, `mover`, `girar`, `cambiar_escala`, `esperar`,
   `emitir`) plus user-defined methods, triggered on start, click, collision,
@@ -36,7 +38,8 @@ The project is in **Phase 3 — blocks, scenes and inheritance**. Working today:
 - **Persistence**: autosave to IndexedDB and `.kamay.json` export/import.
 - **Undo/redo** and error messages in Spanish.
 
-Pending (Phase 3): richer events and optional physics.
+Pending (Phase 4): classroom features (missions, teacher mode, sharing,
+portfolio).
 
 ## Accessibility
 

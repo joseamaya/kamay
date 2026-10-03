@@ -43,6 +43,25 @@ function distanceSquared(a: Point, b: Point): number {
   return dx * dx + dy * dy
 }
 
+function distanceCollisions(actors: Actor[]): Set<string> {
+  const colliding = new Set<string>()
+  for (let i = 0; i < actors.length; i += 1) {
+    for (let j = i + 1; j < actors.length; j += 1) {
+      const first = actors[i]!
+      const second = actors[j]!
+      const radius =
+        (ACTOR_SIZE / 2) * Math.max(first.transform.scale, 0.2) +
+        (ACTOR_SIZE / 2) * Math.max(second.transform.scale, 0.2)
+      const dx = first.transform.position.x - second.transform.position.x
+      const dy = first.transform.position.y - second.transform.position.y
+      if (dx * dx + dy * dy <= radius * radius) {
+        colliding.add(collisionKey(first.name, second.name))
+      }
+    }
+  }
+  return colliding
+}
+
 function hitTest(actors: Actor[], point: Point): Actor | null {
   for (let index = actors.length - 1; index >= 0; index -= 1) {
     const actor = actors[index]!
@@ -114,6 +133,12 @@ export function ScenarioCanvas() {
   }, [reducedMotion])
 
   useEffect(() => {
+    controllerRef.current.setSimulating(
+      runtimeStatus === 'loading' || runtimeStatus === 'running' || runtimeStatus === 'ready',
+    )
+  }, [runtimeStatus])
+
+  useEffect(() => {
     if (runtimeStatus !== 'ready' && runtimeStatus !== 'running') return
     const handleKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null
@@ -149,27 +174,15 @@ export function ScenarioCanvas() {
       return
     }
 
-    const actors = controllerRef.current.getActors()
-    const colliding = new Set<string>()
-    for (let i = 0; i < actors.length; i += 1) {
-      for (let j = i + 1; j < actors.length; j += 1) {
-        const first = actors[i]!
-        const second = actors[j]!
-        const radius =
-          (ACTOR_SIZE / 2) * Math.max(first.transform.scale, 0.2) +
-          (ACTOR_SIZE / 2) * Math.max(second.transform.scale, 0.2)
-        const dx = first.transform.position.x - second.transform.position.x
-        const dy = first.transform.position.y - second.transform.position.y
-        if (dx * dx + dy * dy > radius * radius) continue
+    const physicsCollisions = controllerRef.current.getCollisions()
+    const colliding = physicsCollisions ?? distanceCollisions(controllerRef.current.getActors())
 
-        const key = collisionKey(first.name, second.name)
-        colliding.add(key)
-        if (!collisionsRef.current.has(key)) {
-          emitRuntimeTrigger({ kind: 'collision', source: key })
-        }
+    for (const key of colliding) {
+      if (!collisionsRef.current.has(key)) {
+        emitRuntimeTrigger({ kind: 'collision', source: key })
       }
     }
-    collisionsRef.current = colliding
+    collisionsRef.current = new Set(colliding)
   }, [])
 
   const render = useCallback(() => {

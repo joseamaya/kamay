@@ -1,6 +1,8 @@
 import { BACKGROUNDS } from '../../engine'
 import { getMessages } from '../../i18n'
 import { useActiveScene, useProjectStore } from '../../store'
+import { Button } from '../../ui/Button'
+import { NumberField } from '../../ui/NumberField'
 import { Panel } from '../../ui/Panel'
 import { Select } from '../../ui/Select'
 import { ScenarioCanvas } from './ScenarioCanvas'
@@ -9,6 +11,7 @@ export function ScenarioView() {
   const messages = getMessages()
   const scene = useActiveScene()
   const setBackground = useProjectStore((state) => state.setBackground)
+  const setPhysics = useProjectStore((state) => state.setPhysics)
 
   const backgroundLabels: Record<string, string> = {
     grass: messages.backgrounds.grass,
@@ -33,16 +36,39 @@ export function ScenarioView() {
 
   return (
     <Panel title={messages.scenario.title} actions={actions} className="min-h-0">
-      <div className="relative h-full min-h-48">
-        <ScenarioCanvas />
-        {scene && scene.objects.length === 0 ? (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-sm font-medium">{messages.scenario.empty}</p>
-              <p className="text-muted-foreground mt-1 text-sm">{messages.scenario.emptyHint}</p>
-            </div>
+      <div className="flex h-full min-h-48 flex-col gap-2">
+        {scene ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant={scene.physics.enabled ? 'secondary' : 'ghost'}
+              size="sm"
+              aria-pressed={scene.physics.enabled}
+              onClick={() => setPhysics(scene.id, { enabled: !scene.physics.enabled })}
+            >
+              {messages.physics.toggle}
+            </Button>
+            {scene.physics.enabled ? (
+              <NumberField
+                label={messages.physics.gravity}
+                value={scene.physics.gravityY}
+                step={0.5}
+                className="w-28"
+                onChange={(value) => setPhysics(scene.id, { gravityY: value })}
+              />
+            ) : null}
           </div>
         ) : null}
+        <div className="relative min-h-0 flex-1">
+          <ScenarioCanvas />
+          {scene && scene.objects.length === 0 ? (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-sm font-medium">{messages.scenario.empty}</p>
+                <p className="text-muted-foreground mt-1 text-sm">{messages.scenario.emptyHint}</p>
+              </div>
+            </div>
+          ) : null}
+        </div>
       </div>
     </Panel>
   )

@@ -125,6 +125,10 @@ export const es = {
     sunset: 'Atardecer',
     night: 'Noche',
   },
+  physics: {
+    toggle: 'Física',
+    gravity: 'Gravedad',
+  },
   inspector: {
     title: 'Propiedades',
     empty: 'Selecciona un objeto para editar sus propiedades.',

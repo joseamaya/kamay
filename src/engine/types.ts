@@ -1,3 +1,4 @@
+import type { PhysicsConfig } from '../model'
 import type { ActorShape } from '../model/factory'
 
 export interface Vector2 {
@@ -23,6 +24,7 @@ export interface Actor {
 export interface SceneState {
   background: string
   actors: Actor[]
+  physics?: PhysicsConfig
 }
 
 export interface Bubble {
