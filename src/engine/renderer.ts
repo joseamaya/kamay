@@ -196,9 +196,14 @@ function drawShape(ctx: CanvasRenderingContext2D, shape: ActorShape, size: numbe
 }
 
 function drawSprite(ctx: CanvasRenderingContext2D, image: CanvasImageSource, size: number): void {
-  const source = image as { width?: number; height?: number }
-  const naturalWidth = source.width || size
-  const naturalHeight = source.height || size
+  const source = image as {
+    width?: number
+    height?: number
+    naturalWidth?: number
+    naturalHeight?: number
+  }
+  const naturalWidth = source.naturalWidth || source.width || size
+  const naturalHeight = source.naturalHeight || source.height || size
   const scale = Math.min(size / naturalWidth, size / naturalHeight)
   const width = naturalWidth * scale
   const height = naturalHeight * scale

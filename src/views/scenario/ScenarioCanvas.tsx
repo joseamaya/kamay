@@ -73,10 +73,11 @@ function hitTest(actors: Actor[], point: Point): Actor | null {
 
 function ensureImages(cache: Map<string, HTMLImageElement>, actors: Actor[]): void {
   for (const actor of actors) {
-    if (!actor.image || cache.has(actor.image)) continue
+    const source = actor.image
+    if (!source || !source.startsWith('data:image/') || cache.has(source)) continue
     const image = new Image()
-    image.src = actor.image
-    cache.set(actor.image, image)
+    image.src = source
+    cache.set(source, image)
   }
 }
 
