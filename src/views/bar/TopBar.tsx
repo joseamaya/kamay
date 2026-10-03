@@ -48,6 +48,7 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
 
   const [openDialog, setOpenDialog] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
+  const [shareLink, setShareLink] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const guard = (run: () => void) => {
@@ -77,6 +78,25 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
   const handleExport = () => {
     persistence.exportFile()
     pushLog(messages.activity.exported)
+  }
+
+  const handleShare = async () => {
+    try {
+      setShareLink(await persistence.shareLink())
+    } catch {
+      pushLog(messages.errors.share, 'error')
+    }
+  }
+
+  const handleCopyShare = async () => {
+    if (!shareLink) return
+    try {
+      await navigator.clipboard.writeText(shareLink)
+      pushLog(messages.share.copied)
+    } catch {
+      pushLog(messages.share.copyError, 'error')
+    }
+    setShareLink(null)
   }
 
   const requestOpen = (id: string) => {
@@ -141,6 +161,9 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
         <Button variant="ghost" size="sm" onClick={() => fileInputRef.current?.click()}>
           {messages.bar.import}
         </Button>
+        <Button variant="ghost" size="sm" onClick={() => void handleShare()}>
+          {messages.bar.share}
+        </Button>
 
         <span className="bg-border mx-1 h-5 w-px" aria-hidden="true" />
 
@@ -198,6 +221,24 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
         onClose={() => setOpenDialog(false)}
         onSelect={requestOpen}
       />
+
+      <Dialog
+        open={shareLink !== null}
+        title={messages.share.title}
+        confirmLabel={messages.share.copy}
+        cancelLabel={messages.dialog.cancel}
+        onCancel={() => setShareLink(null)}
+        onConfirm={() => void handleCopyShare()}
+      >
+        <p className="mb-2">{messages.share.description}</p>
+        <input
+          readOnly
+          aria-label={messages.share.link}
+          value={shareLink ?? ''}
+          onFocus={(event) => event.currentTarget.select()}
+          className="border-border bg-background text-foreground w-full rounded-md border px-2 py-1 text-xs"
+        />
+      </Dialog>
 
       <Dialog
         open={pendingAction !== null}

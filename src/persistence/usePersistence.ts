@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { createId } from '../model'
+import type { Project } from '../model'
 import { useEditorStore, useProjectStore } from '../store'
 import type { Autosave } from './autosave'
 import { createAutosave } from './autosave'
 import { openKamayDb } from './db'
 import { exportProject, projectFileName, readProjectFile } from './file'
 import { createRepository } from './repository'
+import { encodeShareUrl } from './share'
 import type { ProjectRecord, ProjectRepository } from './types'
 
 export interface PersistenceApi {
@@ -17,6 +19,8 @@ export interface PersistenceApi {
   removeProject: (id: string) => Promise<void>
   exportFile: () => void
   importFile: (file: File) => Promise<void>
+  shareLink: () => Promise<string>
+  openShared: (project: Project) => Promise<void>
 }
 
 function download(blob: Blob, filename: string): void {
@@ -76,6 +80,16 @@ export function usePersistence(): PersistenceApi {
       },
       importFile: async (file) => {
         const project = await readProjectFile(file)
+        useProjectStore.getState().loadProject(project)
+        useEditorStore.getState().setProjectId(createId('project'))
+        await autosaveRef.current?.saveNow()
+      },
+      shareLink: () =>
+        encodeShareUrl(
+          useProjectStore.getState().project,
+          `${window.location.origin}${window.location.pathname}`,
+        ),
+      openShared: async (project) => {
         useProjectStore.getState().loadProject(project)
         useEditorStore.getState().setProjectId(createId('project'))
         await autosaveRef.current?.saveNow()

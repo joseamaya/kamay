@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
-import { usePersistence } from '../persistence'
+import { getMessages } from '../i18n'
+import { decodeSharePayload, readSharePayload, usePersistence } from '../persistence'
 import { useRuntime } from '../runtime'
 import { useEditorStore, usePreferencesEffects, useProjectStore } from '../store'
 import { ActionsPanel } from './actions/ActionsPanel'
@@ -20,6 +21,22 @@ export function App() {
   const setActiveSceneId = useEditorStore((state) => state.setActiveSceneId)
   const selectObject = useEditorStore((state) => state.selectObject)
   const setDirty = useEditorStore((state) => state.setDirty)
+  const pushLog = useEditorStore((state) => state.pushLog)
+
+  useEffect(() => {
+    if (!persistence.ready) return
+    const payload = readSharePayload(window.location.hash)
+    if (!payload) return
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`)
+    void decodeSharePayload(payload)
+      .then(async (shared) => {
+        await persistence.openShared(shared)
+        selectObject(null)
+        setDirty(false)
+        pushLog(getMessages().activity.sharedOpened)
+      })
+      .catch(() => pushLog(getMessages().errors.share, 'error'))
+  }, [persistence, selectObject, setDirty, pushLog])
 
   useEffect(() => {
     const exists = project.scenes.some((scene) => scene.id === activeSceneId)

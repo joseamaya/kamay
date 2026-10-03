@@ -11,10 +11,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Catalog**: more geometric shapes (rectangle, diamond, pentagon, hexagon,
   heart, star) and characters/things drawn as emoji (cat, dog, robot, rocket,
   apple, ball, tree, house), grouped into "Formas" and "Personajes y cosas".
+- **Share by link**: encode the project (gzip + base64url) in the URL hash and
+  open it as a new copy in another browser.
 
 ### Planned
 
-- Classroom features (missions, teacher mode, sharing, portfolio).
+- Classroom features (missions, auto-checked challenges, badges, projector mode,
+  teacher guides and portfolio).
 
 ## [0.1.0] - 2026-10-02
 
