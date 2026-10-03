@@ -125,8 +125,11 @@ test('saves and reopens a project from local storage', async ({ page }) => {
   await page.getByRole('button', { name: 'Nuevo' }).click()
   await expect(page.getByRole('button', { name: 'square1', exact: true })).toHaveCount(0)
 
-  await page.getByRole('button', { name: 'Abrir' }).click()
-  await page.getByRole('button', { name: 'Proyecto sin título' }).click()
+  await page.getByRole('button', { name: 'Portafolio' }).click()
+  await page
+    .getByRole('dialog', { name: 'Portafolio' })
+    .getByRole('button', { name: /^Proyecto sin título/ })
+    .click()
   await expect(page.getByRole('button', { name: 'square1', exact: true })).toBeVisible()
 })
 

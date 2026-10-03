@@ -23,7 +23,7 @@ import { Dialog } from '../../ui/Dialog'
 import { Select } from '../../ui/Select'
 import { MissionsDialog } from '../missions/MissionsDialog'
 import { TemplatesDialog } from '../templates/TemplatesDialog'
-import { OpenProjectDialog } from './OpenProjectDialog'
+import { PortfolioDialog } from './PortfolioDialog'
 
 export interface TopBarProps {
   persistence: PersistenceApi
@@ -38,6 +38,7 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
   const hasFuture = useProjectStore(canRedo)
   const projectName = useProjectStore((state) => state.project.meta.name)
   const loadProject = useProjectStore((state) => state.loadProject)
+  const renameProject = useProjectStore((state) => state.renameProject)
 
   const setProjectId = useEditorStore((state) => state.setProjectId)
   const selectObject = useEditorStore((state) => state.selectObject)
@@ -55,11 +56,13 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
   const projector = usePreferencesStore((state) => state.projector)
   const setProjector = usePreferencesStore((state) => state.setProjector)
 
-  const [openDialog, setOpenDialog] = useState(false)
+  const [portfolioOpen, setPortfolioOpen] = useState(false)
   const [missionsOpen, setMissionsOpen] = useState(false)
   const [templatesOpen, setTemplatesOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
   const [shareLink, setShareLink] = useState<string | null>(null)
+  const [renameOpen, setRenameOpen] = useState(false)
+  const [nameDraft, setNameDraft] = useState(projectName)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const guard = (run: () => void) => {
@@ -91,6 +94,22 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
     pushLog(messages.activity.exported)
   }
 
+  const handleDeliver = () => {
+    persistence.deliver()
+    pushLog(messages.activity.delivered)
+  }
+
+  const openRename = () => {
+    setNameDraft(projectName)
+    setRenameOpen(true)
+  }
+
+  const confirmRename = () => {
+    renameProject(nameDraft.trim() || messages.dialog.untitledProject)
+    setRenameOpen(false)
+    pushLog(messages.activity.renamed)
+  }
+
   const handleShare = async () => {
     try {
       setShareLink(await persistence.shareLink())
@@ -111,7 +130,7 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
   }
 
   const requestOpen = (id: string) => {
-    setOpenDialog(false)
+    setPortfolioOpen(false)
     guard(() => {
       void persistence.openProject(id).then(() => {
         selectObject(null)
@@ -154,10 +173,15 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
     <header className="border-border bg-card flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2">
       <div className="flex items-baseline gap-3">
         <span className="text-primary text-lg font-bold">{messages.app.name}</span>
-        <span className="text-muted-foreground hidden text-sm sm:inline">
+        <button
+          type="button"
+          onClick={openRename}
+          aria-label={messages.bar.renameProject}
+          className="text-muted-foreground hover:text-foreground hidden max-w-40 truncate text-sm hover:underline sm:inline"
+        >
           {projectName}
           {dirty ? ' •' : ''}
-        </span>
+        </button>
       </div>
 
       <div className="flex flex-wrap items-center gap-1">
@@ -167,10 +191,10 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setOpenDialog(true)}
+          onClick={() => setPortfolioOpen(true)}
           disabled={!persistence.ready}
         >
-          {messages.bar.open}
+          {messages.bar.portfolio}
         </Button>
         <Button
           variant="ghost"
@@ -182,6 +206,9 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
         </Button>
         <Button variant="ghost" size="sm" onClick={handleExport}>
           {messages.bar.export}
+        </Button>
+        <Button variant="ghost" size="sm" onClick={handleDeliver}>
+          {messages.bar.deliver}
         </Button>
         <Button variant="ghost" size="sm" onClick={() => fileInputRef.current?.click()}>
           {messages.bar.import}
@@ -258,10 +285,10 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
         onChange={handleImportFile}
       />
 
-      <OpenProjectDialog
-        open={openDialog}
+      <PortfolioDialog
+        open={portfolioOpen}
         persistence={persistence}
-        onClose={() => setOpenDialog(false)}
+        onClose={() => setPortfolioOpen(false)}
         onSelect={requestOpen}
       />
 
@@ -289,6 +316,28 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
           onFocus={(event) => event.currentTarget.select()}
           className="border-border bg-background text-foreground w-full rounded-md border px-2 py-1 text-xs"
         />
+      </Dialog>
+
+      <Dialog
+        open={renameOpen}
+        title={messages.dialog.renameProjectTitle}
+        confirmLabel={messages.bar.save}
+        cancelLabel={messages.dialog.cancel}
+        onCancel={() => setRenameOpen(false)}
+        onConfirm={confirmRename}
+      >
+        <label className="flex flex-col gap-1 text-xs">
+          <span className="text-muted-foreground">{messages.dialog.projectName}</span>
+          <input
+            autoFocus
+            value={nameDraft}
+            onChange={(event) => setNameDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') confirmRename()
+            }}
+            className="border-border bg-background text-foreground w-full rounded-md border px-2 py-1 text-sm"
+          />
+        </label>
       </Dialog>
 
       <Dialog
