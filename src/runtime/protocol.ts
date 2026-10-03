@@ -1,4 +1,10 @@
-import type { RuntimeCommand, RuntimeError, RuntimeStatus, TriggerKind } from './types'
+import type {
+  RuntimeCommand,
+  RuntimeError,
+  RuntimeStatus,
+  TriggerKind,
+  WarmupStatus,
+} from './types'
 
 export type WorkerRequest =
   | { type: 'preload' }
@@ -7,5 +13,6 @@ export type WorkerRequest =
 
 export type WorkerResponse =
   | { type: 'status'; status: RuntimeStatus }
+  | { type: 'warmup'; status: WarmupStatus }
   | { type: 'command'; command: RuntimeCommand }
   | { type: 'error'; error: RuntimeError }

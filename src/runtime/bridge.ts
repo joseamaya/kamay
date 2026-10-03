@@ -1,23 +1,40 @@
 import type { WorkerRequest, WorkerResponse } from './protocol'
-import type { RuntimeBridge, RuntimeCommand, RuntimeError, RuntimeStatus } from './types'
+import type {
+  RuntimeBridge,
+  RuntimeCommand,
+  RuntimeError,
+  RuntimeStatus,
+  WarmupStatus,
+} from './types'
 
 export function createRuntimeBridge(): RuntimeBridge {
   let worker: Worker | null = null
-  let status: RuntimeStatus = 'idle'
+  let warmup: WarmupStatus = 'idle'
   let readySettlers: Array<{ resolve: () => void; reject: (error: Error) => void }> = []
+  let warmupSettlers: Array<{ resolve: () => void; reject: (error: Error) => void }> = []
 
   const settleReady = (error?: Error) => {
     readySettlers.forEach((settler) => (error ? settler.reject(error) : settler.resolve()))
     readySettlers = []
   }
 
+  const settleWarmup = (error?: Error) => {
+    warmupSettlers.forEach((settler) => (error ? settler.reject(error) : settler.resolve()))
+    warmupSettlers = []
+  }
+
   const commandListeners = new Set<(command: RuntimeCommand) => void>()
   const errorListeners = new Set<(error: RuntimeError) => void>()
   const statusListeners = new Set<(status: RuntimeStatus) => void>()
+  const warmupListeners = new Set<(status: WarmupStatus) => void>()
 
   const setStatus = (next: RuntimeStatus) => {
-    status = next
     statusListeners.forEach((listener) => listener(next))
+  }
+
+  const setWarmup = (next: WarmupStatus) => {
+    warmup = next
+    warmupListeners.forEach((listener) => listener(next))
   }
 
   const ensureWorker = (): Worker => {
@@ -32,6 +49,9 @@ export function createRuntimeBridge(): RuntimeBridge {
       else if (message.type === 'status') {
         setStatus(message.status)
         if (message.status === 'ready') settleReady()
+      } else if (message.type === 'warmup') {
+        setWarmup(message.status)
+        if (message.status === 'ready' || message.status === 'idle') settleWarmup()
       }
     }
     return worker
@@ -40,9 +60,9 @@ export function createRuntimeBridge(): RuntimeBridge {
   return {
     preload: () => {
       const current = ensureWorker()
-      if (status === 'ready') return Promise.resolve()
+      if (warmup === 'ready') return Promise.resolve()
       return new Promise<void>((resolve, reject) => {
-        readySettlers.push({ resolve, reject })
+        warmupSettlers.push({ resolve, reject })
         current.postMessage({ type: 'preload' } satisfies WorkerRequest)
       })
     },
@@ -56,7 +76,9 @@ export function createRuntimeBridge(): RuntimeBridge {
       worker?.terminate()
       worker = null
       settleReady(new Error('runtime_stopped'))
+      settleWarmup(new Error('runtime_stopped'))
       setStatus('idle')
+      setWarmup('idle')
     },
     onCommand: (listener) => {
       commandListeners.add(listener)
@@ -69,6 +91,10 @@ export function createRuntimeBridge(): RuntimeBridge {
     onStatus: (listener) => {
       statusListeners.add(listener)
       return () => statusListeners.delete(listener)
+    },
+    onWarmup: (listener) => {
+      warmupListeners.add(listener)
+      return () => warmupListeners.delete(listener)
     },
   }
 }

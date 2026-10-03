@@ -14,7 +14,8 @@ export default defineConfig({
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    command: `pnpm dev --port ${PORT}`,
+    // E2E must not auto-download Pyodide; the opt-in suite loads it explicitly.
+    command: `VITE_KAMAY_DISABLE_PRELOAD=1 pnpm dev --port ${PORT}`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
