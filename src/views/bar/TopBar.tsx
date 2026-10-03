@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
 import type { ChangeEventHandler } from 'react'
 
-import { getMessages } from '../../i18n'
+import { format, getMessages } from '../../i18n'
+import { MISSIONS } from '../../missions'
 import { createEmptyProject, createId } from '../../model'
 import type { PersistenceApi } from '../../persistence'
 import type { RuntimeApi } from '../../runtime'
@@ -10,6 +11,7 @@ import {
   canUndo,
   useEditorStore,
   usePreferencesStore,
+  useProgressStore,
   useProjectStore,
   useRuntimeStore,
 } from '../../store'
@@ -17,6 +19,7 @@ import type { FontScale } from '../../store'
 import { Button } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
 import { Select } from '../../ui/Select'
+import { MissionsDialog } from '../missions/MissionsDialog'
 import { OpenProjectDialog } from './OpenProjectDialog'
 
 export interface TopBarProps {
@@ -45,8 +48,10 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
   const setTheme = usePreferencesStore((state) => state.setTheme)
   const fontScale = usePreferencesStore((state) => state.fontScale)
   const setFontScale = usePreferencesStore((state) => state.setFontScale)
+  const completedMissions = useProgressStore((state) => state.completed)
 
   const [openDialog, setOpenDialog] = useState(false)
+  const [missionsOpen, setMissionsOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
   const [shareLink, setShareLink] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -164,6 +169,12 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
         <Button variant="ghost" size="sm" onClick={() => void handleShare()}>
           {messages.bar.share}
         </Button>
+        <Button variant="ghost" size="sm" onClick={() => setMissionsOpen(true)}>
+          {format(messages.bar.missions, {
+            done: completedMissions.length,
+            total: MISSIONS.length,
+          })}
+        </Button>
 
         <span className="bg-border mx-1 h-5 w-px" aria-hidden="true" />
 
@@ -221,6 +232,8 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
         onClose={() => setOpenDialog(false)}
         onSelect={requestOpen}
       />
+
+      <MissionsDialog open={missionsOpen} onClose={() => setMissionsOpen(false)} />
 
       <Dialog
         open={shareLink !== null}

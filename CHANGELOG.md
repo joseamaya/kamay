@@ -13,11 +13,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   apple, ball, tree, house), grouped into "Formas" and "Personajes y cosas".
 - **Share by link**: encode the project (gzip + base64url) in the URL hash and
   open it as a new copy in another browser.
+- **Missions and badges**: eleven auto-checked goals over the project model
+  (objects, orders, own classes, inheritance, events, sequences) with six
+  concept badges and local progress.
 
 ### Planned
 
-- Classroom features (missions, auto-checked challenges, badges, projector mode,
-  teacher guides and portfolio).
+- Classroom features (projector mode, teacher guides and portfolio).
 
 ## [0.1.0] - 2026-10-02
 

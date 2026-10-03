@@ -1,9 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
-import { getMessages } from '../i18n'
+import { format, getMessages } from '../i18n'
+import { evaluateMissions } from '../missions'
 import { decodeSharePayload, readSharePayload, usePersistence } from '../persistence'
 import { useRuntime } from '../runtime'
-import { useEditorStore, usePreferencesEffects, useProjectStore } from '../store'
+import { useEditorStore, usePreferencesEffects, useProgressStore, useProjectStore } from '../store'
 import { ActionsPanel } from './actions/ActionsPanel'
 import { ActivityPanel } from './activity/ActivityPanel'
 import { TopBar } from './bar/TopBar'
@@ -22,6 +23,20 @@ export function App() {
   const selectObject = useEditorStore((state) => state.selectObject)
   const setDirty = useEditorStore((state) => state.setDirty)
   const pushLog = useEditorStore((state) => state.pushLog)
+  const missionsInitialized = useRef(false)
+
+  useEffect(() => {
+    const messages = getMessages()
+    const { completed, complete } = useProgressStore.getState()
+    for (const id of evaluateMissions(project)) {
+      if (completed.includes(id)) continue
+      complete(id)
+      if (missionsInitialized.current) {
+        pushLog(format(messages.missions.completed, { title: messages.missions.list[id].title }))
+      }
+    }
+    missionsInitialized.current = true
+  }, [project, pushLog])
 
   useEffect(() => {
     if (!persistence.ready) return
