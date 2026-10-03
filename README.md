@@ -42,9 +42,13 @@ The project is in **Phase 3 — blocks, scenes, inheritance, events and physics*
   **share by link** (the project travels encoded in the URL).
 - **Missions and badges**: short auto-checked goals ("add an object", "create
   your own class", "use inheritance") with progress kept locally.
+- **Templates**: ready-to-use classroom starting points (greeting, collision,
+  own class, inheritance, physics).
+- **Projector mode**: high-contrast theme with larger text for explaining in
+  class.
 - **Undo/redo** and error messages in Spanish.
 
-Pending (Phase 4): projector mode and teacher guides, and a project portfolio.
+Pending (Phase 4): a project portfolio.
 
 ## Accessibility
 

@@ -4,7 +4,12 @@ import { usePreferencesStore } from './preferencesStore'
 
 beforeEach(() => {
   localStorage.clear()
-  usePreferencesStore.setState({ theme: 'light', fontScale: 'normal', reducedMotion: false })
+  usePreferencesStore.setState({
+    theme: 'light',
+    fontScale: 'normal',
+    reducedMotion: false,
+    projector: false,
+  })
 })
 
 describe('usePreferencesStore', () => {
@@ -13,7 +18,15 @@ describe('usePreferencesStore', () => {
     usePreferencesStore.getState().setFontScale('large')
 
     const stored = JSON.parse(localStorage.getItem('kamay.preferences')!)
-    expect(stored).toEqual({ theme: 'dark', fontScale: 'large' })
+    expect(stored).toEqual({ theme: 'dark', fontScale: 'large', projector: false })
+  })
+
+  it('updates and persists the projector preference', () => {
+    usePreferencesStore.getState().setProjector(true)
+
+    expect(usePreferencesStore.getState().projector).toBe(true)
+    const stored = JSON.parse(localStorage.getItem('kamay.preferences')!)
+    expect(stored).toEqual({ theme: 'light', fontScale: 'normal', projector: true })
   })
 
   it('tracks reduced motion without persisting it', () => {
@@ -22,6 +35,6 @@ describe('usePreferencesStore', () => {
 
     expect(usePreferencesStore.getState().reducedMotion).toBe(true)
     const stored = JSON.parse(localStorage.getItem('kamay.preferences')!)
-    expect(stored).toEqual({ theme: 'dark', fontScale: 'normal' })
+    expect(stored).toEqual({ theme: 'dark', fontScale: 'normal', projector: false })
   })
 })

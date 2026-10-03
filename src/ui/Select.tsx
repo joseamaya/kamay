@@ -13,10 +13,19 @@ export interface SelectProps {
   value: string
   options: SelectOption[]
   className?: string
+  disabled?: boolean
   onChange: (value: string) => void
 }
 
-export function Select({ label, ariaLabel, value, options, className, onChange }: SelectProps) {
+export function Select({
+  label,
+  ariaLabel,
+  value,
+  options,
+  className,
+  disabled,
+  onChange,
+}: SelectProps) {
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
     onChange(event.target.value)
   }
@@ -27,8 +36,9 @@ export function Select({ label, ariaLabel, value, options, className, onChange }
       <select
         aria-label={ariaLabel}
         value={value}
+        disabled={disabled}
         onChange={handleChange}
-        className="border-border bg-background focus-visible:ring-ring h-8 rounded-md border px-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+        className="border-border bg-background focus-visible:ring-ring h-8 rounded-md border px-2 text-sm focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>

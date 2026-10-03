@@ -11,6 +11,8 @@ export const es = {
     import: 'Importar',
     share: 'Compartir',
     missions: 'Misiones {done}/{total}',
+    templates: 'Plantillas',
+    projector: 'Proyector',
     undo: 'Deshacer',
     redo: 'Rehacer',
     newProject: 'Nuevo',
@@ -157,6 +159,33 @@ export const es = {
     toggle: 'Física',
     gravity: 'Gravedad',
   },
+  templates: {
+    title: 'Plantillas',
+    description: 'Empieza desde un ejemplo listo para clase.',
+    use: 'Usar plantilla',
+    list: {
+      hello: {
+        title: 'Saludo',
+        description: 'Un objeto que saluda al iniciar.',
+      },
+      chase: {
+        title: 'Choque',
+        description: 'Dos objetos que reaccionan al chocar.',
+      },
+      own_class: {
+        title: 'Mi clase',
+        description: 'Una clase propia con atributo y método.',
+      },
+      inheritance: {
+        title: 'Herencia',
+        description: 'Una clase que hereda de otra.',
+      },
+      physics: {
+        title: 'Física',
+        description: 'Un objeto que cae por gravedad.',
+      },
+    },
+  },
   missions: {
     title: 'Misiones',
     completed: '¡Misión completada: {title}!',
@@ -293,6 +322,7 @@ export const es = {
     exported: 'Proyecto exportado.',
     opened: 'Proyecto abierto.',
     sharedOpened: 'Proyecto compartido abierto.',
+    templateLoaded: 'Plantilla cargada.',
     objectAdded: 'Objeto agregado.',
     objectRemoved: 'Objeto eliminado.',
     objectDuplicated: 'Objeto duplicado.',
