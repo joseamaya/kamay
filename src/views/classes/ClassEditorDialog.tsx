@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 
 import { getMessages } from '../../i18n'
 import {
-  ACTOR_CATALOG,
+  ACTOR_SHAPES,
   availableBaseClasses,
   BASE_CLASS,
   createClassDraft,
@@ -52,9 +52,9 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
     { value: 'string', label: messages.types.string },
     { value: 'boolean', label: messages.types.boolean },
   ]
-  const shapeOptions = ACTOR_CATALOG.map((item) => ({
-    value: item.shape,
-    label: messages.catalog[item.shape],
+  const shapeOptions = ACTOR_SHAPES.map((shape) => ({
+    value: shape,
+    label: messages.shapes[shape],
   }))
   const baseOptions = availableBaseClasses(scene, draft).map((name) => ({
     value: name,

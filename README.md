@@ -15,7 +15,10 @@ English.
 
 The project is in **Phase 3 — blocks, scenes, inheritance, events and physics**. Working today:
 
-- **Factory**: add and remove objects from the catalog (circle, square, triangle).
+- **Factory**: add and remove objects from the catalog: geometric shapes
+  (circle, square, triangle, rectangle, diamond, pentagon, hexagon, heart,
+  star) and characters/things drawn as emoji (cat, dog, robot, rocket, apple,
+  ball, tree, house).
 - **Classes**: create your own classes with attributes and methods, instantiate
   several objects from them and inherit from another class.
 - **Scenes**: create, rename, switch and delete scenes; the stage and the

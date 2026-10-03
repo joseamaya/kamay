@@ -16,6 +16,7 @@ export interface Actor {
   id: string
   name: string
   shape: ActorShape
+  glyph?: string
   color: string
   transform: Transform
   zIndex: number

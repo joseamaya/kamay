@@ -1,19 +1,94 @@
 import { createId } from './ids'
-import type { Action, ClassDefinition, EventType, ObjectInstance, Project, Scene } from './schema'
+import type {
+  Action,
+  Attribute,
+  ClassDefinition,
+  EventType,
+  ObjectInstance,
+  Project,
+  Scene,
+} from './schema'
 
-export type ActorShape = 'circle' | 'square' | 'triangle'
+export type ActorShape =
+  | 'circle'
+  | 'square'
+  | 'triangle'
+  | 'rectangle'
+  | 'diamond'
+  | 'pentagon'
+  | 'hexagon'
+  | 'heart'
+  | 'star'
+
+export const ACTOR_SHAPES: ActorShape[] = [
+  'circle',
+  'square',
+  'triangle',
+  'rectangle',
+  'diamond',
+  'pentagon',
+  'hexagon',
+  'heart',
+  'star',
+]
+
+export type CatalogKind = 'shape' | 'glyph'
 
 export interface CatalogItem {
   id: string
   className: string
+  kind: CatalogKind
   shape: ActorShape
+  glyph?: string
   color: string
 }
 
 export const ACTOR_CATALOG: CatalogItem[] = [
-  { id: 'circle', className: 'Circle', shape: 'circle', color: '#e2603a' },
-  { id: 'square', className: 'Square', shape: 'square', color: '#e0a23c' },
-  { id: 'triangle', className: 'Triangle', shape: 'triangle', color: '#3f9a86' },
+  { id: 'circle', className: 'Circle', kind: 'shape', shape: 'circle', color: '#e2603a' },
+  { id: 'square', className: 'Square', kind: 'shape', shape: 'square', color: '#e0a23c' },
+  { id: 'triangle', className: 'Triangle', kind: 'shape', shape: 'triangle', color: '#3f9a86' },
+  { id: 'rectangle', className: 'Rectangle', kind: 'shape', shape: 'rectangle', color: '#5b8def' },
+  { id: 'diamond', className: 'Diamond', kind: 'shape', shape: 'diamond', color: '#9b6dd6' },
+  { id: 'pentagon', className: 'Pentagon', kind: 'shape', shape: 'pentagon', color: '#d66d9b' },
+  { id: 'hexagon', className: 'Hexagon', kind: 'shape', shape: 'hexagon', color: '#3f9a86' },
+  { id: 'heart', className: 'Heart', kind: 'shape', shape: 'heart', color: '#e2603a' },
+  { id: 'star', className: 'Star', kind: 'shape', shape: 'star', color: '#e0a23c' },
+  { id: 'cat', className: 'Cat', kind: 'glyph', shape: 'circle', glyph: '🐱', color: '#e0a23c' },
+  { id: 'dog', className: 'Dog', kind: 'glyph', shape: 'circle', glyph: '🐶', color: '#c98a4b' },
+  {
+    id: 'robot',
+    className: 'Robot',
+    kind: 'glyph',
+    shape: 'circle',
+    glyph: '🤖',
+    color: '#8f9aa8',
+  },
+  {
+    id: 'rocket',
+    className: 'Rocket',
+    kind: 'glyph',
+    shape: 'circle',
+    glyph: '🚀',
+    color: '#5b8def',
+  },
+  {
+    id: 'apple',
+    className: 'Apple',
+    kind: 'glyph',
+    shape: 'circle',
+    glyph: '🍎',
+    color: '#d64b4b',
+  },
+  { id: 'ball', className: 'Ball', kind: 'glyph', shape: 'circle', glyph: '⚽', color: '#3f9a86' },
+  { id: 'tree', className: 'Tree', kind: 'glyph', shape: 'circle', glyph: '🌳', color: '#3f9a86' },
+  {
+    id: 'house',
+    className: 'House',
+    kind: 'glyph',
+    shape: 'circle',
+    glyph: '🏠',
+    color: '#c98a4b',
+  },
 ]
 
 export const BASE_CLASS = 'Actor'
@@ -35,19 +110,21 @@ export function findCatalogItem(id: string): CatalogItem | undefined {
 }
 
 export function isActorShape(value: unknown): value is ActorShape {
-  return value === 'circle' || value === 'square' || value === 'triangle'
+  return typeof value === 'string' && (ACTOR_SHAPES as string[]).includes(value)
 }
 
 export function catalogClass(item: CatalogItem): ClassDefinition {
+  const attributes: Attribute[] = [
+    { name: 'color', type: 'string', initial: item.color },
+    { name: 'shape', type: 'string', initial: item.shape },
+  ]
+  if (item.glyph) attributes.push({ name: 'glyph', type: 'string', initial: item.glyph })
   return {
     id: createId('class'),
     name: item.className,
     inherits: BASE_CLASS,
     image: null,
-    attributes: [
-      { name: 'color', type: 'string', initial: item.color },
-      { name: 'shape', type: 'string', initial: item.shape },
-    ],
+    attributes,
     methods: [],
   }
 }
@@ -74,7 +151,11 @@ export function createObject(
 }
 
 export function createObjectFromCatalog(scene: Scene, item: CatalogItem): ObjectInstance {
-  return createObject(scene, item.className, { color: item.color, shape: item.shape })
+  return createObject(scene, item.className, {
+    color: item.color,
+    shape: item.shape,
+    ...(item.glyph ? { glyph: item.glyph } : {}),
+  })
 }
 
 /** Adds the catalog object (and its class if missing) to the scene. */
