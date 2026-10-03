@@ -4,6 +4,7 @@ import { generatePython } from '../generator'
 import { useEditorStore, useProjectStore, useRuntimeStore } from '../store'
 import { createRuntimeBridge } from './bridge'
 import { emitRuntimeCommand, emitRuntimeReset, onRuntimeTrigger } from './bus'
+import { scheduleWarmup } from './warmup'
 
 export interface RuntimeApi {
   run: () => void
@@ -14,6 +15,7 @@ export function useRuntime(): RuntimeApi {
   const [bridge] = useState(createRuntimeBridge)
 
   const setStatus = useRuntimeStore((state) => state.setStatus)
+  const setWarmup = useRuntimeStore((state) => state.setWarmup)
   const setError = useRuntimeStore((state) => state.setError)
 
   useEffect(() => {
@@ -29,6 +31,20 @@ export function useRuntime(): RuntimeApi {
       bridge.stop()
     }
   }, [bridge, setStatus, setError])
+
+  useEffect(() => {
+    const offWarmup = bridge.onWarmup(setWarmup)
+    const cancel = scheduleWarmup({
+      disabled: import.meta.env.VITE_KAMAY_DISABLE_PRELOAD === '1',
+      preload: () => {
+        void bridge.preload().catch(() => undefined)
+      },
+    })
+    return () => {
+      offWarmup()
+      cancel()
+    }
+  }, [bridge, setWarmup])
 
   const run = useCallback(() => {
     const project = useProjectStore.getState().project

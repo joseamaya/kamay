@@ -15,6 +15,9 @@ export interface RuntimeError {
 
 export type RuntimeStatus = 'idle' | 'loading' | 'ready' | 'running' | 'error'
 
+/** Background warmup of Pyodide, tracked separately from the run lifecycle. */
+export type WarmupStatus = 'idle' | 'loading' | 'ready'
+
 export type TriggerKind = 'click' | 'collision' | 'key'
 
 export interface RuntimeBridge {
@@ -29,4 +32,5 @@ export interface RuntimeBridge {
   onCommand: (listener: (command: RuntimeCommand) => void) => () => void
   onError: (listener: (error: RuntimeError) => void) => () => void
   onStatus: (listener: (status: RuntimeStatus) => void) => () => void
+  onWarmup: (listener: (status: WarmupStatus) => void) => () => void
 }

@@ -24,7 +24,6 @@ function post(message: WorkerResponse): void {
 
 async function ensurePyodide(): Promise<PyodideLike> {
   if (!pyodidePromise) {
-    post({ type: 'status', status: 'loading' })
     pyodidePromise = (async () => {
       const module = (await import(/* @vite-ignore */ `${PYODIDE_CDN}pyodide.mjs`)) as {
         loadPyodide: (options: { indexURL: string }) => Promise<PyodideLike>
@@ -33,6 +32,13 @@ async function ensurePyodide(): Promise<PyodideLike> {
     })()
   }
   return pyodidePromise
+}
+
+function preload(): void {
+  post({ type: 'warmup', status: 'loading' })
+  ensurePyodide()
+    .then(() => post({ type: 'warmup', status: 'ready' }))
+    .catch(() => post({ type: 'warmup', status: 'idle' }))
 }
 
 function handleTrigger(kind: TriggerKind, source: string): void {
@@ -45,6 +51,7 @@ function handleTrigger(kind: TriggerKind, source: string): void {
 
 async function run(files: Record<string, string>, entry: string): Promise<void> {
   knownFiles = new Set(Object.keys(files))
+  post({ type: 'status', status: 'loading' })
   try {
     const pyodide = await ensurePyodide()
 
@@ -93,7 +100,7 @@ for _name in [name for name, module in list(sys.modules.items()) if getattr(modu
 self.onmessage = (event: MessageEvent<WorkerRequest>) => {
   const request = event.data
   if (request.type === 'preload') {
-    void ensurePyodide()
+    preload()
   } else if (request.type === 'run') {
     void run(request.files, request.entry)
   } else if (request.type === 'trigger') {

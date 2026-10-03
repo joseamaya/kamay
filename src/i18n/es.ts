@@ -15,6 +15,7 @@ export const es = {
     missions: 'Misiones {done}/{total}',
     templates: 'Plantillas',
     projector: 'Proyector',
+    preparing: 'Preparando Python…',
     undo: 'Deshacer',
     redo: 'Rehacer',
     newProject: 'Nuevo',

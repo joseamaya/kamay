@@ -47,6 +47,7 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
   const dirty = useEditorStore((state) => state.dirty)
   const setDirty = useEditorStore((state) => state.setDirty)
   const runtimeStatus = useRuntimeStore((state) => state.status)
+  const warmup = useRuntimeStore((state) => state.warmup)
   const isRunning = runtimeStatus === 'loading' || runtimeStatus === 'running'
   const theme = usePreferencesStore((state) => state.theme)
   const setTheme = usePreferencesStore((state) => state.setTheme)
@@ -234,6 +235,11 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
         <Button variant="ghost" size="sm" onClick={redo} disabled={!hasFuture}>
           {messages.bar.redo}
         </Button>
+        {warmup === 'loading' && runtimeStatus === 'idle' ? (
+          <span aria-live="polite" className="text-muted-foreground hidden text-xs sm:inline">
+            {messages.bar.preparing}
+          </span>
+        ) : null}
         {isRunning ? (
           <Button variant="secondary" size="sm" onClick={runtime.stop}>
             {messages.bar.stop}

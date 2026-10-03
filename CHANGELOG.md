@@ -28,6 +28,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the project); it renders on the stage without appearing in the generated code.
 - **Themed worlds**: procedural backgrounds (forest, desert, space, city) on top
   of the flat colors.
+- **Background warmup**: Pyodide is preloaded during idle time through a warmup
+  channel kept separate from the run lifecycle, so the first run is fast.
 
 ### Planned
 
