@@ -37,14 +37,17 @@ async function gunzip(input: Uint8Array): Promise<Uint8Array> {
 
 export async function encodeSharePayload(project: Project): Promise<string> {
   const bytes = new TextEncoder().encode(JSON.stringify(project))
+  let payload: string | null = null
   if (typeof CompressionStream !== 'undefined') {
     try {
-      return `${GZIP_PREFIX}${toBase64Url(await gzip(bytes))}`
+      payload = `${GZIP_PREFIX}${toBase64Url(await gzip(bytes))}`
     } catch {
       // Fall back to the uncompressed form when gzip is unavailable.
     }
   }
-  return `${PLAIN_PREFIX}${toBase64Url(bytes)}`
+  if (!payload) payload = `${PLAIN_PREFIX}${toBase64Url(bytes)}`
+  if (payload.length > MAX_SHARE_LENGTH) throw new ProjectImportError(['too_large'])
+  return payload
 }
 
 export async function decodeSharePayload(payload: string): Promise<Project> {

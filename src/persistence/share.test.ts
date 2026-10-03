@@ -25,6 +25,18 @@ describe('encodeSharePayload / decodeSharePayload', () => {
     }
   })
 
+  it('refuses to encode a project that would not fit in a link', async () => {
+    const globals = globalThis as unknown as Record<string, unknown>
+    const original = globals.CompressionStream
+    globals.CompressionStream = undefined
+    try {
+      const project = createEmptyProject({ name: 'a'.repeat(800_000) })
+      await expect(encodeSharePayload(project)).rejects.toThrow(ProjectImportError)
+    } finally {
+      globals.CompressionStream = original
+    }
+  })
+
   it('rejects empty, unknown and oversized payloads', async () => {
     await expect(decodeSharePayload('')).rejects.toThrow(ProjectImportError)
     await expect(decodeSharePayload('x.abc')).rejects.toThrow(ProjectImportError)
