@@ -7,10 +7,12 @@ export const DEFAULT_COLOR = '#e2603a'
 
 export function toActor(object: ObjectInstance, zIndex: number): Actor {
   const shape = object.attributes.shape
+  const glyph = readString(object.attributes, 'glyph', '')
   return {
     id: object.id,
     name: object.name,
     shape: isActorShape(shape) ? shape : DEFAULT_SHAPE,
+    glyph: glyph || undefined,
     color: readString(object.attributes, 'color', DEFAULT_COLOR),
     transform: {
       position: {

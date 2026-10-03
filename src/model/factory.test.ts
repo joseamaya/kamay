@@ -15,10 +15,35 @@ import {
 } from './index'
 
 const circle = ACTOR_CATALOG.find((item) => item.id === 'circle')!
+const cat = ACTOR_CATALOG.find((item) => item.id === 'cat')!
 
 describe('ACTOR_CATALOG', () => {
   it('exposes the geometric primitives', () => {
-    expect(ACTOR_CATALOG.map((item) => item.id)).toEqual(['circle', 'square', 'triangle'])
+    expect(ACTOR_CATALOG.filter((item) => item.kind === 'shape').map((item) => item.id)).toEqual([
+      'circle',
+      'square',
+      'triangle',
+      'rectangle',
+      'diamond',
+      'pentagon',
+      'hexagon',
+      'heart',
+      'star',
+    ])
+  })
+
+  it('exposes characters and things as glyphs', () => {
+    expect(ACTOR_CATALOG.filter((item) => item.kind === 'glyph').map((item) => item.id)).toEqual([
+      'cat',
+      'dog',
+      'robot',
+      'rocket',
+      'apple',
+      'ball',
+      'tree',
+      'house',
+    ])
+    expect(cat.glyph).toBe('🐱')
   })
 })
 
@@ -44,6 +69,17 @@ describe('addCatalogObject', () => {
       shape: 'circle',
       color: circle.color,
     })
+  })
+
+  it('seeds the glyph attribute for characters and things', () => {
+    const scene = addCatalogObject(createScene('Principal'), cat)
+    expect(scene.classes[0]?.name).toBe('Cat')
+    expect(scene.classes[0]?.attributes).toContainEqual({
+      name: 'glyph',
+      type: 'string',
+      initial: '🐱',
+    })
+    expect(scene.objects[0]?.attributes.glyph).toBe('🐱')
   })
 })
 

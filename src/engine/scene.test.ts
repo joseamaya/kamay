@@ -8,8 +8,18 @@ describe('toActor', () => {
     const actor = toActor({ id: 'a', name: 'a', class: 'Circle', attributes: {} }, 0)
 
     expect(actor.shape).toBe(DEFAULT_SHAPE)
+    expect(actor.glyph).toBeUndefined()
     expect(actor.color).toBe(DEFAULT_COLOR)
     expect(actor.transform).toEqual({ position: { x: 0, y: 0 }, rotation: 0, scale: 1 })
+  })
+
+  it('reads the glyph attribute when present', () => {
+    const actor = toActor(
+      { id: 'a', name: 'a', class: 'Cat', attributes: { shape: 'circle', glyph: '🐱' } },
+      0,
+    )
+
+    expect(actor.glyph).toBe('🐱')
   })
 
   it('reads visual attributes from the object', () => {

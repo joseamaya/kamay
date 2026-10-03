@@ -10,17 +10,37 @@ import { Panel } from '../../ui/Panel'
 import { ClassEditorDialog } from '../classes/ClassEditorDialog'
 import { SceneManager } from '../scenes/SceneManager'
 
-function ShapePreview({ shape, color }: { shape: ActorShape; color: string }) {
-  const style = { backgroundColor: color }
-  if (shape === 'square') return <span className="h-6 w-6 rounded-sm" style={style} />
-  if (shape === 'triangle') {
+const CLIP_PATHS: Partial<Record<ActorShape, string>> = {
+  triangle: 'polygon(50% 0, 100% 100%, 0 100%)',
+  diamond: 'polygon(50% 0, 100% 50%, 50% 100%, 0 50%)',
+  pentagon: 'polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%)',
+  hexagon: 'polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%)',
+  star: 'polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
+}
+
+function ShapePreview({ item }: { item: CatalogItem }) {
+  if (item.kind === 'glyph') {
     return (
-      <span
-        className="h-6 w-6"
-        style={{ ...style, clipPath: 'polygon(50% 0, 100% 100%, 0 100%)' }}
-      />
+      <span className="flex h-6 w-6 items-center justify-center text-lg leading-none">
+        {item.glyph}
+      </span>
     )
   }
+  const style = { backgroundColor: item.color }
+  if (item.shape === 'heart') {
+    return (
+      <span
+        className="flex h-6 w-6 items-center justify-center text-lg leading-none"
+        style={{ color: item.color }}
+      >
+        ♥
+      </span>
+    )
+  }
+  const clipPath = CLIP_PATHS[item.shape]
+  if (clipPath) return <span className="h-6 w-6" style={{ ...style, clipPath }} />
+  if (item.shape === 'rectangle') return <span className="h-4 w-6 rounded-sm" style={style} />
+  if (item.shape === 'square') return <span className="h-6 w-6 rounded-sm" style={style} />
   return <span className="h-6 w-6 rounded-full" style={style} />
 }
 
@@ -42,11 +62,17 @@ export function FactoryView() {
   const [blockedClass, setBlockedClass] = useState<{ name: string; reasons: string[] } | null>(null)
   const [editorClass, setEditorClass] = useState<ClassDefinition | null | undefined>(undefined)
 
-  const catalogLabels: Record<string, string> = {
-    circle: messages.catalog.circle,
-    square: messages.catalog.square,
-    triangle: messages.catalog.triangle,
-  }
+  const catalogLabels: Record<string, string> = messages.catalog
+  const catalogGroups = [
+    {
+      title: messages.factory.catalogShapes,
+      items: ACTOR_CATALOG.filter((item) => item.kind === 'shape'),
+    },
+    {
+      title: messages.factory.catalogCharacters,
+      items: ACTOR_CATALOG.filter((item) => item.kind === 'glyph'),
+    },
+  ]
 
   if (!scene) return null
   const pendingDelete = scene.objects.find((object) => object.id === pendingDeleteId) ?? null
@@ -92,27 +118,31 @@ export function FactoryView() {
       <div className="flex h-full flex-col gap-4">
         <SceneManager />
 
-        <div>
-          <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-            {messages.factory.catalogTitle}
-          </h3>
-          <div className="grid grid-cols-3 gap-2">
-            {ACTOR_CATALOG.map((item) => {
-              const label = catalogLabels[item.id] ?? item.className
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  aria-label={format(messages.factory.addObject, { name: label })}
-                  onClick={() => handleAdd(item)}
-                  className="border-border hover:bg-muted focus-visible:ring-ring flex flex-col items-center gap-1 rounded-md border p-2 transition focus-visible:ring-2 focus-visible:outline-none"
-                >
-                  <ShapePreview shape={item.shape} color={item.color} />
-                  <span className="text-xs">{label}</span>
-                </button>
-              )
-            })}
-          </div>
+        <div className="flex flex-col gap-3">
+          {catalogGroups.map((group) => (
+            <div key={group.title}>
+              <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
+                {group.title}
+              </h3>
+              <div className="grid grid-cols-3 gap-2">
+                {group.items.map((item) => {
+                  const label = catalogLabels[item.id] ?? item.className
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      aria-label={format(messages.factory.addObject, { name: label })}
+                      onClick={() => handleAdd(item)}
+                      className="border-border hover:bg-muted focus-visible:ring-ring flex flex-col items-center gap-1 rounded-md border p-2 transition focus-visible:ring-2 focus-visible:outline-none"
+                    >
+                      <ShapePreview item={item} />
+                      <span className="text-xs">{label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </div>
 
         <div>

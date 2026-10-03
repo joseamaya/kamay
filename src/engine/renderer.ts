@@ -30,6 +30,47 @@ export function sceneToScreen(
   }
 }
 
+const GLYPH_FONT = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'
+
+function polygon(ctx: CanvasRenderingContext2D, sides: number, radius: number): void {
+  for (let i = 0; i < sides; i += 1) {
+    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / sides
+    const x = Math.cos(angle) * radius
+    const y = Math.sin(angle) * radius
+    if (i === 0) ctx.moveTo(x, y)
+    else ctx.lineTo(x, y)
+  }
+  ctx.closePath()
+}
+
+function star(ctx: CanvasRenderingContext2D, radius: number): void {
+  const inner = radius * 0.42
+  for (let i = 0; i < 10; i += 1) {
+    const point = i % 2 === 0 ? radius : inner
+    const angle = -Math.PI / 2 + (i * Math.PI) / 5
+    const x = Math.cos(angle) * point
+    const y = Math.sin(angle) * point
+    if (i === 0) ctx.moveTo(x, y)
+    else ctx.lineTo(x, y)
+  }
+  ctx.closePath()
+}
+
+function heart(ctx: CanvasRenderingContext2D, radius: number): void {
+  const top = -radius * 0.6
+  ctx.moveTo(0, radius * 0.8)
+  ctx.bezierCurveTo(
+    radius * 1.1,
+    radius * 0.1,
+    radius * 0.6,
+    top - radius * 0.3,
+    0,
+    top + radius * 0.2,
+  )
+  ctx.bezierCurveTo(-radius * 0.6, top - radius * 0.3, -radius * 1.1, radius * 0.1, 0, radius * 0.8)
+  ctx.closePath()
+}
+
 function drawShape(ctx: CanvasRenderingContext2D, shape: ActorShape, size: number): void {
   const radius = size / 2
   ctx.beginPath()
@@ -37,11 +78,20 @@ function drawShape(ctx: CanvasRenderingContext2D, shape: ActorShape, size: numbe
     ctx.arc(0, 0, radius, 0, Math.PI * 2)
   } else if (shape === 'square') {
     ctx.rect(-radius, -radius, size, size)
+  } else if (shape === 'rectangle') {
+    ctx.rect(-radius, -radius * 0.6, size, size * 0.6)
+  } else if (shape === 'triangle') {
+    polygon(ctx, 3, radius)
+  } else if (shape === 'diamond') {
+    polygon(ctx, 4, radius)
+  } else if (shape === 'pentagon') {
+    polygon(ctx, 5, radius)
+  } else if (shape === 'hexagon') {
+    polygon(ctx, 6, radius)
+  } else if (shape === 'star') {
+    star(ctx, radius)
   } else {
-    ctx.moveTo(0, -radius)
-    ctx.lineTo(radius, radius)
-    ctx.lineTo(-radius, radius)
-    ctx.closePath()
+    heart(ctx, radius)
   }
   ctx.fill()
 }
@@ -53,7 +103,14 @@ function renderActor(ctx: CanvasRenderingContext2D, actor: Actor, options: Rende
   ctx.rotate((-actor.transform.rotation * Math.PI) / 180)
   ctx.scale(actor.transform.scale, actor.transform.scale)
   ctx.fillStyle = actor.color
-  drawShape(ctx, actor.shape, ACTOR_SIZE)
+  if (actor.glyph) {
+    ctx.font = `${ACTOR_SIZE}px ${GLYPH_FONT}`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(actor.glyph, 0, 0)
+  } else {
+    drawShape(ctx, actor.shape, ACTOR_SIZE)
+  }
   ctx.restore()
 
   if (actor.id === options.selectedId) {

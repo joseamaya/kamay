@@ -20,10 +20,14 @@ function createMockContext() {
     closePath: vi.fn(),
     fill: vi.fn(),
     stroke: vi.fn(),
+    fillText: vi.fn(),
     setLineDash: vi.fn(),
     fillStyle: '',
     strokeStyle: '',
     lineWidth: 0,
+    font: '',
+    textAlign: '',
+    textBaseline: '',
   }
 }
 
@@ -62,6 +66,52 @@ describe('renderScene', () => {
 
     expect(ctx.fillRect).toHaveBeenCalledWith(0, 0, 100, 100)
     expect(ctx.arc).toHaveBeenCalled()
+    expect(ctx.fill).toHaveBeenCalled()
+  })
+
+  it('draws a glyph actor with text instead of a shape', () => {
+    const ctx = createMockContext()
+    const scene: SceneState = {
+      background: 'grass',
+      actors: [
+        {
+          id: 'a',
+          name: 'cat1',
+          shape: 'circle',
+          glyph: '🐱',
+          color: '#e0a23c',
+          transform: { position: { x: 0, y: 0 }, rotation: 0, scale: 1 },
+          zIndex: 0,
+        },
+      ],
+    }
+
+    renderScene(ctx as unknown as CanvasRenderingContext2D, scene, { width: 100, height: 100 })
+
+    expect(ctx.fillText).toHaveBeenCalledWith('🐱', 0, 0)
+    expect(ctx.arc).not.toHaveBeenCalled()
+  })
+
+  it('draws polygon-based shapes', () => {
+    const ctx = createMockContext()
+    const scene: SceneState = {
+      background: 'grass',
+      actors: [
+        {
+          id: 'a',
+          name: 'star1',
+          shape: 'star',
+          color: '#e0a23c',
+          transform: { position: { x: 0, y: 0 }, rotation: 0, scale: 1 },
+          zIndex: 0,
+        },
+      ],
+    }
+
+    renderScene(ctx as unknown as CanvasRenderingContext2D, scene, { width: 100, height: 100 })
+
+    expect(ctx.moveTo).toHaveBeenCalled()
+    expect(ctx.lineTo).toHaveBeenCalled()
     expect(ctx.fill).toHaveBeenCalled()
   })
 })

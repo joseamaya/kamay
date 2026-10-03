@@ -6,11 +6,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Catalog**: more geometric shapes (rectangle, diamond, pentagon, hexagon,
+  heart, star) and characters/things drawn as emoji (cat, dog, robot, rocket,
+  apple, ball, tree, house), grouped into "Formas" and "Personajes y cosas".
+
 ### Planned
 
-- Code → blocks sync and "advanced code".
-- Richer events and optional physics.
-- Classroom features (missions, teacher mode, sharing).
+- Classroom features (missions, teacher mode, sharing, portfolio).
 
 ## [0.1.0] - 2026-10-02
 
