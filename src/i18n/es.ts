@@ -28,7 +28,6 @@ export const es = {
   },
   factory: {
     title: 'Fábrica',
-    catalogTitle: 'Catálogo',
     catalogShapes: 'Formas',
     catalogCharacters: 'Personajes y cosas',
     objectsTitle: 'Objetos',
