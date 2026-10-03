@@ -228,6 +228,7 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
             { value: 'xlarge', label: messages.bar.textXLarge },
           ]}
           className="w-28"
+          disabled={projector}
           onChange={(value) => setFontScale(value as FontScale)}
         />
         <Button
