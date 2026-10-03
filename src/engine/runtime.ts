@@ -23,9 +23,15 @@ export class RuntimeController {
   private delay = 0
   private pending: { command: ActorCommand; at: number }[] = []
   private physics = new PhysicsController()
+  private simulating = false
 
   setReducedMotion(value: boolean): void {
     this.reducedMotion = value
+  }
+
+  /** Physics only advances while the program is running, not while editing. */
+  setSimulating(value: boolean): void {
+    this.simulating = value
   }
 
   reset(scene: SceneState): void {
@@ -124,7 +130,7 @@ export class RuntimeController {
     }
 
     if (this.physics.isActive()) {
-      this.physics.step(delta, this.actors)
+      if (this.simulating) this.physics.step(delta, this.actors)
     } else {
       this.tweens = advanceTweens(this.tweens, delta, ({ objectId, property, value }) => {
         const actor = this.actors.find((candidate) => candidate.id === objectId)

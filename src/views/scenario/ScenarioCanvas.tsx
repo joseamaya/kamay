@@ -133,6 +133,12 @@ export function ScenarioCanvas() {
   }, [reducedMotion])
 
   useEffect(() => {
+    controllerRef.current.setSimulating(
+      runtimeStatus === 'loading' || runtimeStatus === 'running' || runtimeStatus === 'ready',
+    )
+  }, [runtimeStatus])
+
+  useEffect(() => {
     if (runtimeStatus !== 'ready' && runtimeStatus !== 'running') return
     const handleKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null

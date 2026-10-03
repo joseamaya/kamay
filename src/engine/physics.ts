@@ -37,7 +37,7 @@ export class PhysicsController {
     this.world = null
     this.bodies.clear()
 
-    if (this.active) void this.ready()
+    if (this.active) void this.ready().catch(() => undefined)
   }
 
   /** Loads planck.js on demand and builds the world once. */
