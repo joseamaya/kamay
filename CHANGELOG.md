@@ -16,10 +16,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Missions and badges**: eleven auto-checked goals over the project model
   (objects, orders, own classes, inheritance, events, sequences) with six
   concept badges and local progress.
+- **Templates**: ready-to-use classroom starting points (greeting, collision,
+  own class, inheritance, physics).
+- **Projector mode**: high-contrast theme with larger text, persisted with the
+  other accessibility preferences.
 
 ### Planned
 
-- Classroom features (projector mode, teacher guides and portfolio).
+- Classroom features (project portfolio).
 
 ## [0.1.0] - 2026-10-02
 

@@ -14,6 +14,7 @@ const STORAGE_KEY = 'kamay.preferences'
 interface StoredPreferences {
   theme?: ThemePreference
   fontScale?: FontScale
+  projector?: boolean
 }
 
 function readStored(): StoredPreferences {
@@ -40,9 +41,11 @@ export interface PreferencesState {
   theme: ThemePreference
   fontScale: FontScale
   reducedMotion: boolean
+  projector: boolean
   setTheme: (theme: ThemePreference) => void
   setFontScale: (fontScale: FontScale) => void
   setReducedMotion: (reducedMotion: boolean) => void
+  setProjector: (projector: boolean) => void
 }
 
 const stored = readStored()
@@ -52,7 +55,11 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => {
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ theme: get().theme, fontScale: get().fontScale }),
+        JSON.stringify({
+          theme: get().theme,
+          fontScale: get().fontScale,
+          projector: get().projector,
+        }),
       )
     } catch {
       // Storage can be unavailable (private mode); preferences stay in memory.
@@ -63,6 +70,7 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => {
     theme: stored.theme ?? systemTheme(),
     fontScale: stored.fontScale ?? 'normal',
     reducedMotion: systemReducedMotion(),
+    projector: stored.projector ?? false,
     setTheme: (theme) => {
       set({ theme })
       persist()
@@ -72,5 +80,9 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => {
       persist()
     },
     setReducedMotion: (reducedMotion) => set({ reducedMotion }),
+    setProjector: (projector) => {
+      set({ projector })
+      persist()
+    },
   }
 })

@@ -74,6 +74,38 @@
   --color-syntax-type: oklch(80% 0.13 70);
 }
 
+/* Projector mode: high contrast and larger text for classroom projection. */
+.projector {
+  --color-background: oklch(0% 0 0);
+  --color-foreground: oklch(100% 0 0);
+
+  --color-card: oklch(14% 0 0);
+  --color-card-foreground: oklch(100% 0 0);
+
+  --color-primary: oklch(88% 0.19 92);
+  --color-primary-foreground: oklch(0% 0 0);
+
+  --color-secondary: oklch(24% 0 0);
+  --color-secondary-foreground: oklch(100% 0 0);
+
+  --color-accent: oklch(82% 0.17 85);
+  --color-accent-foreground: oklch(0% 0 0);
+
+  --color-muted: oklch(24% 0 0);
+  --color-muted-foreground: oklch(88% 0 0);
+
+  --color-destructive: oklch(68% 0.22 25);
+  --color-destructive-foreground: oklch(0% 0 0);
+
+  --color-border: oklch(50% 0 0);
+  --color-ring: oklch(88% 0.19 92);
+
+  --color-syntax-string: oklch(85% 0.15 150);
+  --color-syntax-number: oklch(85% 0.15 305);
+  --color-syntax-function: oklch(85% 0.13 250);
+  --color-syntax-type: oklch(86% 0.15 80);
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
