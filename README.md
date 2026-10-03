@@ -38,11 +38,12 @@ The project is in **Phase 3 — blocks, scenes, inheritance, events and physics*
 - **Execution**: run the program with **Pyodide** (Web Worker) and see the
   objects talk and move; runtime errors are translated to Spanish and marked
   inline in the generated code.
-- **Persistence**: autosave to IndexedDB and `.kamay.json` export/import.
+- **Persistence**: autosave to IndexedDB, `.kamay.json` export/import and
+  **share by link** (the project travels encoded in the URL).
 - **Undo/redo** and error messages in Spanish.
 
-Pending (Phase 4): classroom features (missions, teacher mode, sharing,
-portfolio).
+Pending (Phase 4): missions and auto-checked challenges, badges, projector mode
+and teacher guides, and a project portfolio.
 
 ## Accessibility
 
