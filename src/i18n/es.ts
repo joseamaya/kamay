@@ -308,6 +308,20 @@ export const es = {
     add: 'Agregar orden',
     remove: 'Quitar orden',
   },
+  selection: {
+    menu: 'Menú del objeto',
+    class: 'Clase: {name}',
+    appearance: 'Aspecto',
+    orders: 'Órdenes',
+    duplicate: 'Duplicar',
+  },
+  guide: {
+    title: 'Guía',
+    level: 'Nivel {level}',
+    noObjects: 'Agrega un objeto desde la Fábrica para empezar.',
+    select: 'Selecciona un objeto en el escenario para ver qué puede hacer.',
+    selected: 'Usa el menú junto al objeto para cambiar sus propiedades o darle órdenes.',
+  },
   triggers: {
     onStart: 'Al iniciar',
     onClick: 'Al hacer clic',

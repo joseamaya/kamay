@@ -24,6 +24,9 @@ The project has completed **Phase 4 — classroom and gamification**. Working to
 - **Scenes**: create, rename, switch and delete scenes; the stage and the
   generated code follow the active scene.
 - **Stage**: custom Canvas 2D engine with background, selection and drag.
+- **Object menu**: selecting an object on the stage opens a contextual menu
+  anchored next to it with its properties and orders, and a guide panel shows
+  the current level and the next step.
 - **Physics**: optional per scene (toggle + gravity); objects fall and collide
   for real with planck.js.
 - **Properties**: position, rotation, scale and color.
