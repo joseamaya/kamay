@@ -31,6 +31,8 @@ import type { CodeDiagnostic } from './diagnostics'
 
 const theme = EditorView.theme({
   '&': {
+    height: '100%',
+    minHeight: '0',
     color: 'var(--color-foreground)',
     backgroundColor: 'var(--color-card)',
     fontSize: '12px',
