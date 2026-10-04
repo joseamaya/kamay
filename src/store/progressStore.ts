@@ -8,6 +8,7 @@ interface StoredProgress {
   completed: MissionId[]
   freeMode: boolean
   unlockedLevel: number
+  onboardingDone: boolean
 }
 
 function asMissionIds(value: unknown): MissionId[] {
@@ -15,7 +16,12 @@ function asMissionIds(value: unknown): MissionId[] {
 }
 
 function readStored(): StoredProgress {
-  const fallback: StoredProgress = { completed: [], freeMode: false, unlockedLevel: 1 }
+  const fallback: StoredProgress = {
+    completed: [],
+    freeMode: false,
+    unlockedLevel: 1,
+    onboardingDone: false,
+  }
   if (typeof localStorage === 'undefined') return fallback
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -28,6 +34,7 @@ function readStored(): StoredProgress {
         completed: asMissionIds(record.completed),
         freeMode: record.freeMode === true,
         unlockedLevel: typeof record.unlockedLevel === 'number' ? record.unlockedLevel : 1,
+        onboardingDone: record.onboardingDone === true,
       }
     }
     return fallback
@@ -48,6 +55,7 @@ export interface ProgressState extends StoredProgress {
   complete: (id: MissionId) => void
   setFreeMode: (freeMode: boolean) => void
   setUnlockedLevel: (level: number) => void
+  completeOnboarding: () => void
   reset: () => void
 }
 
@@ -58,6 +66,7 @@ function snapshot(state: ProgressState): StoredProgress {
     completed: state.completed,
     freeMode: state.freeMode,
     unlockedLevel: state.unlockedLevel,
+    onboardingDone: state.onboardingDone,
   }
 }
 
@@ -74,6 +83,10 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
   },
   setUnlockedLevel: (unlockedLevel) => {
     set({ unlockedLevel })
+    persist(snapshot(get()))
+  },
+  completeOnboarding: () => {
+    set({ onboardingDone: true })
     persist(snapshot(get()))
   },
   reset: () => {

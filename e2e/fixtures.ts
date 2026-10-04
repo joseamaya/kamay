@@ -10,7 +10,12 @@ export const test = base.extend({
     await page.addInitScript(() => {
       window.localStorage.setItem(
         'kamay.progress',
-        JSON.stringify({ completed: [], freeMode: true, unlockedLevel: 1 }),
+        JSON.stringify({
+          completed: [],
+          freeMode: true,
+          unlockedLevel: 1,
+          onboardingDone: true,
+        }),
       )
     })
     await run(page)

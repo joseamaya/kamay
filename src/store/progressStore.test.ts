@@ -5,7 +5,12 @@ import { useProgressStore } from './progressStore'
 describe('useProgressStore', () => {
   beforeEach(() => {
     localStorage.clear()
-    useProgressStore.setState({ completed: [], freeMode: false, unlockedLevel: 1 })
+    useProgressStore.setState({
+      completed: [],
+      freeMode: false,
+      unlockedLevel: 1,
+      onboardingDone: false,
+    })
   })
 
   it('completes missions and persists progress', () => {
@@ -16,7 +21,15 @@ describe('useProgressStore', () => {
       completed: ['first_object'],
       freeMode: false,
       unlockedLevel: 1,
+      onboardingDone: false,
     })
+  })
+
+  it('marks onboarding as done and persists it', () => {
+    useProgressStore.getState().completeOnboarding()
+
+    expect(useProgressStore.getState().onboardingDone).toBe(true)
+    expect(JSON.parse(localStorage.getItem('kamay.progress')!).onboardingDone).toBe(true)
   })
 
   it('stores the free mode and unlocked level', () => {

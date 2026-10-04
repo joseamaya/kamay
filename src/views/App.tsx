@@ -12,6 +12,7 @@ import {
   useProjectStore,
 } from '../store'
 import { ActivityPanel } from './activity/ActivityPanel'
+import { MissionToast } from './activity/MissionToast'
 import { TopBar } from './bar/TopBar'
 import { CodeView } from './code/CodeView'
 import { FactoryView } from './factory/FactoryView'
@@ -29,6 +30,7 @@ export function App() {
   const selectObject = useEditorStore((state) => state.selectObject)
   const setDirty = useEditorStore((state) => state.setDirty)
   const pushLog = useEditorStore((state) => state.pushLog)
+  const showToast = useEditorStore((state) => state.showToast)
   const missionsInitialized = useRef(false)
 
   useEffect(() => {
@@ -39,10 +41,11 @@ export function App() {
       complete(id)
       if (missionsInitialized.current) {
         pushLog(format(messages.missions.completed, { title: messages.missions.list[id].title }))
+        showToast(messages.missions.list[id].title)
       }
     }
     missionsInitialized.current = true
-  }, [project, pushLog])
+  }, [project, pushLog, showToast])
 
   useEffect(() => {
     if (!persistence.ready) return
@@ -90,6 +93,7 @@ export function App() {
         <CodeView />
       </div>
       <ActivityPanel />
+      <MissionToast />
     </div>
   )
 }
