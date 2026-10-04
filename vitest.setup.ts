@@ -1,5 +1,13 @@
 import '@testing-library/jest-dom/vitest'
 
+import { useProgressStore } from './src/store'
+
+// Component tests exercise full-featured views; guided level gating is tested
+// explicitly by setting the store back to a guided state.
+beforeEach(() => {
+  useProgressStore.setState({ completed: [], freeMode: true, unlockedLevel: 1 })
+})
+
 class ResizeObserverStub {
   observe() {}
   unobserve() {}

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures'
 
 test('completes a mission and shows it in the missions dialog', async ({ page }) => {
   await page.goto('/')

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { createClassDraft, createEmptyProject } from '../../model'
-import { useEditorStore, useProjectStore } from '../../store'
+import { useEditorStore, useProgressStore, useProjectStore } from '../../store'
 import { FactoryView } from './FactoryView'
 
 beforeEach(() => {
@@ -44,6 +44,14 @@ describe('FactoryView', () => {
     await user.click(screen.getByRole('button', { name: 'Crear objeto de Heroe' }))
 
     expect(useProjectStore.getState().project.scenes[0]?.objects[0]?.class).toBe('Heroe')
+  })
+
+  it('hides the class editor until level 3', () => {
+    useProgressStore.setState({ completed: [], freeMode: false, unlockedLevel: 1 })
+    render(<FactoryView />)
+
+    expect(screen.queryByRole('button', { name: 'Nueva clase' })).not.toBeInTheDocument()
+    expect(screen.getByText('Se desbloquea en el Nivel 3.')).toBeInTheDocument()
   })
 
   it('duplicates an object', async () => {

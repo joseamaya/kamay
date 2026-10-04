@@ -43,6 +43,9 @@ The project has completed **Phase 4 — classroom and gamification**. Working to
   **share by link** (the project travels encoded in the URL).
 - **Missions and badges**: short auto-checked goals ("add an object", "create
   your own class", "use inheritance") with progress kept locally.
+- **Guided levels**: a 1–5 learning path that unlocks language features (orders,
+  own classes, blocks, events, inheritance) as missions are completed, plus a
+  free mode for teachers and advanced users.
 - **Templates**: ready-to-use classroom starting points (greeting, collision,
   own class, inheritance, physics).
 - **Projector mode**: high-contrast theme with larger text for explaining in

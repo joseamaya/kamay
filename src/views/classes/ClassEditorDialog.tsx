@@ -19,6 +19,7 @@ import type {
   Parameter,
   Scene,
 } from '../../model'
+import { useCapabilities } from '../../store'
 import { Button } from '../../ui/Button'
 import { ColorInput } from '../../ui/ColorInput'
 import { Dialog } from '../../ui/Dialog'
@@ -44,6 +45,7 @@ export interface ClassEditorDialogProps {
 
 export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEditorDialogProps) {
   const messages = getMessages()
+  const capabilities = useCapabilities()
   const [draft, setDraft] = useState<ClassDefinition>(() => initial ?? createClassDraft())
   const [imageError, setImageError] = useState(false)
 
@@ -180,19 +182,21 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
                 <span className="text-destructive">{messages.classEditor.errorNameTaken}</span>
               ) : null}
             </label>
-            <div className="flex flex-col gap-1">
-              <Select
-                label={messages.classEditor.base}
-                value={draft.inherits ?? BASE_CLASS}
-                options={baseOptions}
-                onChange={(value) => setDraft((current) => ({ ...current, inherits: value }))}
-              />
-              {errors.inheritsInvalid ? (
-                <span className="text-destructive text-xs">
-                  {messages.classEditor.errorInherits}
-                </span>
-              ) : null}
-            </div>
+            {capabilities.inheritance ? (
+              <div className="flex flex-col gap-1">
+                <Select
+                  label={messages.classEditor.base}
+                  value={draft.inherits ?? BASE_CLASS}
+                  options={baseOptions}
+                  onChange={(value) => setDraft((current) => ({ ...current, inherits: value }))}
+                />
+                {errors.inheritsInvalid ? (
+                  <span className="text-destructive text-xs">
+                    {messages.classEditor.errorInherits}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
           </div>
           <div className="flex flex-col justify-center gap-2">
             <ColorInput

@@ -21,6 +21,7 @@ import type {
   Operation,
   Scene,
 } from '../../model'
+import { useCapabilities } from '../../store'
 import { Button } from '../../ui/Button'
 import { LazyCodeEditor } from '../../ui/LazyCodeEditor'
 import { NumberField } from '../../ui/NumberField'
@@ -289,6 +290,7 @@ export interface MethodBodyEditorProps {
 
 export function MethodBodyEditor({ scene, definition, method, onChange }: MethodBodyEditorProps) {
   const messages = getMessages()
+  const capabilities = useCapabilities()
 
   const body = method.body
   const methods = availableBlockMethods(scene, definition)
@@ -306,13 +308,15 @@ export function MethodBodyEditor({ scene, definition, method, onChange }: Method
             <span className="bg-secondary text-secondary-foreground rounded-md px-2 py-0.5 text-xs">
               {messages.classEditor.blocks}
             </span>
-            <button
-              type="button"
-              onClick={() => onChange({ kind: 'code', code: preview })}
-              className="text-primary text-xs font-medium hover:underline"
-            >
-              {messages.classEditor.convertToCode}
-            </button>
+            {capabilities.freeCode ? (
+              <button
+                type="button"
+                onClick={() => onChange({ kind: 'code', code: preview })}
+                className="text-primary text-xs font-medium hover:underline"
+              >
+                {messages.classEditor.convertToCode}
+              </button>
+            ) : null}
           </div>
         ) : (
           <div className="flex items-center gap-1">
@@ -398,7 +402,10 @@ export function MethodBodyEditor({ scene, definition, method, onChange }: Method
         <div className="border-border h-28 overflow-hidden rounded-md border">
           <LazyCodeEditor
             value={body.code}
-            onValueChange={(code) => onChange({ kind: 'code', code })}
+            readOnly={!capabilities.freeCode}
+            onValueChange={
+              capabilities.freeCode ? (code) => onChange({ kind: 'code', code }) : undefined
+            }
             ariaLabel={messages.classEditor.body}
           />
         </div>
