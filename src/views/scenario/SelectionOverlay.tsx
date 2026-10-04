@@ -63,7 +63,7 @@ export const SelectionOverlay = forwardRef<HTMLDivElement>(function SelectionOve
             <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
               {messages.selection.orders}
             </h3>
-            <OrderComposer scene={scene} object={object} />
+            <OrderComposer key={object.id} scene={scene} object={object} />
           </section>
         ) : null}
 
@@ -71,7 +71,7 @@ export const SelectionOverlay = forwardRef<HTMLDivElement>(function SelectionOve
           <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
             {messages.selection.appearance}
           </h3>
-          <ObjectAttributes scene={scene} object={object} />
+          <ObjectAttributes key={object.id} scene={scene} object={object} />
         </section>
 
         <footer className="border-border flex items-center justify-end gap-2 border-t pt-3">

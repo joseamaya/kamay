@@ -39,6 +39,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Object menu**: selecting an object on the stage opens a contextual menu
   anchored next to it with its properties and orders, and a guide panel shows
   the current level and the next step. The code dock starts collapsed at level 1.
+- **Compact toolbar**: project and classroom actions (new, portfolio, export,
+  import, share, templates, projector) move into a "⋯" menu, leaving save, level,
+  missions, run and undo/redo at hand; the guide panel also shows the next
+  mission.
 
 ### Planned
 

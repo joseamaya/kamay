@@ -26,7 +26,10 @@ The project has completed **Phase 4 — classroom and gamification**. Working to
 - **Stage**: custom Canvas 2D engine with background, selection and drag.
 - **Object menu**: selecting an object on the stage opens a contextual menu
   anchored next to it with its properties and orders, and a guide panel shows
-  the current level and the next step.
+  the current level, the next mission and the next step.
+- **Compact toolbar**: save, level, missions, run and undo/redo stay at hand;
+  project and classroom actions (new, portfolio, export, import, share,
+  templates, projector) live in a "⋯" menu.
 - **Physics**: optional per scene (toggle + gravity); objects fall and collide
   for real with planck.js.
 - **Properties**: position, rotation, scale and color.

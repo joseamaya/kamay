@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures'
 
-import { codeContent } from './helpers'
+import { codeContent, openMore } from './helpers'
 
 test.use({ colorScheme: 'light' })
 
@@ -26,14 +26,20 @@ test('changes the text size', async ({ page }) => {
 test('toggles projector mode with larger, high-contrast text', async ({ page }) => {
   await page.goto('/')
 
-  const toggle = page.getByRole('button', { name: 'Proyector' })
+  await openMore(page)
+  const toggle = page.getByRole('menuitem', { name: 'Proyector' })
   await expect(toggle).toHaveAttribute('aria-pressed', 'false')
 
   await toggle.click()
 
-  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
   await expect(page.locator('html')).toHaveClass(/projector/)
   await expect(page.locator('html')).toHaveAttribute('style', /font-size: 150%/)
+
+  await openMore(page)
+  await expect(page.getByRole('menuitem', { name: 'Proyector' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
 })
 
 test('moves the selected object with the keyboard', async ({ page }) => {

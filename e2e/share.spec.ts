@@ -1,11 +1,14 @@
 import { expect, test } from './fixtures'
 
+import { openMore } from './helpers'
+
 test('shares a project through a link that opens a copy', async ({ page, context }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
   await expect(page.getByRole('button', { name: 'circle1', exact: true })).toBeVisible()
 
-  await page.getByRole('button', { name: 'Compartir' }).click()
+  await openMore(page)
+  await page.getByRole('menuitem', { name: 'Compartir' }).click()
   const link = await page.getByLabel('Enlace').inputValue()
   expect(link).toContain('#p=')
 

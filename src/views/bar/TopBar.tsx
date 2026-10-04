@@ -21,6 +21,7 @@ import { findTemplate } from '../../templates'
 import type { TemplateId } from '../../templates'
 import { Button } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
+import { Menu, MenuItem } from '../../ui/Menu'
 import { Select } from '../../ui/Select'
 import { LevelsDialog } from '../levels/LevelsDialog'
 import { MissionsDialog } from '../missions/MissionsDialog'
@@ -190,17 +191,6 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
       </div>
 
       <div className="flex flex-wrap items-center gap-1">
-        <Button variant="ghost" size="sm" onClick={handleNew}>
-          {messages.bar.newProject}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setPortfolioOpen(true)}
-          disabled={!persistence.ready}
-        >
-          {messages.bar.portfolio}
-        </Button>
         <Button
           variant="ghost"
           size="sm"
@@ -208,21 +198,6 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
           disabled={!persistence.ready}
         >
           {messages.bar.save}
-        </Button>
-        <Button variant="ghost" size="sm" onClick={handleExport}>
-          {messages.bar.export}
-        </Button>
-        <Button variant="ghost" size="sm" onClick={handleDeliver}>
-          {messages.bar.deliver}
-        </Button>
-        <Button variant="ghost" size="sm" onClick={() => fileInputRef.current?.click()}>
-          {messages.bar.import}
-        </Button>
-        <Button variant="ghost" size="sm" onClick={() => void handleShare()}>
-          {messages.bar.share}
-        </Button>
-        <Button variant="ghost" size="sm" onClick={() => setTemplatesOpen(true)}>
-          {messages.bar.templates}
         </Button>
         <Button variant="ghost" size="sm" onClick={() => setLevelsOpen(true)}>
           {format(messages.levels.button, { level })}
@@ -274,20 +249,85 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
         <Button
           variant="ghost"
           size="sm"
-          aria-pressed={projector}
-          onClick={() => setProjector(!projector)}
-        >
-          {messages.bar.projector}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
           aria-pressed={theme === 'dark'}
           aria-label={messages.bar.toggleTheme}
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         >
           {theme === 'dark' ? messages.bar.themeDark : messages.bar.themeLight}
         </Button>
+
+        <Menu label={messages.bar.more} trigger="⋯">
+          {(close) => (
+            <>
+              <MenuItem
+                onClick={() => {
+                  close()
+                  handleNew()
+                }}
+              >
+                {messages.bar.newProject}
+              </MenuItem>
+              <MenuItem
+                disabled={!persistence.ready}
+                onClick={() => {
+                  close()
+                  setPortfolioOpen(true)
+                }}
+              >
+                {messages.bar.portfolio}
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  close()
+                  handleExport()
+                }}
+              >
+                {messages.bar.export}
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  close()
+                  handleDeliver()
+                }}
+              >
+                {messages.bar.deliver}
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  close()
+                  fileInputRef.current?.click()
+                }}
+              >
+                {messages.bar.import}
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  close()
+                  void handleShare()
+                }}
+              >
+                {messages.bar.share}
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  close()
+                  setTemplatesOpen(true)
+                }}
+              >
+                {messages.bar.templates}
+              </MenuItem>
+              <MenuItem
+                pressed={projector}
+                onClick={() => {
+                  close()
+                  setProjector(!projector)
+                }}
+              >
+                {messages.bar.projector}
+              </MenuItem>
+            </>
+          )}
+        </Menu>
       </div>
 
       <input
