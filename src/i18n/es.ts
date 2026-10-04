@@ -346,6 +346,7 @@ export const es = {
     files: 'Archivos generados',
     copy: 'Copiar',
     copied: 'Copiado',
+    editValues: 'Editar valores',
     collapse: 'Ocultar',
     expand: 'Mostrar',
     resize: 'Redimensionar el panel de código',

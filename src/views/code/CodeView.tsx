@@ -1,10 +1,18 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 
 import { generatePython } from '../../generator'
+import type { EditableValue } from '../../generator'
 import { getMessages } from '../../i18n'
 import { translateRuntimeError } from '../../runtime'
-import { CODE_MIN_HEIGHT, useEditorStore, useProjectStore, useRuntimeStore } from '../../store'
+import {
+  CODE_MIN_HEIGHT,
+  useActiveScene,
+  useCapabilities,
+  useEditorStore,
+  useProjectStore,
+  useRuntimeStore,
+} from '../../store'
 import { cn } from '../../ui/cn'
 import { LazyCodeEditor } from '../../ui/LazyCodeEditor'
 
@@ -20,10 +28,12 @@ export function CodeView() {
   const messages = getMessages()
   const project = useProjectStore((state) => state.project)
   const activeSceneId = useEditorStore((state) => state.activeSceneId)
-  const files = useMemo(
-    () => generatePython(project, activeSceneId).files,
-    [project, activeSceneId],
-  )
+  const scene = useActiveScene()
+  const capabilities = useCapabilities()
+  const updateObjectAttributes = useProjectStore((state) => state.updateObjectAttributes)
+  const setActionArg = useProjectStore((state) => state.setActionArg)
+  const generation = useMemo(() => generatePython(project, activeSceneId), [project, activeSceneId])
+  const files = generation.files
 
   const codeHeight = useEditorStore((state) => state.codeHeight)
   const setCodeHeight = useEditorStore((state) => state.setCodeHeight)
@@ -34,6 +44,7 @@ export function CodeView() {
   const error = useRuntimeStore((state) => state.error)
 
   const [copied, setCopied] = useState(false)
+  const [editValuesOn, setEditValuesOn] = useState(false)
   const dragRef = useRef<{ startY: number; startHeight: number } | null>(null)
   const panelId = useId()
 
@@ -57,6 +68,34 @@ export function CodeView() {
     if (!error?.line || !error.file || error.file !== activeFile?.path) return []
     return [{ line: error.line, message: translateRuntimeError(error) }]
   }, [error, activeFile?.path])
+
+  const canEditValues = capabilities.editValues && activeFile?.path === 'principal.py'
+  const editableValues = canEditValues && editValuesOn ? generation.editableValues : undefined
+
+  const handleEditValue = useCallback(
+    (item: EditableValue, next: number | string | boolean) => {
+      if (!scene) return
+      if (item.kind === 'attribute') {
+        const object = scene.objects.find((candidate) => candidate.name === item.objectName)
+        if (!object) return
+        updateObjectAttributes(scene.id, object.id, { [item.key]: next })
+        return
+      }
+      if (!item.eventType) return
+      setActionArg(
+        scene.id,
+        item.eventType,
+        item.source,
+        item.other,
+        item.actionIndex,
+        item.key,
+        next,
+        item.eventKey,
+        item.signal,
+      )
+    },
+    [scene, updateObjectAttributes, setActionArg],
+  )
 
   const handleCopy = async () => {
     if (!activeFile) return
@@ -146,6 +185,21 @@ export function CodeView() {
           })}
         </div>
 
+        {canEditValues ? (
+          <button
+            type="button"
+            aria-pressed={editValuesOn}
+            onClick={() => setEditValuesOn(!editValuesOn)}
+            className={cn(
+              'rounded-md px-2 py-0.5 text-xs transition',
+              editValuesOn
+                ? 'bg-secondary text-secondary-foreground'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+            )}
+          >
+            {messages.code.editValues}
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={() => void handleCopy()}
@@ -176,6 +230,8 @@ export function CodeView() {
               value={activeFile.content}
               ariaLabel={`${messages.code.title}: ${activeFile.path}`}
               diagnostics={diagnostics}
+              editableValues={editableValues}
+              onEditValue={handleEditValue}
             />
           ) : (
             <p className="text-muted-foreground p-4 text-sm">{messages.code.empty}</p>

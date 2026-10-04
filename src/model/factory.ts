@@ -270,6 +270,35 @@ export function addEventAction(
   return { ...scene, events }
 }
 
+/** Updates a single argument of an existing action, keyed by its trigger. */
+export function setActionArg(
+  scene: Scene,
+  eventType: EventType,
+  source: string | null,
+  other: string | null,
+  actionIndex: number,
+  parameter: string,
+  value: number | string | boolean,
+  key: string | null = null,
+  signal: string | null = null,
+): Scene {
+  const event = findEvent(scene, eventType, source, other, key, signal)
+  if (!event) return scene
+  const events = scene.events.map((candidate) =>
+    candidate === event
+      ? {
+          ...candidate,
+          actions: candidate.actions.map((action, index) =>
+            index === actionIndex
+              ? { ...action, args: { ...action.args, [parameter]: value } }
+              : action,
+          ),
+        }
+      : candidate,
+  )
+  return { ...scene, events }
+}
+
 export function removeEventAction(
   scene: Scene,
   eventType: EventType,

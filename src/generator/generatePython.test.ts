@@ -507,3 +507,35 @@ if __name__ == "__main__":
     expect(first).toEqual(second)
   })
 })
+
+describe('editableValues', () => {
+  it('locates object attributes and action arguments', () => {
+    const { files, editableValues } = generatePython(buildFixture())
+    const main = files.find((file) => file.path === 'principal.py')!.content
+
+    const attribute = editableValues.find(
+      (value) => value.kind === 'attribute' && value.key === 'x',
+    )!
+    expect(attribute.objectName).toBe('h1')
+    expect(attribute.value).toBe(0)
+    expect(main.slice(attribute.from, attribute.to)).toBe('0')
+
+    const argument = editableValues.find((value) => value.kind === 'action-arg')!
+    expect(argument.key).toBe('mensaje')
+    expect(argument.eventType).toBe('on_start')
+    expect(argument.value).toBe('¡Hola!')
+    expect(main.slice(argument.from, argument.to)).toBe('"¡Hola!"')
+  })
+
+  it('keeps the generated content clean and every range valid', () => {
+    const { files, editableValues } = generatePython(buildFixture())
+    const main = files.find((file) => file.path === 'principal.py')!.content
+
+    expect(main).not.toContain('\u0001')
+    expect(main).not.toContain('\u0002')
+    for (const value of editableValues) {
+      expect(value.from).toBeLessThan(value.to)
+      expect(value.to).toBeLessThanOrEqual(main.length)
+    }
+  })
+})

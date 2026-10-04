@@ -16,6 +16,7 @@ import {
   renameProject as renameProjectInProject,
   renameScene as renameSceneInProject,
   replaceScene,
+  setActionArg as setActionArgInScene,
   setSceneBackground,
   setScenePhysics,
   updateObjectAttributes as updateObjectAttributesOnScene,
@@ -59,6 +60,17 @@ export interface ProjectState {
     source: string | null,
     other: string | null,
     actionIndex: number,
+    key?: string | null,
+    signal?: string | null,
+  ) => void
+  setActionArg: (
+    sceneId: string,
+    eventType: EventType,
+    source: string | null,
+    other: string | null,
+    actionIndex: number,
+    parameter: string,
+    value: number | string | boolean,
     key?: string | null,
     signal?: string | null,
   ) => void
@@ -165,6 +177,34 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     get().updateProject((project) =>
       updateScene(project, sceneId, (scene) =>
         removeEventAction(scene, eventType, source, other, actionIndex, key, signal),
+      ),
+    )
+  },
+
+  setActionArg: (
+    sceneId,
+    eventType,
+    source,
+    other,
+    actionIndex,
+    parameter,
+    value,
+    key = null,
+    signal = null,
+  ) => {
+    get().updateProject((project) =>
+      updateScene(project, sceneId, (scene) =>
+        setActionArgInScene(
+          scene,
+          eventType,
+          source,
+          other,
+          actionIndex,
+          parameter,
+          value,
+          key,
+          signal,
+        ),
       ),
     )
   },
