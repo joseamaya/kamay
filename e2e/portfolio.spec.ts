@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures'
 
-import { codeContent } from './helpers'
+import { codeContent, openMore } from './helpers'
 
 test('renames the project and reflects it in the code', async ({ page }) => {
   await page.goto('/')
@@ -19,7 +19,8 @@ test('lists saved projects in the portfolio with export and delete', async ({ pa
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Proyecto guardado.')).toBeVisible()
 
-  await page.getByRole('button', { name: 'Portafolio' }).click()
+  await openMore(page)
+  await page.getByRole('menuitem', { name: 'Portafolio' }).click()
   const dialog = page.getByRole('dialog', { name: 'Portafolio' })
 
   await expect(dialog.getByRole('button', { name: /^Proyecto sin título/ })).toBeVisible()
@@ -31,9 +32,10 @@ test('delivers the project as a bundle', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
 
+  await openMore(page)
   const [download] = await Promise.all([
     page.waitForEvent('download'),
-    page.getByRole('button', { name: 'Entregar' }).click(),
+    page.getByRole('menuitem', { name: 'Entregar' }).click(),
   ])
 
   expect(download.suggestedFilename()).toContain('entrega')

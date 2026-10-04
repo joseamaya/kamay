@@ -26,6 +26,7 @@ export const es = {
     textNormal: 'Normal',
     textLarge: 'Grande',
     textXLarge: 'Muy grande',
+    more: 'Más opciones',
   },
   views: {
     scenario: 'Escenario',
@@ -321,6 +322,8 @@ export const es = {
     noObjects: 'Agrega un objeto desde la Fábrica para empezar.',
     select: 'Selecciona un objeto en el escenario para ver qué puede hacer.',
     selected: 'Usa el menú junto al objeto para cambiar sus propiedades o darle órdenes.',
+    nextMission: 'Siguiente misión: {title}',
+    allDone: '¡Completaste todas las misiones!',
   },
   triggers: {
     onStart: 'Al iniciar',
