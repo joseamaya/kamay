@@ -24,9 +24,12 @@ The project has completed **Phase 4 — classroom and gamification**. Working to
 - **Scenes**: create, rename, switch and delete scenes; the stage and the
   generated code follow the active scene.
 - **Stage**: custom Canvas 2D engine with background, selection and drag.
+- **Project explorer**: the left column lists the scenes and the generated
+  Python files (`principal.py` plus one per class); picking a file opens it in
+  the code dock.
 - **Object menu**: selecting an object on the stage opens a contextual menu
-  anchored next to it with its properties and orders, and a guide panel shows
-  the current level, the next mission and the next step.
+  anchored next to it with its properties and orders, and a guide banner under
+  the toolbar shows the current level, the next mission and the next step.
 - **Compact toolbar**: save, level, missions, run and undo/redo stay at hand;
   project and classroom actions (new, portfolio, export, import, share,
   templates, projector) live in a "⋯" menu.

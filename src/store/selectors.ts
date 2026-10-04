@@ -1,3 +1,7 @@
+import { useMemo } from 'react'
+
+import { generatePython } from '../generator'
+import type { GeneratedFile } from '../generator'
 import { capabilitiesFor, FREE_CAPABILITIES } from '../levels'
 import type { Capabilities } from '../levels'
 import type { ObjectInstance, Scene } from '../model'
@@ -26,4 +30,10 @@ export function useCapabilities(): Capabilities {
   const level = useProgressStore((state) => state.unlockedLevel)
   const freeMode = useProgressStore((state) => state.freeMode)
   return freeMode ? FREE_CAPABILITIES : capabilitiesFor(level)
+}
+
+export function useGeneratedFiles(): GeneratedFile[] {
+  const project = useProjectStore((state) => state.project)
+  const activeSceneId = useEditorStore((state) => state.activeSceneId)
+  return useMemo(() => generatePython(project, activeSceneId).files, [project, activeSceneId])
 }

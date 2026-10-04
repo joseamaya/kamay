@@ -46,6 +46,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **First-run guide and celebrations**: a welcome card on the empty stage shows
   the first three steps once (remembered locally), and completing a mission pops
   a small celebration toast.
+- **IDE-style layout**: the left column is now a project explorer (scenes plus
+  the generated Python files), the catalogue moves to the right, and the guide
+  becomes a compact banner under the toolbar. The code dock drops its file tabs
+  and follows the file chosen in the explorer.
 
 ### Planned
 

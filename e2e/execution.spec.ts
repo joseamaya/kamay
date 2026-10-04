@@ -107,7 +107,10 @@ test('shows an inline error when a method fails', async ({ page }) => {
   await expect(page.getByText(/Se pidió algo que el objeto no tiene/)).toBeVisible({
     timeout: 150_000,
   })
-  await expect(page.getByRole('tab', { name: 'Heroe.py' })).toHaveAttribute('aria-selected', 'true')
+  await expect(page.getByRole('button', { name: 'Heroe.py' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  )
   await expect(page.locator('.cm-lintRange-error')).toBeVisible()
 })
 

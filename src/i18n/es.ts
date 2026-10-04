@@ -57,6 +57,10 @@ export const es = {
     editScene: 'Renombrar {name}',
     deleteScene: 'Eliminar {name}',
   },
+  explorer: {
+    title: 'Proyecto',
+    files: 'Archivos',
+  },
   classEditor: {
     titleNew: 'Nueva clase',
     titleEdit: 'Editar clase',

@@ -13,10 +13,11 @@ import {
 } from '../store'
 import { ActivityPanel } from './activity/ActivityPanel'
 import { MissionToast } from './activity/MissionToast'
+import { GuideBanner } from './bar/GuideBanner'
 import { TopBar } from './bar/TopBar'
 import { CodeView } from './code/CodeView'
+import { ProjectExplorer } from './explorer/ProjectExplorer'
 import { FactoryView } from './factory/FactoryView'
-import { GuidePanel } from './guide/GuidePanel'
 import { ScenarioView } from './scenario/ScenarioView'
 
 export function App() {
@@ -82,13 +83,12 @@ export function App() {
   return (
     <div className="flex h-screen flex-col">
       <TopBar persistence={persistence} runtime={runtime} />
+      <GuideBanner />
       <div className="flex min-h-0 flex-1 flex-col gap-3 p-3">
         <main className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-auto lg:grid-cols-[18rem_minmax(0,1fr)_18rem] lg:overflow-hidden">
-          <FactoryView />
+          <ProjectExplorer />
           <ScenarioView />
-          <div className="flex min-h-0 flex-col gap-3 overflow-auto">
-            <GuidePanel />
-          </div>
+          <FactoryView />
         </main>
         <CodeView />
       </div>

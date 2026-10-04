@@ -49,13 +49,13 @@ test('creates a class with a method and instantiates it', async ({ page }) => {
   await methodBody(page).fill('self.decir("hola")')
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
-  await page.getByRole('tab', { name: 'Heroe.py' }).click()
+  await page.getByRole('button', { name: 'Heroe.py' }).click()
   await expect(codeContent(page)).toContainText('class Heroe(Actor):')
   await expect(codeContent(page)).toContainText('def saludar(self):')
   await expect(codeContent(page)).toContainText('self.decir("hola")')
 
   await page.getByRole('button', { name: 'Crear objeto de Heroe' }).click()
-  await page.getByRole('tab', { name: 'principal.py' }).click()
+  await page.getByRole('button', { name: 'principal.py' }).click()
   await expect(codeContent(page)).toContainText('heroe1 = Heroe("heroe1")')
 })
 
@@ -84,10 +84,10 @@ test('shows every generated file and switches tabs', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
 
-  await page.getByRole('tab', { name: 'Circle.py' }).click()
+  await page.getByRole('button', { name: 'Circle.py' }).click()
   await expect(codeContent(page)).toContainText('class Circle(Actor):')
 
-  await page.getByRole('tab', { name: 'principal.py' }).click()
+  await page.getByRole('button', { name: 'principal.py' }).click()
   await expect(codeContent(page)).toContainText('circle1 = Circle("circle1")')
 })
 
@@ -152,11 +152,11 @@ test('creates a class that inherits from another class', async ({ page }) => {
   await page.getByLabel('Hereda de').selectOption('Personaje')
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
-  await page.getByRole('tab', { name: 'Heroe.py' }).click()
+  await page.getByRole('button', { name: 'Heroe.py' }).click()
   await expect(codeContent(page)).toContainText('from Personaje import Personaje')
   await expect(codeContent(page)).toContainText('class Heroe(Personaje):')
 
-  await page.getByRole('tab', { name: 'Personaje.py' }).click()
+  await page.getByRole('button', { name: 'Personaje.py' }).click()
   await expect(codeContent(page)).toContainText('class Personaje(Actor):')
 
   await page.getByRole('button', { name: 'Crear objeto de Heroe' }).click()
@@ -211,7 +211,7 @@ test('builds a method body with blocks', async ({ page }) => {
 
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
-  await page.getByRole('tab', { name: 'Heroe.py' }).click()
+  await page.getByRole('button', { name: 'Heroe.py' }).click()
   await expect(codeContent(page)).toContainText('def saludar(self):')
   await expect(codeContent(page)).toContainText('self.decir("hola")')
 })

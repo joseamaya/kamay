@@ -17,21 +17,20 @@ beforeEach(() => {
 })
 
 describe('CodeView', () => {
-  it('lists the generated files and switches tabs', async () => {
-    const user = userEvent.setup()
+  it('shows the active file name and its code', async () => {
     const sceneId = useProjectStore.getState().project.scenes[0]!.id
     useProjectStore.getState().addObject(sceneId, 'circle')
 
     const { container } = render(<CodeView />)
 
-    expect(screen.getByRole('tab', { name: 'principal.py' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    )
+    expect(screen.getByText('principal.py')).toBeInTheDocument()
+    await waitFor(() => expect(editorText(container)).toContain('circle1 = Circle("circle1")'))
 
-    await user.click(screen.getByRole('tab', { name: 'Circle.py' }))
+    act(() => {
+      useEditorStore.setState({ codeFile: 'Circle.py' })
+    })
 
-    expect(screen.getByRole('tab', { name: 'Circle.py' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByText('Circle.py')).toBeInTheDocument()
     await waitFor(() => expect(editorText(container)).toContain('class Circle(Actor):'))
   })
 
@@ -40,10 +39,7 @@ describe('CodeView', () => {
     useProjectStore.getState().addObject(sceneId, 'circle')
 
     render(<CodeView />)
-    expect(screen.getByRole('tab', { name: 'principal.py' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    )
+    expect(screen.getByText('principal.py')).toBeInTheDocument()
 
     act(() => {
       useRuntimeStore.setState({
@@ -52,12 +48,7 @@ describe('CodeView', () => {
       })
     })
 
-    await waitFor(() =>
-      expect(screen.getByRole('tab', { name: 'Circle.py' })).toHaveAttribute(
-        'aria-selected',
-        'true',
-      ),
-    )
+    await waitFor(() => expect(screen.getByText('Circle.py')).toBeInTheDocument())
   })
 
   it('copies the active file', async () => {

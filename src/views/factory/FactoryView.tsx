@@ -8,7 +8,6 @@ import { cn } from '../../ui/cn'
 import { Dialog } from '../../ui/Dialog'
 import { Panel } from '../../ui/Panel'
 import { ClassEditorDialog } from '../classes/ClassEditorDialog'
-import { SceneManager } from '../scenes/SceneManager'
 
 const CLIP_PATHS: Partial<Record<ActorShape, string>> = {
   triangle: 'polygon(50% 0, 100% 100%, 0 100%)',
@@ -117,8 +116,6 @@ export function FactoryView() {
   return (
     <Panel title={messages.factory.title} className="min-h-0">
       <div className="flex h-full flex-col gap-4">
-        <SceneManager />
-
         <div className="flex flex-col gap-3">
           {catalogGroups.map((group) => (
             <div key={group.title}>
