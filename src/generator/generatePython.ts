@@ -1,5 +1,14 @@
 import { collisionKey, findBuiltinMethod, resolveMethods } from '../model'
-import type { Action, ClassDefinition, Method, ObjectInstance, Project, Scene } from '../model'
+import type {
+  Action,
+  ClassDefinition,
+  EventType,
+  Method,
+  ObjectInstance,
+  Project,
+  Scene,
+  SceneEvent,
+} from '../model'
 import { blocksToLines } from './blocks'
 import { indent, pyLiteral, TYPE_HINTS } from './python'
 
@@ -8,11 +17,64 @@ export interface GeneratedFile {
   content: string
 }
 
+/** Identity of an editable literal so an edit can be mapped back to the model. */
+export interface ValueTarget {
+  kind: 'attribute' | 'action-arg'
+  objectName: string
+  /** Attribute key or parameter name. */
+  key: string
+  eventType: EventType | null
+  source: string | null
+  other: string | null
+  eventKey: string | null
+  signal: string | null
+  actionIndex: number
+}
+
+export interface EditableValue extends ValueTarget {
+  value: number | string | boolean
+  raw: string
+  from: number
+  to: number
+}
+
 export interface GenerationResult {
   files: GeneratedFile[]
+  editableValues: EditableValue[]
 }
 
 const ENCODING_HEADER = '# -*- coding: utf-8 -*-'
+
+const VALUE_OPEN = '\u0001'
+const VALUE_CLOSE = '\u0002'
+
+interface CollectedValue {
+  target: ValueTarget
+  value: number | string | boolean
+  raw: string
+}
+
+function mark(
+  raw: string,
+  target: ValueTarget,
+  value: unknown,
+  collected: CollectedValue[],
+): string {
+  collected.push({ target, value: value as number | string | boolean, raw })
+  return `${VALUE_OPEN}${raw}${VALUE_CLOSE}`
+}
+
+function eventRef(
+  event: SceneEvent,
+): Omit<ValueTarget, 'kind' | 'objectName' | 'key' | 'actionIndex'> {
+  return {
+    eventType: event.type,
+    source: event.source,
+    other: event.other,
+    eventKey: event.key,
+    signal: event.signal,
+  }
+}
 
 function collectClasses(project: Project): ClassDefinition[] {
   const byName = new Map<string, ClassDefinition>()
@@ -86,38 +148,79 @@ function resolveVariableName(scene: Scene, target: string): string {
   return found ? found.name : target
 }
 
+interface OrderedArg {
+  name: string
+  value: unknown
+}
+
 /**
  * Orders action arguments by the method's declared parameter order. Unknown
  * arguments are appended in their recorded order so nothing is dropped.
  */
-function orderedArgs(scene: Scene, action: Action): unknown[] {
+function orderedArgs(scene: Scene, action: Action): OrderedArg[] {
   const object = findObject(scene, action.target)
   const method = object
     ? resolveMethods(scene, object.class).find((candidate) => candidate.name === action.method)
     : undefined
   const parameters = method?.parameters ?? findBuiltinMethod(action.method)?.parameters
-  if (!parameters) return Object.values(action.args)
+  if (!parameters) return Object.entries(action.args).map(([name, value]) => ({ name, value }))
 
   const byParameter = parameters
     .filter((parameter) => parameter.name in action.args)
-    .map((parameter) => action.args[parameter.name])
+    .map((parameter) => ({ name: parameter.name, value: action.args[parameter.name] }))
   const extras = Object.entries(action.args)
     .filter(([name]) => !parameters.some((parameter) => parameter.name === name))
-    .map(([, value]) => value)
+    .map(([name, value]) => ({ name, value }))
 
   return [...byParameter, ...extras]
 }
 
-function generateAction(scene: Scene, action: Action): string {
+function generateAction(
+  scene: Scene,
+  action: Action,
+  event: SceneEvent,
+  actionIndex: number,
+  collected: CollectedValue[],
+): string {
   const variable = resolveVariableName(scene, action.target)
-  const args = orderedArgs(scene, action).map(pyLiteral)
+  const args = orderedArgs(scene, action).map(({ name, value }) =>
+    mark(
+      pyLiteral(value),
+      {
+        kind: 'action-arg',
+        objectName: variable,
+        key: name,
+        actionIndex,
+        ...eventRef(event),
+      },
+      value,
+      collected,
+    ),
+  )
   return `${variable}.${action.method}(${args.join(', ')})`
 }
 
-function generateObjectStatements(object: ObjectInstance): string[] {
+function generateObjectStatements(object: ObjectInstance, collected: CollectedValue[]): string[] {
   const lines = [`${object.name} = ${object.class}(${pyLiteral(object.name)})`]
   for (const [key, value] of Object.entries(object.attributes)) {
-    lines.push(`${object.name}.${key} = ${pyLiteral(value)}`)
+    lines.push(
+      `${object.name}.${key} = ${mark(
+        pyLiteral(value),
+        {
+          kind: 'attribute',
+          objectName: object.name,
+          key,
+          eventType: null,
+          source: null,
+          other: null,
+          eventKey: null,
+          signal: null,
+          actionIndex: -1,
+        },
+        value,
+        collected,
+      )}`,
+    )
   }
   return lines
 }
@@ -132,11 +235,11 @@ function pyIdentifier(value: string): string {
   return /^[A-Za-z_]/.test(base) ? base : `_${base}`
 }
 
-function generateSceneBody(scene: Scene): string[] {
+function generateSceneBody(scene: Scene, collected: CollectedValue[]): string[] {
   const lines: string[] = [`# Escena: ${scene.name}`]
 
   for (const object of scene.objects) {
-    lines.push(...generateObjectStatements(object))
+    lines.push(...generateObjectStatements(object, collected))
   }
 
   for (const event of scene.events) {
@@ -145,7 +248,7 @@ function generateSceneBody(scene: Scene): string[] {
     pushHandler(
       lines,
       name,
-      event.actions.map((action) => generateAction(scene, action)),
+      event.actions.map((action, index) => generateAction(scene, action, event, index, collected)),
     )
     lines.push(`registrar("click", ${pyLiteral(event.source)}, ${name})`)
   }
@@ -157,7 +260,7 @@ function generateSceneBody(scene: Scene): string[] {
     pushHandler(
       lines,
       name,
-      event.actions.map((action) => generateAction(scene, action)),
+      event.actions.map((action, index) => generateAction(scene, action, event, index, collected)),
     )
     lines.push(
       `registrar("collision", ${pyLiteral(collisionKey(event.source, event.other))}, ${name})`,
@@ -165,47 +268,70 @@ function generateSceneBody(scene: Scene): string[] {
   }
 
   const keyGroups = groupActionsBy(scene, 'on_key', (event) => event.key)
-  for (const [key, actions] of keyGroups) {
+  for (const [key, refs] of keyGroups) {
     const name = `al_pulsar_${pyIdentifier(key)}`
-    pushHandler(lines, name, actions)
+    pushHandler(
+      lines,
+      name,
+      refs.map(({ event, actionIndex }) =>
+        generateAction(scene, event.actions[actionIndex]!, event, actionIndex, collected),
+      ),
+    )
     lines.push(`registrar("key", ${pyLiteral(key)}, ${name})`)
   }
 
   const signalGroups = groupActionsBy(scene, 'on_signal', (event) => event.signal)
-  for (const [signal, actions] of signalGroups) {
+  for (const [signal, refs] of signalGroups) {
     const name = `al_recibir_${pyIdentifier(signal)}`
-    pushHandler(lines, name, actions)
+    pushHandler(
+      lines,
+      name,
+      refs.map(({ event, actionIndex }) =>
+        generateAction(scene, event.actions[actionIndex]!, event, actionIndex, collected),
+      ),
+    )
     lines.push(`registrar("signal", ${pyLiteral(signal)}, ${name})`)
   }
 
   // Run start actions last so every handler is registered before they fire.
   for (const event of scene.events) {
     if (event.type !== 'on_start') continue
-    for (const action of event.actions) lines.push(generateAction(scene, action))
+    event.actions.forEach((action, index) => {
+      lines.push(generateAction(scene, action, event, index, collected))
+    })
   }
 
   return lines
+}
+
+interface ActionRef {
+  event: SceneEvent
+  actionIndex: number
 }
 
 /** Groups the generated actions of an event type by a discriminating field. */
 function groupActionsBy(
   scene: Scene,
   type: 'on_key' | 'on_signal',
-  pick: (event: Scene['events'][number]) => string | null,
-): Map<string, string[]> {
-  const groups = new Map<string, string[]>()
+  pick: (event: SceneEvent) => string | null,
+): Map<string, ActionRef[]> {
+  const groups = new Map<string, ActionRef[]>()
   for (const event of scene.events) {
     if (event.type !== type) continue
     const value = pick(event)
     if (!value) continue
-    const actions = groups.get(value) ?? []
-    actions.push(...event.actions.map((action) => generateAction(scene, action)))
-    groups.set(value, actions)
+    const refs = groups.get(value) ?? []
+    event.actions.forEach((_, actionIndex) => refs.push({ event, actionIndex }))
+    groups.set(value, refs)
   }
   return groups
 }
 
-function generateBootstrap(project: Project, classes: ClassDefinition[]): string {
+function generateBootstrap(
+  project: Project,
+  classes: ClassDefinition[],
+  collected: CollectedValue[],
+): string {
   const usedClassNames = new Set<string>()
   for (const scene of project.scenes) {
     for (const object of scene.objects) usedClassNames.add(object.class)
@@ -232,7 +358,7 @@ function generateBootstrap(project: Project, classes: ClassDefinition[]): string
   const body: string[] = []
   project.scenes.forEach((scene, index) => {
     if (index > 0) body.push('')
-    body.push(...generateSceneBody(scene))
+    body.push(...generateSceneBody(scene, collected))
   })
   if (body.length === 0) body.push('pass')
 
@@ -243,6 +369,36 @@ function generateBootstrap(project: Project, classes: ClassDefinition[]): string
   parts.push(main, '', '', 'if __name__ == "__main__":', '    main()')
 
   return `${parts.join('\n')}\n`
+}
+
+/** Removes the value markers and returns their positions in the clean source. */
+function extractEditableValues(
+  marked: string,
+  collected: CollectedValue[],
+): { content: string; values: EditableValue[] } {
+  let content = ''
+  const values: EditableValue[] = []
+  let cursor = 0
+  let index = 0
+
+  for (;;) {
+    const open = marked.indexOf(VALUE_OPEN, cursor)
+    if (open === -1) break
+    const close = marked.indexOf(VALUE_CLOSE, open + 1)
+    if (close === -1) break
+    content += marked.slice(cursor, open)
+    const raw = marked.slice(open + 1, close)
+    const from = content.length
+    content += raw
+    const to = content.length
+    const item = collected[index]
+    if (item) values.push({ ...item.target, value: item.value, raw: item.raw, from, to })
+    index += 1
+    cursor = close + 1
+  }
+  content += marked.slice(cursor)
+
+  return { content, values }
 }
 
 /**
@@ -262,7 +418,10 @@ export function generatePython(project: Project, sceneId?: string | null): Gener
     return { path: `${definition.name}.py`, content: generateClassFile(definition, scene) }
   })
 
-  files.push({ path: 'principal.py', content: generateBootstrap(scoped, classes) })
+  const collected: CollectedValue[] = []
+  const marked = generateBootstrap(scoped, classes, collected)
+  const { content, values } = extractEditableValues(marked, collected)
+  files.push({ path: 'principal.py', content })
 
-  return { files }
+  return { files, editableValues: values }
 }

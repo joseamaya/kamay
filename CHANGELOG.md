@@ -33,6 +33,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Guided levels**: a 1–5 path that unlocks language features (orders, own
   classes, blocks, events, inheritance) as missions are completed, with a free
   mode and an automatic raise for loaded projects.
+- **Edit values in the code**: from level 2, an "Editar valores" toggle turns
+  the editable literals of `principal.py` (object attributes and order
+  arguments) into inline fields that write back to the model.
 
 ### Planned
 

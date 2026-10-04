@@ -10,6 +10,7 @@ import {
   removeEventAction,
   removeObject,
   renameProject,
+  setActionArg,
   setSceneBackground,
   updateObjectAttributes,
 } from './index'
@@ -80,6 +81,28 @@ describe('addCatalogObject', () => {
       initial: '🐱',
     })
     expect(scene.objects[0]?.attributes.glyph).toBe('🐱')
+  })
+})
+
+describe('setActionArg', () => {
+  it('updates a single action argument immutably', () => {
+    let scene = addCatalogObject(createScene('Principal'), circle)
+    const name = scene.objects[0]!.name
+    scene = addEventAction(scene, 'on_start', null, null, {
+      target: name,
+      method: 'decir',
+      args: { mensaje: 'hola' },
+    })
+
+    const next = setActionArg(scene, 'on_start', null, null, 0, 'mensaje', 'adios')
+
+    expect(next.events[0]?.actions[0]?.args.mensaje).toBe('adios')
+    expect(scene.events[0]?.actions[0]?.args.mensaje).toBe('hola')
+  })
+
+  it('ignores a missing event', () => {
+    const scene = addCatalogObject(createScene('Principal'), circle)
+    expect(setActionArg(scene, 'on_start', null, null, 0, 'mensaje', 'x')).toEqual(scene)
   })
 })
 

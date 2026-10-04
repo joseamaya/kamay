@@ -19,6 +19,8 @@ export const LEVELS: Level[] = [
 ]
 
 export interface Capabilities {
+  /** Edit literal values directly in the generated code. */
+  editValues: boolean
   /** Orders panel with basic methods and start/click triggers. */
   orders: boolean
   /** Create and edit your own classes. */
@@ -34,6 +36,7 @@ export interface Capabilities {
 }
 
 export const FREE_CAPABILITIES: Capabilities = {
+  editValues: true,
   orders: true,
   ownClasses: true,
   blocks: true,
@@ -50,6 +53,7 @@ export const ADVANCED_TRIGGERS = ['on_collision', 'on_key', 'on_signal']
 export function capabilitiesFor(level: number): Capabilities {
   const value = Math.min(Math.max(level, 1), MAX_LEVEL)
   return {
+    editValues: value >= 2,
     orders: value >= 2,
     ownClasses: value >= 3,
     blocks: value >= 3,

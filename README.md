@@ -34,7 +34,8 @@ The project has completed **Phase 4 — classroom and gamification**. Working to
   an attribute, repeat) and convert them to/from code; code the editor cannot
   represent is kept as advanced code.
 - **Code**: Python generated live, shown in a CodeMirror view (read-only) with
-  editable method bodies.
+  editable method bodies and, from level 2, inline editing of literal values
+  directly in `principal.py` (object attributes and order arguments).
 - **Execution**: run the program with **Pyodide** (Web Worker) and see the
   objects talk and move; runtime errors are translated to Spanish and marked
   inline in the generated code. Pyodide is warmed up in the background so the

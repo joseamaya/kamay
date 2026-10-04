@@ -21,6 +21,7 @@ function klass(name: string, inherits = 'Actor'): ClassDefinition {
 describe('capabilitiesFor', () => {
   it('unlocks capabilities progressively and clamps the level', () => {
     expect(capabilitiesFor(1)).toEqual({
+      editValues: false,
       orders: false,
       ownClasses: false,
       blocks: false,
@@ -28,6 +29,7 @@ describe('capabilitiesFor', () => {
       freeCode: false,
       inheritance: false,
     })
+    expect(capabilitiesFor(2).editValues).toBe(true)
     expect(capabilitiesFor(2).orders).toBe(true)
     expect(capabilitiesFor(2).ownClasses).toBe(false)
     expect(capabilitiesFor(3).ownClasses).toBe(true)
