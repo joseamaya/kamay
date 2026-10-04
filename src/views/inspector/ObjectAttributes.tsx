@@ -5,27 +5,22 @@ import {
   resolveAttributeDefaults,
   resolveCustomAttributes,
 } from '../../model'
-import { useActiveScene, useProjectStore, useSelectedObject } from '../../store'
+import type { ObjectInstance, Scene } from '../../model'
+import { useProjectStore } from '../../store'
 import { ColorInput } from '../../ui/ColorInput'
 import { NumberField } from '../../ui/NumberField'
-import { Panel } from '../../ui/Panel'
 import { Select } from '../../ui/Select'
 import { Slider } from '../../ui/Slider'
 import { TextField } from '../../ui/TextField'
 
-export function AttributesPanel() {
-  const messages = getMessages()
-  const scene = useActiveScene()
-  const object = useSelectedObject()
-  const updateObjectAttributes = useProjectStore((state) => state.updateObjectAttributes)
+export interface ObjectAttributesProps {
+  scene: Scene
+  object: ObjectInstance
+}
 
-  if (!scene || !object) {
-    return (
-      <Panel title={messages.inspector.title} className="min-h-0">
-        <p className="text-muted-foreground text-sm">{messages.inspector.empty}</p>
-      </Panel>
-    )
-  }
+export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
+  const messages = getMessages()
+  const updateObjectAttributes = useProjectStore((state) => state.updateObjectAttributes)
 
   const patch = (values: Record<string, number | string | boolean>) =>
     updateObjectAttributes(scene.id, object.id, values)
@@ -34,7 +29,7 @@ export function AttributesPanel() {
   const defaults = resolveAttributeDefaults(scene, object.class)
 
   return (
-    <Panel title={messages.inspector.title} className="min-h-0">
+    <>
       <div className="grid grid-cols-2 gap-3">
         <NumberField
           label={messages.inspector.positionX}
@@ -121,6 +116,6 @@ export function AttributesPanel() {
           })}
         </div>
       ) : null}
-    </Panel>
+    </>
   )
 }

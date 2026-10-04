@@ -36,6 +36,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Edit values in the code**: from level 2, an "Editar valores" toggle turns
   the editable literals of `principal.py` (object attributes and order
   arguments) into inline fields that write back to the model.
+- **Object menu**: selecting an object on the stage opens a contextual menu
+  anchored next to it with its properties and orders, and a guide panel shows
+  the current level and the next step. The code dock starts collapsed at level 1.
 
 ### Planned
 

@@ -58,6 +58,10 @@ export function CodeView() {
   }, [files, codeFile, setCodeFile])
 
   useEffect(() => {
+    if (!capabilities.editValues) setCodeCollapsed(true)
+  }, [capabilities.editValues, setCodeCollapsed])
+
+  useEffect(() => {
     if (!error?.file) return
     if (!files.some((file) => file.path === error.file)) return
     setCodeFile(error.file)

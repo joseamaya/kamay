@@ -20,6 +20,7 @@ import {
   useProjectStore,
   useRuntimeStore,
 } from '../../store'
+import { SelectionOverlay } from './SelectionOverlay'
 
 interface Point {
   x: number
@@ -36,6 +37,8 @@ interface DragState {
 
 const MOVE_STEP = 4
 const MOVE_STEP_FAST = 16
+const MENU_GAP = 12
+const MENU_PAD = 8
 
 function distanceSquared(a: Point, b: Point): number {
   const dx = a.x - b.x
@@ -92,6 +95,8 @@ export function ScenarioCanvas() {
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const menuLayoutRef = useRef({ width: 288, height: 0 })
   const dragRef = useRef<DragState | null>(null)
   const controllerRef = useRef(new RuntimeController())
   const imageCacheRef = useRef(new Map<string, HTMLImageElement>())
@@ -111,6 +116,19 @@ export function ScenarioCanvas() {
   useEffect(() => {
     selectedRef.current = selectedObjectId
   }, [selectedObjectId])
+
+  useEffect(() => {
+    const menu = menuRef.current
+    if (!menu) return
+    const measure = () => {
+      menuLayoutRef.current = { width: menu.offsetWidth, height: menu.offsetHeight }
+    }
+    measure()
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(measure)
+    observer.observe(menu)
+    return () => observer.disconnect()
+  }, [selectedObjectId, runtimeStatus])
 
   useEffect(() => {
     sizeRef.current = size
@@ -159,6 +177,7 @@ export function ScenarioCanvas() {
       ) {
         return
       }
+      if (target?.closest('[data-selection-overlay]')) return
       const source = event.key.length === 1 ? event.key.toLowerCase() : event.key
       emitRuntimeTrigger({ kind: 'key', source })
     }
@@ -233,6 +252,32 @@ export function ScenarioCanvas() {
     }
 
     ensureImages(imageCacheRef.current, actors)
+
+    const menu = menuRef.current
+    if (menu) {
+      menu.style.setProperty('--kamay-menu-max', `${Math.max(120, height - 2 * MENU_PAD)}px`)
+      const selected = actors.find((actor) => actor.id === selectedRef.current)
+      if (selected) {
+        const { width: menuWidth, height: menuHeight } = menuLayoutRef.current
+        const centerX = width / 2 + selected.transform.position.x
+        const centerY = height / 2 - selected.transform.position.y
+        const radius = (ACTOR_SIZE / 2) * Math.max(selected.transform.scale, 0.2) + MENU_GAP
+        const preferred =
+          centerX + radius + menuWidth <= width - MENU_PAD
+            ? centerX + radius
+            : centerX - radius - menuWidth
+        const left = Math.min(
+          Math.max(preferred, MENU_PAD),
+          Math.max(MENU_PAD, width - menuWidth - MENU_PAD),
+        )
+        const top = Math.min(
+          Math.max(centerY - menuHeight / 2, MENU_PAD),
+          Math.max(MENU_PAD, height - MENU_PAD - menuHeight),
+        )
+        menu.style.transform = `translate(${left}px, ${top}px)`
+      }
+    }
+
     const options = {
       width,
       height,
@@ -374,6 +419,7 @@ export function ScenarioCanvas() {
         onPointerCancel={handlePointerUp}
         onKeyDown={handleKeyDown}
       />
+      <SelectionOverlay ref={menuRef} />
     </div>
   )
 }

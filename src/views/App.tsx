@@ -11,12 +11,11 @@ import {
   useProgressStore,
   useProjectStore,
 } from '../store'
-import { ActionsPanel } from './actions/ActionsPanel'
 import { ActivityPanel } from './activity/ActivityPanel'
 import { TopBar } from './bar/TopBar'
 import { CodeView } from './code/CodeView'
 import { FactoryView } from './factory/FactoryView'
-import { AttributesPanel } from './inspector/AttributesPanel'
+import { GuidePanel } from './guide/GuidePanel'
 import { ScenarioView } from './scenario/ScenarioView'
 
 export function App() {
@@ -81,12 +80,11 @@ export function App() {
     <div className="flex h-screen flex-col">
       <TopBar persistence={persistence} runtime={runtime} />
       <div className="flex min-h-0 flex-1 flex-col gap-3 p-3">
-        <main className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-auto lg:grid-cols-[18rem_minmax(0,1fr)_22rem] lg:overflow-hidden">
+        <main className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-auto lg:grid-cols-[18rem_minmax(0,1fr)_18rem] lg:overflow-hidden">
           <FactoryView />
           <ScenarioView />
           <div className="flex min-h-0 flex-col gap-3 overflow-auto">
-            <AttributesPanel />
-            <ActionsPanel />
+            <GuidePanel />
           </div>
         </main>
         <CodeView />
