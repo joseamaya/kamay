@@ -53,24 +53,31 @@ export interface ProgressState extends StoredProgress {
 
 const stored = readStored()
 
+function snapshot(state: ProgressState): StoredProgress {
+  return {
+    completed: state.completed,
+    freeMode: state.freeMode,
+    unlockedLevel: state.unlockedLevel,
+  }
+}
+
 export const useProgressStore = create<ProgressState>((set, get) => ({
   ...stored,
   complete: (id) => {
     if (get().completed.includes(id)) return
-    const next = { ...get(), completed: [...get().completed, id] }
-    set({ completed: next.completed })
-    persist(next)
+    set((state) => ({ completed: [...state.completed, id] }))
+    persist(snapshot(get()))
   },
   setFreeMode: (freeMode) => {
     set({ freeMode })
-    persist({ ...get(), freeMode })
+    persist(snapshot(get()))
   },
   setUnlockedLevel: (unlockedLevel) => {
     set({ unlockedLevel })
-    persist({ ...get(), unlockedLevel })
+    persist(snapshot(get()))
   },
   reset: () => {
     set({ completed: [], unlockedLevel: 1 })
-    persist({ ...get(), completed: [], unlockedLevel: 1 })
+    persist(snapshot(get()))
   },
 }))
