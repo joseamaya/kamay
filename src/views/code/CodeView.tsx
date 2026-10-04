@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 
 import { generatePython } from '../../generator'
@@ -46,7 +46,6 @@ export function CodeView() {
   const [copied, setCopied] = useState(false)
   const [editValuesOn, setEditValuesOn] = useState(false)
   const dragRef = useRef<{ startY: number; startHeight: number } | null>(null)
-  const panelId = useId()
 
   const activeFile =
     files.find((file) => file.path === codeFile) ??
@@ -160,34 +159,10 @@ export function CodeView() {
 
       <header className="border-border flex flex-none flex-wrap items-center gap-2 border-b px-3 py-1.5">
         <h2 className="text-sm font-semibold tracking-wide uppercase">{messages.code.title}</h2>
-        <div
-          role="tablist"
-          aria-label={messages.code.files}
-          className="flex flex-1 flex-wrap items-center gap-1"
-        >
-          {files.map((file) => {
-            const selected = file.path === activeFile?.path
-            return (
-              <button
-                key={file.path}
-                type="button"
-                role="tab"
-                id={`${panelId}-tab-${file.path}`}
-                aria-controls={panelId}
-                aria-selected={selected}
-                onClick={() => setCodeFile(file.path)}
-                className={cn(
-                  'rounded-md px-2 py-0.5 font-mono text-xs transition',
-                  selected
-                    ? 'bg-secondary text-secondary-foreground'
-                    : 'text-muted-foreground hover:bg-muted',
-                )}
-              >
-                {file.path}
-              </button>
-            )
-          })}
-        </div>
+        {activeFile ? (
+          <span className="text-muted-foreground font-mono text-xs">{activeFile.path}</span>
+        ) : null}
+        <div className="flex-1" />
 
         {canEditValues ? (
           <button
@@ -222,12 +197,7 @@ export function CodeView() {
       </header>
 
       {codeCollapsed ? null : (
-        <div
-          id={panelId}
-          role="tabpanel"
-          aria-labelledby={activeFile ? `${panelId}-tab-${activeFile.path}` : undefined}
-          className="min-h-0 flex-1"
-        >
+        <div className="min-h-0 flex-1">
           {activeFile ? (
             <LazyCodeEditor
               readOnly
