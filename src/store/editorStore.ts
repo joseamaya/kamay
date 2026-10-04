@@ -22,6 +22,7 @@ export interface EditorState {
   codeCollapsed: boolean
   codeFile: string | null
   log: LogEntry[]
+  toast: string | null
   setProjectId: (projectId: string) => void
   setActiveSceneId: (sceneId: string | null) => void
   selectObject: (objectId: string | null) => void
@@ -32,6 +33,8 @@ export interface EditorState {
   setCodeFile: (file: string | null) => void
   pushLog: (text: string, level?: LogLevel) => void
   clearLog: () => void
+  showToast: (text: string) => void
+  hideToast: () => void
 }
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -44,6 +47,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   codeCollapsed: false,
   codeFile: null,
   log: [],
+  toast: null,
 
   setProjectId: (projectId) => set({ projectId }),
   setActiveSceneId: (activeSceneId) => set({ activeSceneId }),
@@ -56,4 +60,6 @@ export const useEditorStore = create<EditorState>((set) => ({
   pushLog: (text, level = 'info') =>
     set((state) => ({ log: [{ id: createId('log'), text, level }, ...state.log].slice(0, 20) })),
   clearLog: () => set({ log: [] }),
+  showToast: (toast) => set({ toast }),
+  hideToast: () => set({ toast: null }),
 }))

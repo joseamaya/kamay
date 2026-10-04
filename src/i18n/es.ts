@@ -43,7 +43,7 @@ export const es = {
     addObject: 'Agregar {name} al escenario',
     removeObject: 'Eliminar {name}',
     duplicateObject: 'Duplicar {name}',
-    empty: 'Agrega objetos desde el catálogo para empezar.',
+    empty: 'Todavía no hay objetos. ¡Agrega uno!',
     newClass: 'Nueva clase',
     noClasses: 'Todavía no hay clases propias.',
     newObjectOfClass: 'Crear objeto de {name}',
@@ -156,8 +156,15 @@ export const es = {
     title: 'Escenario',
     background: 'Fondo',
     canvasLabel: 'Escenario. Usa las flechas para mover el objeto seleccionado.',
-    empty: 'El escenario está vacío.',
-    emptyHint: 'Agrega objetos desde la Fábrica y verás su efecto aquí.',
+    empty: 'Tu escenario está listo.',
+    emptyHint: 'Toca un objeto de la Fábrica para que aparezca aquí.',
+  },
+  welcome: {
+    title: '¡Bienvenido a Kamay!',
+    step1: 'Toca un objeto del catálogo de la izquierda para ponerlo en el escenario.',
+    step2: 'Selecciónalo para ver qué puede hacer.',
+    step3: 'Pulsa Ejecutar y míralo en acción.',
+    start: '¡Empecemos!',
   },
   backgrounds: {
     grass: 'Pasto',
@@ -203,6 +210,7 @@ export const es = {
   missions: {
     title: 'Misiones',
     completed: '¡Misión completada: {title}!',
+    completedToast: '¡Misión completada!',
     reset: 'Reiniciar progreso',
     badgesTitle: 'Insignias',
     locked: 'Bloqueada',
@@ -319,7 +327,7 @@ export const es = {
   guide: {
     title: 'Guía',
     level: 'Nivel {level}',
-    noObjects: 'Agrega un objeto desde la Fábrica para empezar.',
+    noObjects: 'Toca un objeto de la Fábrica para empezar.',
     select: 'Selecciona un objeto en el escenario para ver qué puede hacer.',
     selected: 'Usa el menú junto al objeto para cambiar sus propiedades o darle órdenes.',
     nextMission: 'Siguiente misión: {title}',

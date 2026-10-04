@@ -43,6 +43,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   import, share, templates, projector) move into a "⋯" menu, leaving save, level,
   missions, run and undo/redo at hand; the guide panel also shows the next
   mission.
+- **First-run guide and celebrations**: a welcome card on the empty stage shows
+  the first three steps once (remembered locally), and completing a mission pops
+  a small celebration toast.
 
 ### Planned
 

@@ -30,6 +30,8 @@ The project has completed **Phase 4 — classroom and gamification**. Working to
 - **Compact toolbar**: save, level, missions, run and undo/redo stay at hand;
   project and classroom actions (new, portfolio, export, import, share,
   templates, projector) live in a "⋯" menu.
+- **First-run guide and celebrations**: a welcome card shows the first three
+  steps once, and completing a mission pops a small celebration toast.
 - **Physics**: optional per scene (toggle + gravity); objects fall and collide
   for real with planck.js.
 - **Properties**: position, rotation, scale and color.

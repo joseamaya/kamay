@@ -1,17 +1,19 @@
 import { BACKGROUNDS } from '../../engine'
 import { getMessages } from '../../i18n'
-import { useActiveScene, useProjectStore } from '../../store'
+import { useActiveScene, useProgressStore, useProjectStore } from '../../store'
 import { Button } from '../../ui/Button'
 import { NumberField } from '../../ui/NumberField'
 import { Panel } from '../../ui/Panel'
 import { Select } from '../../ui/Select'
 import { ScenarioCanvas } from './ScenarioCanvas'
+import { WelcomeCard } from './WelcomeCard'
 
 export function ScenarioView() {
   const messages = getMessages()
   const scene = useActiveScene()
   const setBackground = useProjectStore((state) => state.setBackground)
   const setPhysics = useProjectStore((state) => state.setPhysics)
+  const onboardingDone = useProgressStore((state) => state.onboardingDone)
 
   const backgroundLabels: Record<string, string> = messages.backgrounds
 
@@ -57,12 +59,18 @@ export function ScenarioView() {
         <div className="relative min-h-0 flex-1">
           <ScenarioCanvas />
           {scene && scene.objects.length === 0 ? (
-            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-sm font-medium">{messages.scenario.empty}</p>
-                <p className="text-muted-foreground mt-1 text-sm">{messages.scenario.emptyHint}</p>
+            onboardingDone ? (
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-sm font-medium">{messages.scenario.empty}</p>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    {messages.scenario.emptyHint}
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : (
+              <WelcomeCard />
+            )
           ) : null}
         </div>
       </div>
