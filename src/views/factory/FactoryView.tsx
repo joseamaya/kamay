@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { format, getMessages } from '../../i18n'
 import { ACTOR_CATALOG, classInheritanceUsageCount, classUsageCount } from '../../model'
 import type { ActorShape, CatalogItem, ClassDefinition } from '../../model'
-import { useActiveScene, useEditorStore, useProjectStore } from '../../store'
+import { useActiveScene, useCapabilities, useEditorStore, useProjectStore } from '../../store'
 import { cn } from '../../ui/cn'
 import { Dialog } from '../../ui/Dialog'
 import { Panel } from '../../ui/Panel'
@@ -47,6 +47,7 @@ function ShapePreview({ item }: { item: CatalogItem }) {
 export function FactoryView() {
   const messages = getMessages()
   const scene = useActiveScene()
+  const capabilities = useCapabilities()
   const addObject = useProjectStore((state) => state.addObject)
   const removeObject = useProjectStore((state) => state.removeObject)
   const duplicateObject = useProjectStore((state) => state.duplicateObject)
@@ -150,15 +151,21 @@ export function FactoryView() {
             <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               {messages.factory.classesTitle}
             </h3>
-            <button
-              type="button"
-              onClick={() => setEditorClass(null)}
-              className="text-primary text-xs font-medium hover:underline"
-            >
-              {messages.factory.newClass}
-            </button>
+            {capabilities.ownClasses ? (
+              <button
+                type="button"
+                onClick={() => setEditorClass(null)}
+                className="text-primary text-xs font-medium hover:underline"
+              >
+                {messages.factory.newClass}
+              </button>
+            ) : null}
           </div>
-          {scene.classes.length === 0 ? (
+          {!capabilities.ownClasses ? (
+            <p className="text-muted-foreground text-sm">
+              {format(messages.levels.lockedHint, { level: 3 })}
+            </p>
+          ) : scene.classes.length === 0 ? (
             <p className="text-muted-foreground text-sm">{messages.factory.noClasses}</p>
           ) : (
             <ul className="flex flex-col gap-1">

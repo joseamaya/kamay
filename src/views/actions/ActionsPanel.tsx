@@ -1,9 +1,16 @@
 import { useState } from 'react'
 
-import { getMessages } from '../../i18n'
+import { format, getMessages } from '../../i18n'
+import { BASIC_METHODS } from '../../levels'
 import { BUILTIN_METHODS, findEvent, resolveMethods } from '../../model'
 import type { Action, AttributeType, BuiltinMethod } from '../../model'
-import { useActiveScene, useEditorStore, useProjectStore, useSelectedObject } from '../../store'
+import {
+  useActiveScene,
+  useCapabilities,
+  useEditorStore,
+  useProjectStore,
+  useSelectedObject,
+} from '../../store'
 import { Button } from '../../ui/Button'
 import { NumberField } from '../../ui/NumberField'
 import { Panel } from '../../ui/Panel'
@@ -30,6 +37,7 @@ export function ActionsPanel() {
   const messages = getMessages()
   const scene = useActiveScene()
   const object = useSelectedObject()
+  const capabilities = useCapabilities()
   const addAction = useProjectStore((state) => state.addAction)
   const removeAction = useProjectStore((state) => state.removeAction)
   const pushLog = useEditorStore((state) => state.pushLog)
@@ -68,6 +76,16 @@ export function ActionsPanel() {
   }
   const keyLabel = (key: string) => keyLabels[key] ?? key.toUpperCase()
 
+  if (!capabilities.orders) {
+    return (
+      <Panel title={messages.actions.title} className="min-h-0">
+        <p className="text-muted-foreground text-sm">
+          {format(messages.levels.lockedHint, { level: 2 })}
+        </p>
+      </Panel>
+    )
+  }
+
   if (!scene || !object) {
     return (
       <Panel title={messages.actions.title} className="min-h-0">
@@ -76,13 +94,27 @@ export function ActionsPanel() {
     )
   }
 
+  const triggerOptions = [
+    { value: 'on_start', label: messages.triggers.onStart },
+    { value: 'on_click', label: messages.triggers.onClick },
+    ...(capabilities.events
+      ? [
+          { value: 'on_collision', label: messages.triggers.onCollision },
+          { value: 'on_key', label: messages.triggers.onKey },
+          { value: 'on_signal', label: messages.triggers.onSignal },
+        ]
+      : []),
+  ]
+
   const customMethods: BuiltinMethod[] = resolveMethods(scene, object.class).map((method) => ({
     name: method.name,
     parameters: method.parameters,
   }))
   const availableMethods: BuiltinMethod[] = [
     ...BUILTIN_METHODS.filter(
-      (builtin) => !customMethods.some((custom) => custom.name === builtin.name),
+      (builtin) =>
+        (capabilities.events || BASIC_METHODS.includes(builtin.name)) &&
+        !customMethods.some((custom) => custom.name === builtin.name),
     ),
     ...customMethods,
   ]
@@ -149,13 +181,7 @@ export function ActionsPanel() {
           <Select
             label={messages.actions.trigger}
             value={trigger}
-            options={[
-              { value: 'on_start', label: messages.triggers.onStart },
-              { value: 'on_click', label: messages.triggers.onClick },
-              { value: 'on_collision', label: messages.triggers.onCollision },
-              { value: 'on_key', label: messages.triggers.onKey },
-              { value: 'on_signal', label: messages.triggers.onSignal },
-            ]}
+            options={triggerOptions}
             onChange={(value) => setTrigger(value as Trigger)}
           />
           {trigger === 'on_key' ? (

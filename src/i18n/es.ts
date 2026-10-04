@@ -261,6 +261,29 @@ export const es = {
       sequences: { title: 'Secuencias', description: 'Encadenas acciones con pausas.' },
     },
   },
+  levels: {
+    title: 'Camino de aprendizaje',
+    button: 'Nivel {level}',
+    locked: 'Bloqueado',
+    completed: 'Completado',
+    current: 'Actual',
+    freeMode: 'Modo libre',
+    freeModeHint: 'Desbloquea todas las capacidades para explorar sin límites.',
+    lockedHint: 'Se desbloquea en el Nivel {level}.',
+    list: {
+      1: { title: 'Cosas en el escenario', description: 'Objetos del catálogo y sus propiedades.' },
+      2: { title: 'Órdenes', description: 'Dale órdenes a los objetos.' },
+      3: {
+        title: 'Mi primera clase',
+        description: 'Crea clases propias con atributos y métodos.',
+      },
+      4: {
+        title: 'Muchos objetos e identidad',
+        description: 'Eventos de colisión, tecla y señal.',
+      },
+      5: { title: 'Familia de clases', description: 'Hereda y reutiliza.' },
+    },
+  },
   inspector: {
     title: 'Propiedades',
     empty: 'Selecciona un objeto para editar sus propiedades.',

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { createClassDraft, createEmptyProject } from '../../model'
-import { useEditorStore, useProjectStore } from '../../store'
+import { useEditorStore, useProgressStore, useProjectStore } from '../../store'
 import { ActionsPanel } from './ActionsPanel'
 
 beforeEach(() => {
@@ -15,6 +15,14 @@ describe('ActionsPanel', () => {
   it('shows a hint when nothing is selected', () => {
     render(<ActionsPanel />)
     expect(screen.getByText('Selecciona un objeto para darle órdenes.')).toBeInTheDocument()
+  })
+
+  it('shows a locked hint until level 2', () => {
+    useProgressStore.setState({ completed: [], freeMode: false, unlockedLevel: 1 })
+    render(<ActionsPanel />)
+
+    expect(screen.getByText('Se desbloquea en el Nivel 2.')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Cuándo')).not.toBeInTheDocument()
   })
 
   it('offers custom class methods', async () => {

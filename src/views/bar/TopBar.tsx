@@ -10,6 +10,7 @@ import {
   canRedo,
   canUndo,
   useEditorStore,
+  useLevel,
   usePreferencesStore,
   useProgressStore,
   useProjectStore,
@@ -21,6 +22,7 @@ import type { TemplateId } from '../../templates'
 import { Button } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
 import { Select } from '../../ui/Select'
+import { LevelsDialog } from '../levels/LevelsDialog'
 import { MissionsDialog } from '../missions/MissionsDialog'
 import { TemplatesDialog } from '../templates/TemplatesDialog'
 import { PortfolioDialog } from './PortfolioDialog'
@@ -54,11 +56,13 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
   const fontScale = usePreferencesStore((state) => state.fontScale)
   const setFontScale = usePreferencesStore((state) => state.setFontScale)
   const completedMissions = useProgressStore((state) => state.completed)
+  const level = useLevel()
   const projector = usePreferencesStore((state) => state.projector)
   const setProjector = usePreferencesStore((state) => state.setProjector)
 
   const [portfolioOpen, setPortfolioOpen] = useState(false)
   const [missionsOpen, setMissionsOpen] = useState(false)
+  const [levelsOpen, setLevelsOpen] = useState(false)
   const [templatesOpen, setTemplatesOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
   const [shareLink, setShareLink] = useState<string | null>(null)
@@ -220,6 +224,9 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
         <Button variant="ghost" size="sm" onClick={() => setTemplatesOpen(true)}>
           {messages.bar.templates}
         </Button>
+        <Button variant="ghost" size="sm" onClick={() => setLevelsOpen(true)}>
+          {format(messages.levels.button, { level })}
+        </Button>
         <Button variant="ghost" size="sm" onClick={() => setMissionsOpen(true)}>
           {format(messages.bar.missions, {
             done: completedMissions.length,
@@ -297,6 +304,8 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
         onClose={() => setPortfolioOpen(false)}
         onSelect={requestOpen}
       />
+
+      <LevelsDialog open={levelsOpen} onClose={() => setLevelsOpen(false)} />
 
       <MissionsDialog open={missionsOpen} onClose={() => setMissionsOpen(false)} />
 

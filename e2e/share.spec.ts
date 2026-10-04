@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures'
 
 test('shares a project through a link that opens a copy', async ({ page, context }) => {
   await page.goto('/')

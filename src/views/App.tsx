@@ -4,7 +4,13 @@ import { format, getMessages } from '../i18n'
 import { evaluateMissions } from '../missions'
 import { decodeSharePayload, readSharePayload, usePersistence } from '../persistence'
 import { useRuntime } from '../runtime'
-import { useEditorStore, usePreferencesEffects, useProgressStore, useProjectStore } from '../store'
+import {
+  useEditorStore,
+  useLevelsEffects,
+  usePreferencesEffects,
+  useProgressStore,
+  useProjectStore,
+} from '../store'
 import { ActionsPanel } from './actions/ActionsPanel'
 import { ActivityPanel } from './activity/ActivityPanel'
 import { TopBar } from './bar/TopBar'
@@ -15,6 +21,7 @@ import { ScenarioView } from './scenario/ScenarioView'
 
 export function App() {
   usePreferencesEffects()
+  useLevelsEffects()
   const persistence = usePersistence()
   const runtime = useRuntime()
   const project = useProjectStore((state) => state.project)
