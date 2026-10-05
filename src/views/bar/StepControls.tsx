@@ -26,6 +26,9 @@ export function StepControls({ runtime }: StepControlsProps) {
       </Button>
       {stepMode && hasSteps ? (
         <>
+          <Button variant="secondary" size="sm" disabled={cursor === 0} onClick={runtime.back}>
+            {messages.bar.back}
+          </Button>
           <Button variant="secondary" size="sm" disabled={cursor >= total} onClick={runtime.step}>
             {messages.bar.step}
           </Button>

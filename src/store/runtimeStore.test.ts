@@ -20,6 +20,11 @@ describe('runtimeStore step mode', () => {
     useRuntimeStore.getState().advanceStep()
     expect(useRuntimeStore.getState().stepQueue.cursor).toBe(1)
 
+    useRuntimeStore.getState().setCursor(0)
+    expect(useRuntimeStore.getState().stepQueue.cursor).toBe(0)
+    useRuntimeStore.getState().setCursor(99)
+    expect(useRuntimeStore.getState().stepQueue.cursor).toBe(2)
+
     useRuntimeStore.getState().resetSteps()
     expect(useRuntimeStore.getState().stepQueue).toEqual(createStepQueue())
   })
