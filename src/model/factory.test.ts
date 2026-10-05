@@ -6,6 +6,7 @@ import {
   addEventAction,
   createEmptyProject,
   createScene,
+  DOMAIN_BASES,
   findEvent,
   removeEventAction,
   removeObject,
@@ -36,6 +37,19 @@ describe('ACTOR_CATALOG', () => {
       'pelota',
     ])
     expect(domain.every((item) => item.base != null)).toBe(true)
+  })
+
+  it('authors every catalog method as blocks so projects stay simulable', () => {
+    for (const item of ACTOR_CATALOG) {
+      for (const method of item.methods ?? []) {
+        expect(method.body.kind).toBe('blocks')
+      }
+    }
+    for (const definition of Object.values(DOMAIN_BASES)) {
+      for (const method of definition.methods) {
+        expect(method.body.kind).toBe('blocks')
+      }
+    }
   })
 })
 

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { projectSchema } from '../model'
+import {
+  ACTOR_CATALOG,
+  addCatalogObject,
+  createEmptyProject,
+  createScene,
+  projectSchema,
+} from '../model'
 import type { Project } from '../model'
 import { generatePython } from './generatePython'
 
@@ -98,6 +104,23 @@ describe('generatePython', () => {
 
     const animal = generatePython(project).files.find((file) => file.path === 'Animal.py')
     expect(animal?.content).toContain('self.energia = self.energia + 10')
+  })
+
+  it('generates the same Python for catalog block methods', () => {
+    const carro = ACTOR_CATALOG.find((item) => item.id === 'carro')!
+    const scene = addCatalogObject(createScene('Principal'), carro)
+    const project = { ...createEmptyProject(), scenes: [scene] }
+    const files = generatePython(project).files
+
+    expect(files.find((file) => file.path === 'Vehiculo.py')?.content).toContain(
+      'self.encendido = True',
+    )
+    expect(files.find((file) => file.path === 'Vehiculo.py')?.content).toContain(
+      'self.mover(50, 0)',
+    )
+    expect(files.find((file) => file.path === 'Carro.py')?.content).toContain(
+      'self.decir("¡Beep!")',
+    )
   })
 
   it('generates the expected Heroe.py (golden)', () => {
