@@ -104,9 +104,9 @@ describe('MISSIONS', () => {
 describe('comprehension missions', () => {
   it('requires two instances of a class with different state', () => {
     const perro: ClassDefinition = {
-      ...createClassDraft('Perro'),
+      ...createClassDraft('Mascota'),
       attributes: [
-        ...createClassDraft('Perro').attributes,
+        ...createClassDraft('Mascota').attributes,
         { name: 'energia', type: 'number', initial: 50 },
       ],
     }
@@ -124,10 +124,10 @@ describe('comprehension missions', () => {
 
   it('requires a subclass instance that keeps an inherited method', () => {
     const animal: ClassDefinition = {
-      ...createClassDraft('Animal'),
+      ...createClassDraft('SerVivo'),
       methods: [{ name: 'comer', parameters: [], body: { kind: 'blocks', ops: [] } }],
     }
-    const perro: ClassDefinition = { ...createClassDraft('Perro'), inherits: 'Animal' }
+    const perro: ClassDefinition = { ...createClassDraft('Canino'), inherits: 'SerVivo' }
     let scene: Scene = { ...createScene('Principal'), classes: [animal, perro] }
 
     expect(evaluateMissions(projectWith(scene))).not.toContain('inherited_behavior')
@@ -137,13 +137,13 @@ describe('comprehension missions', () => {
   })
 
   it('requires two overriding subclasses called with the same message', () => {
-    const animal = createClassDraft('Animal')
+    const animal = createClassDraft('SerVivo')
     animal.methods.push({ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } })
-    const perro = createClassDraft('Perro')
-    perro.inherits = 'Animal'
+    const perro = createClassDraft('Canino')
+    perro.inherits = 'SerVivo'
     perro.methods.push({ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } })
-    const gato = createClassDraft('Gato')
-    gato.inherits = 'Animal'
+    const gato = createClassDraft('Felino')
+    gato.inherits = 'SerVivo'
     gato.methods.push({ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } })
 
     let scene: Scene = { ...createScene('Principal'), classes: [animal, perro, gato] }
@@ -179,6 +179,19 @@ describe('comprehension missions', () => {
 
     scene = instantiateClass(scene, auto.id)
     expect(evaluateMissions(projectWith(scene))).toContain('composed_part')
+  })
+})
+
+describe('catalog domain entities', () => {
+  it('does not count as a student class nor satisfy inheritance', () => {
+    const carro = ACTOR_CATALOG.find((item) => item.id === 'carro')!
+    const scene = addCatalogObject(createScene('Principal'), carro)
+
+    const done = evaluateMissions(projectWith(scene))
+
+    expect(done).not.toContain('own_class')
+    expect(done).not.toContain('inherit')
+    expect(done).not.toContain('inherited_behavior')
   })
 })
 

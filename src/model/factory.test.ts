@@ -34,17 +34,29 @@ describe('ACTOR_CATALOG', () => {
   })
 
   it('exposes characters and things as glyphs', () => {
-    expect(ACTOR_CATALOG.filter((item) => item.kind === 'glyph').map((item) => item.id)).toEqual([
-      'cat',
-      'dog',
-      'robot',
-      'rocket',
-      'apple',
-      'ball',
-      'tree',
-      'house',
-    ])
+    expect(
+      ACTOR_CATALOG.filter((item) => item.kind === 'glyph' && !item.group).map((item) => item.id),
+    ).toEqual(['cat', 'dog', 'robot', 'rocket', 'apple', 'ball', 'tree', 'house'])
     expect(cat.glyph).toBe('🐱')
+  })
+
+  it('exposes the real-world domain catalog with domain bases', () => {
+    const domain = ACTOR_CATALOG.filter((item) => item.group)
+
+    expect(domain.map((item) => item.id)).toEqual([
+      'carro',
+      'bicicleta',
+      'moto',
+      'perro',
+      'gato',
+      'pajaro',
+      'casa',
+      'arbol',
+      'robot',
+      'cohete',
+      'pelota',
+    ])
+    expect(domain.every((item) => item.base != null)).toBe(true)
   })
 })
 
@@ -81,6 +93,19 @@ describe('addCatalogObject', () => {
       initial: '🐱',
     })
     expect(scene.objects[0]?.attributes.glyph).toBe('🐱')
+  })
+
+  it('adds the domain base chain for a real-world entity', () => {
+    const carro = ACTOR_CATALOG.find((item) => item.id === 'carro')!
+    const scene = addCatalogObject(createScene('Principal'), carro)
+
+    expect(scene.classes.map((definition) => definition.name)).toEqual(['Vehiculo', 'Carro'])
+    const entity = scene.classes.find((definition) => definition.name === 'Carro')!
+    expect(entity.inherits).toBe('Vehiculo')
+    expect(entity.methods.map((method) => method.name)).toContain('tocar_bocina')
+    expect(
+      scene.classes.find((definition) => definition.name === 'Vehiculo')?.methods,
+    ).toHaveLength(3)
   })
 })
 

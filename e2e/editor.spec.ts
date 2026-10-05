@@ -27,14 +27,26 @@ test('groups the catalog into shapes and characters', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Personajes y cosas' })).toBeVisible()
 })
 
-test('adds a character and reflects its glyph in the code view', async ({ page }) => {
+test('adds a real-world entity that inherits its domain base', async ({ page }) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Gato al escenario' }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await expect(page.getByRole('button', { name: 'carro1', exact: true })).toBeVisible()
 
-  await expect(page.getByRole('button', { name: 'cat1', exact: true })).toBeVisible()
-  await expect(codeContent(page)).toContainText('cat1 = Cat("cat1")')
-  await expect(codeContent(page)).toContainText('cat1.glyph = "🐱"')
+  await page.getByRole('button', { name: 'Carro.py' }).click()
+  await expect(codeContent(page)).toContainText('from Vehiculo import Vehiculo')
+  await expect(codeContent(page)).toContainText('class Carro(Vehiculo):')
+  await expect(codeContent(page)).toContainText('def tocar_bocina(self):')
+})
+
+test('adds a glyph object and reflects it in the code view', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Agregar Manzana al escenario' }).click()
+
+  await expect(page.getByRole('button', { name: 'apple1', exact: true })).toBeVisible()
+  await expect(codeContent(page)).toContainText('apple1 = Apple("apple1")')
+  await expect(codeContent(page)).toContainText('apple1.glyph = "🍎"')
 })
 
 test('creates a class with a method and instantiates it', async ({ page }) => {

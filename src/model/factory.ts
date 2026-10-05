@@ -4,6 +4,7 @@ import type {
   Attribute,
   ClassDefinition,
   EventType,
+  Method,
   ObjectInstance,
   Project,
   Scene,
@@ -34,6 +35,8 @@ export const ACTOR_SHAPES: ActorShape[] = [
 
 export type CatalogKind = 'shape' | 'glyph'
 
+export type CatalogGroup = 'vehiculos' | 'animales' | 'cosas'
+
 export interface CatalogItem {
   id: string
   className: string
@@ -41,9 +44,17 @@ export interface CatalogItem {
   shape: ActorShape
   glyph?: string
   color: string
+  /** Real-world group; items without one fall back to shapes/characters. */
+  group?: CatalogGroup
+  /** Domain base class the entity inherits from. */
+  base?: string
+  /** Entity's own attributes beyond the visual ones. */
+  attributes?: Attribute[]
+  /** Entity's own methods. */
+  methods?: Method[]
 }
 
-export const ACTOR_CATALOG: CatalogItem[] = [
+const ABSTRACT_CATALOG: CatalogItem[] = [
   { id: 'circle', className: 'Circle', kind: 'shape', shape: 'circle', color: '#e2603a' },
   { id: 'square', className: 'Square', kind: 'shape', shape: 'square', color: '#e0a23c' },
   { id: 'triangle', className: 'Triangle', kind: 'shape', shape: 'triangle', color: '#3f9a86' },
@@ -93,6 +104,195 @@ export const ACTOR_CATALOG: CatalogItem[] = [
 
 export const BASE_CLASS = 'Actor'
 
+function domainMethod(name: string, code: string): Method {
+  return { name, parameters: [], body: { kind: 'code', code } }
+}
+
+const VEHICULO: ClassDefinition = {
+  id: 'base-vehiculo',
+  name: 'Vehiculo',
+  inherits: BASE_CLASS,
+  image: null,
+  attributes: [
+    { name: 'color', type: 'string', initial: '#e2603a' },
+    { name: 'marca', type: 'string', initial: '' },
+    { name: 'modelo', type: 'string', initial: '' },
+    { name: 'encendido', type: 'boolean', initial: false },
+  ],
+  components: [],
+  methods: [
+    domainMethod('prender', 'self.encendido = True'),
+    domainMethod('apagar', 'self.encendido = False'),
+    domainMethod('moverse', 'self.mover(50, 0)'),
+  ],
+}
+
+const ANIMAL: ClassDefinition = {
+  id: 'base-animal',
+  name: 'Animal',
+  inherits: BASE_CLASS,
+  image: null,
+  attributes: [
+    { name: 'color', type: 'string', initial: '#e0a23c' },
+    { name: 'nombre', type: 'string', initial: '' },
+    { name: 'energia', type: 'number', initial: 50 },
+  ],
+  components: [],
+  methods: [
+    domainMethod('comer', 'self.energia = self.energia + 10'),
+    domainMethod('dormir', 'self.energia = self.energia + 20'),
+  ],
+}
+
+const COSA: ClassDefinition = {
+  id: 'base-cosa',
+  name: 'Cosa',
+  inherits: BASE_CLASS,
+  image: null,
+  attributes: [
+    { name: 'color', type: 'string', initial: '#8f9aa8' },
+    { name: 'nombre', type: 'string', initial: '' },
+  ],
+  components: [],
+  methods: [],
+}
+
+/** Domain base classes provided by the catalog (system classes). */
+export const DOMAIN_BASES: Record<string, ClassDefinition> = {
+  Vehiculo: VEHICULO,
+  Animal: ANIMAL,
+  Cosa: COSA,
+}
+
+export const DOMAIN_BASE_NAMES: string[] = Object.keys(DOMAIN_BASES)
+
+const DOMAIN_CATALOG: CatalogItem[] = [
+  {
+    id: 'carro',
+    className: 'Carro',
+    kind: 'glyph',
+    shape: 'circle',
+    glyph: '🚗',
+    color: '#d64b4b',
+    group: 'vehiculos',
+    base: 'Vehiculo',
+    attributes: [{ name: 'año', type: 'number', initial: 2024 }],
+    methods: [domainMethod('tocar_bocina', 'self.decir("¡Beep!")')],
+  },
+  {
+    id: 'bicicleta',
+    className: 'Bicicleta',
+    kind: 'glyph',
+    shape: 'circle',
+    glyph: '🚲',
+    color: '#3f9a86',
+    group: 'vehiculos',
+    base: 'Vehiculo',
+    attributes: [{ name: 'rodado', type: 'number', initial: 26 }],
+    methods: [domainMethod('pedalear', 'self.mover(30, 0)')],
+  },
+  {
+    id: 'moto',
+    className: 'Moto',
+    kind: 'glyph',
+    shape: 'circle',
+    glyph: '🏍️',
+    color: '#8f9aa8',
+    group: 'vehiculos',
+    base: 'Vehiculo',
+    attributes: [{ name: 'cilindrada', type: 'number', initial: 150 }],
+    methods: [domainMethod('acelerar', 'self.mover(80, 0)')],
+  },
+  {
+    id: 'perro',
+    className: 'Perro',
+    kind: 'glyph',
+    shape: 'circle',
+    glyph: '🐶',
+    color: '#c98a4b',
+    group: 'animales',
+    base: 'Animal',
+    methods: [domainMethod('ladrar', 'self.decir("¡Guau!")')],
+  },
+  {
+    id: 'gato',
+    className: 'Gato',
+    kind: 'glyph',
+    shape: 'circle',
+    glyph: '🐱',
+    color: '#e0a23c',
+    group: 'animales',
+    base: 'Animal',
+    methods: [domainMethod('maullar', 'self.decir("¡Miau!")')],
+  },
+  {
+    id: 'pajaro',
+    className: 'Pajaro',
+    kind: 'glyph',
+    shape: 'circle',
+    glyph: '🐦',
+    color: '#5b8def',
+    group: 'animales',
+    base: 'Animal',
+    methods: [domainMethod('volar', 'self.mover(0, 80)')],
+  },
+  {
+    id: 'casa',
+    className: 'Casa',
+    kind: 'glyph',
+    shape: 'circle',
+    glyph: '🏠',
+    color: '#c98a4b',
+    group: 'cosas',
+    base: 'Cosa',
+  },
+  {
+    id: 'arbol',
+    className: 'Arbol',
+    kind: 'glyph',
+    shape: 'circle',
+    glyph: '🌳',
+    color: '#3f9a86',
+    group: 'cosas',
+    base: 'Cosa',
+  },
+  {
+    id: 'robot',
+    className: 'Robot',
+    kind: 'glyph',
+    shape: 'circle',
+    glyph: '🤖',
+    color: '#8f9aa8',
+    group: 'cosas',
+    base: 'Cosa',
+    methods: [domainMethod('saludar', 'self.decir("¡Hola!")')],
+  },
+  {
+    id: 'cohete',
+    className: 'Cohete',
+    kind: 'glyph',
+    shape: 'circle',
+    glyph: '🚀',
+    color: '#5b8def',
+    group: 'cosas',
+    base: 'Cosa',
+    methods: [domainMethod('despegar', 'self.mover(0, 120)')],
+  },
+  {
+    id: 'pelota',
+    className: 'Pelota',
+    kind: 'glyph',
+    shape: 'circle',
+    glyph: '⚽',
+    color: '#3f9a86',
+    group: 'cosas',
+    base: 'Cosa',
+    methods: [domainMethod('rodar', 'self.mover(60, 0)')],
+  },
+]
+
+export const ACTOR_CATALOG: CatalogItem[] = [...ABSTRACT_CATALOG, ...DOMAIN_CATALOG]
+
 /** Order-independent key for a pair of objects that can collide. */
 export function collisionKey(a: string, b: string): string {
   return [a, b].sort().join('|')
@@ -114,19 +314,20 @@ export function isActorShape(value: unknown): value is ActorShape {
 }
 
 export function catalogClass(item: CatalogItem): ClassDefinition {
-  const attributes: Attribute[] = [
-    { name: 'color', type: 'string', initial: item.color },
-    { name: 'shape', type: 'string', initial: item.shape },
-  ]
-  if (item.glyph) attributes.push({ name: 'glyph', type: 'string', initial: item.glyph })
+  const visual: Attribute[] = [{ name: 'shape', type: 'string', initial: item.shape }]
+  if (item.glyph) visual.push({ name: 'glyph', type: 'string', initial: item.glyph })
+  // Domain entities inherit their color from the base; abstract items own it.
+  const attributes: Attribute[] = item.base
+    ? visual
+    : [{ name: 'color', type: 'string', initial: item.color }, ...visual]
   return {
     id: createId('class'),
     name: item.className,
-    inherits: BASE_CLASS,
+    inherits: item.base ?? BASE_CLASS,
     image: null,
-    attributes,
+    attributes: [...attributes, ...(item.attributes ?? [])],
     components: [],
-    methods: [],
+    methods: item.methods ?? [],
   }
 }
 
@@ -159,10 +360,16 @@ export function createObjectFromCatalog(scene: Scene, item: CatalogItem): Object
   })
 }
 
-/** Adds the catalog object (and its class if missing) to the scene. */
+/** Adds the catalog object and its class chain (domain base included) to the scene. */
 export function addCatalogObject(scene: Scene, item: CatalogItem): Scene {
-  const hasClass = scene.classes.some((definition) => definition.name === item.className)
-  const classes = hasClass ? scene.classes : [...scene.classes, catalogClass(item)]
+  let classes = scene.classes
+  if (item.base && !classes.some((definition) => definition.name === item.base)) {
+    const base = DOMAIN_BASES[item.base]
+    if (base) classes = [...classes, base]
+  }
+  if (!classes.some((definition) => definition.name === item.className)) {
+    classes = [...classes, catalogClass(item)]
+  }
   return { ...scene, classes, objects: [...scene.objects, createObjectFromCatalog(scene, item)] }
 }
 

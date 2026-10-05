@@ -65,14 +65,26 @@ export function FactoryView() {
   const catalogLabels: Record<string, string> = messages.catalog
   const catalogGroups = [
     {
+      title: messages.factory.catalogVehicles,
+      items: ACTOR_CATALOG.filter((item) => item.group === 'vehiculos'),
+    },
+    {
+      title: messages.factory.catalogAnimals,
+      items: ACTOR_CATALOG.filter((item) => item.group === 'animales'),
+    },
+    {
+      title: messages.factory.catalogThings,
+      items: ACTOR_CATALOG.filter((item) => item.group === 'cosas'),
+    },
+    {
       title: messages.factory.catalogShapes,
       items: ACTOR_CATALOG.filter((item) => item.kind === 'shape'),
     },
     {
       title: messages.factory.catalogCharacters,
-      items: ACTOR_CATALOG.filter((item) => item.kind === 'glyph'),
+      items: ACTOR_CATALOG.filter((item) => item.kind === 'glyph' && !item.group),
     },
-  ]
+  ].filter((group) => group.items.length > 0)
 
   if (!scene) return null
   const pendingDelete = scene.objects.find((object) => object.id === pendingDeleteId) ?? null

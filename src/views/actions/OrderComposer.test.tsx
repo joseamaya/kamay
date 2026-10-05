@@ -55,6 +55,19 @@ describe('OrderComposer', () => {
     })
   })
 
+  it('groups own methods ahead of the engine methods', () => {
+    const definition = createClassDraft('Heroe')
+    definition.methods = [{ name: 'saludar', parameters: [], body: { kind: 'blocks', ops: [] } }]
+    useProjectStore.getState().saveClass(currentScene().id, definition)
+    useProjectStore.getState().instantiateClass(currentScene().id, definition.id)
+    useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
+
+    render(<Harness />)
+
+    expect(screen.getByRole('group', { name: 'Órdenes propias' })).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: 'Del motor' })).toBeInTheDocument()
+  })
+
   it('adds a click action whose source is the object', async () => {
     const user = userEvent.setup()
     useProjectStore.getState().addObject(currentScene().id, 'circle')
