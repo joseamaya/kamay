@@ -59,7 +59,7 @@ describe('evaluateRubric', () => {
   })
 
   it('demonstrates state with two instances holding different values', () => {
-    const perro = createClassDraft('Perro')
+    const perro = createClassDraft('Mascota')
     perro.attributes.push({ name: 'energia', type: 'number', initial: 50 })
     let scene: Scene = upsertClass(createScene('Principal'), perro)
     scene = instantiateClass(scene, perro.id)
@@ -71,10 +71,10 @@ describe('evaluateRubric', () => {
   })
 
   it('demonstrates inheritance only when a subclass uses an inherited method', () => {
-    const animal = createClassDraft('Animal')
+    const animal = createClassDraft('SerVivo')
     animal.methods.push({ name: 'comer', parameters: [], body: { kind: 'blocks', ops: [] } })
-    const perro = createClassDraft('Perro')
-    perro.inherits = 'Animal'
+    const perro = createClassDraft('Mascota')
+    perro.inherits = 'SerVivo'
     let scene: Scene = upsertClass(createScene('Principal'), animal)
     scene = upsertClass(scene, perro)
     expect(status(projectWithScene(scene), 'inheritance')).toBe('practiced')
@@ -84,13 +84,13 @@ describe('evaluateRubric', () => {
   })
 
   it('demonstrates polymorphism with two overriding subclasses in use', () => {
-    const animal = createClassDraft('Animal')
+    const animal = createClassDraft('SerVivo')
     animal.methods.push({ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } })
-    const perro = createClassDraft('Perro')
-    perro.inherits = 'Animal'
+    const perro = createClassDraft('Mascota')
+    perro.inherits = 'SerVivo'
     perro.methods.push({ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } })
-    const gato = createClassDraft('Gato')
-    gato.inherits = 'Animal'
+    const gato = createClassDraft('Felino')
+    gato.inherits = 'SerVivo'
     gato.methods.push({ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } })
 
     let scene: Scene = upsertClass(createScene('Principal'), animal)

@@ -45,14 +45,7 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
   const [methodName, setMethodName] = useState(BUILTIN_METHODS[0]!.name)
   const [values, setValues] = useState<Record<string, string>>({})
 
-  const methodLabels: Record<string, string> = {
-    decir: messages.methods.decir,
-    mover: messages.methods.mover,
-    girar: messages.methods.girar,
-    cambiar_escala: messages.methods.cambiar_escala,
-    esperar: messages.methods.esperar,
-    emitir: messages.methods.emitir,
-  }
+  const methodLabels: Record<string, string> = messages.methods
   const paramLabels: Record<string, string> = {
     mensaje: messages.params.mensaje,
     x: messages.params.x,
@@ -88,16 +81,29 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
     name: method.name,
     parameters: method.parameters,
   }))
-  const availableMethods: BuiltinMethod[] = [
-    ...BUILTIN_METHODS.filter(
-      (builtin) =>
-        (capabilities.events || BASIC_METHODS.includes(builtin.name)) &&
-        !customMethods.some((custom) => custom.name === builtin.name),
-    ),
-    ...customMethods,
-  ]
+  const engineMethods: BuiltinMethod[] = BUILTIN_METHODS.filter(
+    (builtin) =>
+      (capabilities.events || BASIC_METHODS.includes(builtin.name)) &&
+      !customMethods.some((custom) => custom.name === builtin.name),
+  )
+  const availableMethods: BuiltinMethod[] = [...engineMethods, ...customMethods]
   const method =
     availableMethods.find((candidate) => candidate.name === methodName) ?? availableMethods[0]!
+
+  // Once the object has its own methods, group them ahead of the engine verbs.
+  const grouped = customMethods.length > 0
+  const methodOptions = [
+    ...customMethods.map((candidate) => ({
+      value: candidate.name,
+      label: methodLabels[candidate.name] ?? candidate.name,
+      group: grouped ? messages.actions.ownMethods : undefined,
+    })),
+    ...engineMethods.map((candidate) => ({
+      value: candidate.name,
+      label: methodLabels[candidate.name] ?? candidate.name,
+      group: grouped ? messages.actions.engineMethods : undefined,
+    })),
+  ]
 
   const otherObjects = scene.objects.filter((candidate) => candidate.id !== object.id)
   const selectedOther =
@@ -195,10 +201,7 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
         <Select
           label={messages.actions.method}
           value={method.name}
-          options={availableMethods.map((candidate) => ({
-            value: candidate.name,
-            label: methodLabels[candidate.name] ?? candidate.name,
-          }))}
+          options={methodOptions}
           onChange={setMethodName}
         />
         {method.parameters.map((parameter) =>

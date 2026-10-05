@@ -5,6 +5,8 @@ import { cn } from './cn'
 export interface SelectOption {
   value: string
   label: string
+  /** Optional group label, rendered as an `<optgroup>`. */
+  group?: string
 }
 
 export interface SelectProps {
@@ -30,6 +32,22 @@ export function Select({
     onChange(event.target.value)
   }
 
+  const renderOption = (option: SelectOption) => (
+    <option key={option.value} value={option.value}>
+      {option.label}
+    </option>
+  )
+
+  const groups = new Map<string, SelectOption[]>()
+  const ungrouped: SelectOption[] = []
+  for (const option of options) {
+    if (option.group) {
+      groups.set(option.group, [...(groups.get(option.group) ?? []), option])
+    } else {
+      ungrouped.push(option)
+    }
+  }
+
   return (
     <label className={cn('flex flex-col gap-1 text-xs', className)}>
       {label ? <span className="text-muted-foreground">{label}</span> : null}
@@ -40,10 +58,11 @@ export function Select({
         onChange={handleChange}
         className="border-border bg-background focus-visible:ring-ring h-8 rounded-md border px-2 text-sm focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
+        {ungrouped.map(renderOption)}
+        {[...groups.entries()].map(([groupLabel, groupOptions]) => (
+          <optgroup key={groupLabel} label={groupLabel}>
+            {groupOptions.map(renderOption)}
+          </optgroup>
         ))}
       </select>
     </label>

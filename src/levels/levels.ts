@@ -1,4 +1,4 @@
-import { ACTOR_CATALOG, BASE_CLASS } from '../model'
+import { ACTOR_CATALOG, BASE_CLASS, DOMAIN_BASE_NAMES } from '../model'
 import type { Project } from '../model'
 import type { MissionId } from '../missions'
 
@@ -102,17 +102,23 @@ export function levelFromMissions(completed: readonly MissionId[]): number {
   return level
 }
 
-const CATALOG_CLASS_NAMES = new Set([...ACTOR_CATALOG.map((item) => item.className), BASE_CLASS])
+const CATALOG_CLASS_NAMES = new Set([
+  ...ACTOR_CATALOG.map((item) => item.className),
+  ...DOMAIN_BASE_NAMES,
+  BASE_CLASS,
+])
 
 /** Minimum level needed to keep a loaded project fully editable. */
 export function requiredLevel(project: Project): number {
   const classes = project.scenes.flatMap((scene) => scene.classes)
   const events = project.scenes.flatMap((scene) => scene.events)
   const actions = events.flatMap((event) => event.actions)
+  // Catalog entities and domain bases are provided, so they do not require level.
+  const custom = classes.filter((definition) => !CATALOG_CLASS_NAMES.has(definition.name))
 
-  if (classes.some((definition) => definition.components.length > 0)) return 6
+  if (custom.some((definition) => definition.components.length > 0)) return 6
 
-  if (classes.some((definition) => definition.inherits && definition.inherits !== BASE_CLASS))
+  if (custom.some((definition) => definition.inherits && definition.inherits !== BASE_CLASS))
     return 5
 
   const advancedEvents = events.some(
@@ -124,7 +130,7 @@ export function requiredLevel(project: Project): number {
   )
   if (advancedEvents || advancedMethods) return 4
 
-  if (classes.some((definition) => !CATALOG_CLASS_NAMES.has(definition.name))) return 3
+  if (custom.length > 0) return 3
 
   return 1
 }

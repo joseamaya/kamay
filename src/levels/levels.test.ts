@@ -137,6 +137,12 @@ describe('requiredLevel', () => {
     expect(requiredLevel(projectWithScene(scene))).toBe(1)
   })
 
+  it('does not require a high level for catalog domain entities', () => {
+    const carro = ACTOR_CATALOG.find((item) => item.id === 'carro')!
+    const scene = addCatalogObject(createScene('Principal'), carro)
+    expect(requiredLevel(projectWithScene(scene))).toBe(1)
+  })
+
   it('requires level 3 for a custom class', () => {
     const scene = { ...createScene('Principal'), classes: [klass('Heroe')] }
     expect(requiredLevel(projectWithScene(scene))).toBe(3)
@@ -174,7 +180,7 @@ describe('requiredLevel', () => {
       ...createScene('Principal'),
       classes: [
         klass('Bateria'),
-        { ...klass('Robot'), components: [{ name: 'bateria', class: 'Bateria' }] },
+        { ...klass('Maquina'), components: [{ name: 'bateria', class: 'Bateria' }] },
       ],
     }
     expect(requiredLevel(projectWithScene(scene))).toBe(6)

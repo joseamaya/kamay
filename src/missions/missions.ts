@@ -2,6 +2,7 @@ import {
   ACTOR_CATALOG,
   BASE_CLASS,
   classCustomAttributes,
+  DOMAIN_BASE_NAMES,
   resolveAttributeDefaults,
   resolveCustomAttributes,
 } from '../model'
@@ -38,7 +39,11 @@ export interface Badge {
   missions: MissionId[]
 }
 
-const CATALOG_CLASS_NAMES = new Set([...ACTOR_CATALOG.map((item) => item.className), BASE_CLASS])
+const CATALOG_CLASS_NAMES = new Set([
+  ...ACTOR_CATALOG.map((item) => item.className),
+  ...DOMAIN_BASE_NAMES,
+  BASE_CLASS,
+])
 
 function classes(project: Project): ClassDefinition[] {
   return project.scenes.flatMap((scene) => scene.classes)
@@ -229,7 +234,7 @@ export const MISSIONS: Mission[] = [
   {
     id: 'inherit',
     isComplete: (project) =>
-      classes(project).some(
+      customClasses(project).some(
         (definition) => definition.inherits != null && definition.inherits !== BASE_CLASS,
       ),
   },
