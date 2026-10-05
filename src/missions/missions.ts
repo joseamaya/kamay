@@ -13,8 +13,10 @@ export type MissionId =
   | 'wait_sequence'
   | 'collision'
   | 'signal'
+  | 'compose'
 
-export type BadgeId = 'objects' | 'orders' | 'classes' | 'inheritance' | 'events' | 'sequences'
+export type BadgeId =
+  'objects' | 'orders' | 'classes' | 'inheritance' | 'events' | 'sequences' | 'composition'
 
 export interface Mission {
   id: MissionId
@@ -104,6 +106,11 @@ export const MISSIONS: Mission[] = [
       events(project).some((event) => event.type === 'on_signal') ||
       actions(project).some((action) => action.method === 'emitir'),
   },
+  {
+    id: 'compose',
+    isComplete: (project) =>
+      classes(project).some((definition) => definition.components.length > 0),
+  },
 ]
 
 export const BADGES: Badge[] = [
@@ -113,6 +120,7 @@ export const BADGES: Badge[] = [
   { id: 'inheritance', missions: ['inherit'] },
   { id: 'events', missions: ['collision', 'signal'] },
   { id: 'sequences', missions: ['wait_sequence'] },
+  { id: 'composition', missions: ['compose'] },
 ]
 
 export function evaluateMissions(project: Project): MissionId[] {

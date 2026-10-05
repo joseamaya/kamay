@@ -2,7 +2,7 @@ import type { AttributeValue } from './attributes'
 import { BASE_CLASS, createObject, nextObjectName } from './factory'
 import { createId } from './ids'
 import { identifierPattern } from './schema'
-import type { Attribute, ClassDefinition, Method, ObjectInstance, Scene } from './schema'
+import type { Attribute, ClassDefinition, Component, Method, ObjectInstance, Scene } from './schema'
 
 export const DEFAULT_CLASS_COLOR = '#e2603a'
 export const DEFAULT_CLASS_SHAPE = 'circle'
@@ -15,6 +15,7 @@ export interface ClassDraftErrors {
   nameTaken: boolean
   inheritsInvalid: boolean
   attributes: boolean[]
+  components: { nameInvalid: boolean; classInvalid: boolean }[]
   methods: { nameInvalid: boolean; nameTaken: boolean; invalidParameters: boolean }[]
 }
 
@@ -32,6 +33,7 @@ export function createClassDraft(name = 'MiClase'): ClassDefinition {
       { name: 'color', type: 'string', initial: DEFAULT_CLASS_COLOR },
       { name: 'shape', type: 'string', initial: DEFAULT_CLASS_SHAPE },
     ],
+    components: [],
     methods: [],
   }
 }
@@ -131,6 +133,64 @@ export function resolveMethods(scene: Scene, className: string): Method[] {
   return result
 }
 
+/** Own components plus inherited ones (nearest definition wins). */
+export function resolveComponents(scene: Scene, className: string): Component[] {
+  const result: Component[] = []
+  const seen = new Set<string>()
+  const visited = new Set<string>()
+  let current: string | null = className
+
+  while (current && !visited.has(current)) {
+    visited.add(current)
+    const definition = scene.classes.find((candidate) => candidate.name === current)
+    if (!definition) break
+    for (const component of definition.components) {
+      if (!seen.has(component.name)) {
+        seen.add(component.name)
+        result.push(component)
+      }
+    }
+    current = definition.inherits
+  }
+
+  return result
+}
+
+/** Number of classes that contain the given class as a component. */
+export function classComponentUsageCount(scene: Scene, className: string): number {
+  return scene.classes.filter((definition) =>
+    definition.components.some((component) => component.class === className),
+  ).length
+}
+
+/** Whether `fromName` transitively contains `targetName` as a component. */
+function componentReaches(
+  scene: Scene,
+  fromName: string,
+  targetName: string,
+  visited: Set<string> = new Set(),
+): boolean {
+  if (fromName === targetName) return true
+  if (visited.has(fromName)) return false
+  visited.add(fromName)
+  const definition = scene.classes.find((candidate) => candidate.name === fromName)
+  if (!definition) return false
+  return definition.components.some((component) =>
+    componentReaches(scene, component.class, targetName, visited),
+  )
+}
+
+/** Classes the draft may contain without creating a composition cycle. */
+export function availableComponentClasses(scene: Scene, draft: ClassDefinition): string[] {
+  return scene.classes
+    .map((candidate) => candidate.name)
+    .filter((name) => name !== draft.name && !componentReaches(scene, name, draft.name))
+}
+
+export function newComponent(className: string): Component {
+  return { name: 'parte', class: className }
+}
+
 /** Own attributes plus inherited ones (nearest definition wins). */
 export function resolveAttributes(scene: Scene, className: string): Attribute[] {
   const result: Attribute[] = []
@@ -187,10 +247,21 @@ export function upsertClass(scene: Scene, definition: ClassDefinition): Scene {
     ...scene,
     classes: scene.classes.map((candidate) => {
       if (candidate.id === definition.id) return definition
-      if (renamed && candidate.inherits === existing.name) {
-        return { ...candidate, inherits: definition.name }
+      let next = candidate
+      if (renamed && next.inherits === existing.name) {
+        next = { ...next, inherits: definition.name }
       }
-      return candidate
+      if (renamed && next.components.some((component) => component.class === existing.name)) {
+        next = {
+          ...next,
+          components: next.components.map((component) =>
+            component.class === existing.name
+              ? { ...component, class: definition.name }
+              : component,
+          ),
+        }
+      }
+      return next
     }),
     objects,
   }
@@ -204,6 +275,7 @@ export function removeClass(scene: Scene, classId: string): Scene {
   const target = scene.classes.find((candidate) => candidate.id === classId)
   if (!target || classUsageCount(scene, target.name) > 0) return scene
   if (classInheritanceUsageCount(scene, target.name) > 0) return scene
+  if (classComponentUsageCount(scene, target.name) > 0) return scene
   return { ...scene, classes: scene.classes.filter((candidate) => candidate.id !== classId) }
 }
 
@@ -236,8 +308,10 @@ function hasDuplicateNames(names: string[]): boolean {
 export function validateClassDraft(scene: Scene, definition: ClassDefinition): ClassDraftErrors {
   const attributeNames = definition.attributes.map((attribute) => attribute.name)
   const methodNames = definition.methods.map((method) => method.name)
+  const componentNames = definition.components.map((component) => component.name)
   const duplicateAttributes = hasDuplicateNames(attributeNames)
   const duplicateMethods = hasDuplicateNames(methodNames)
+  const duplicateComponents = hasDuplicateNames(componentNames)
 
   return {
     nameInvalid: !isIdentifier(definition.name),
@@ -251,6 +325,16 @@ export function validateClassDraft(scene: Scene, definition: ClassDefinition): C
         duplicateAttributes ||
         (!VISUAL_ATTRIBUTES.has(attribute.name) && RESERVED_ATTRIBUTE_NAMES.has(attribute.name)),
     ),
+    components: definition.components.map((component) => ({
+      nameInvalid:
+        !isIdentifier(component.name) ||
+        duplicateComponents ||
+        attributeNames.includes(component.name),
+      classInvalid:
+        component.class === definition.name ||
+        !scene.classes.some((candidate) => candidate.name === component.class) ||
+        componentReaches(scene, component.class, definition.name),
+    })),
     methods: definition.methods.map((method) => {
       const parameterNames = method.parameters.map((parameter) => parameter.name)
       return {
@@ -270,6 +354,7 @@ export function hasClassDraftErrors(errors: ClassDraftErrors): boolean {
     errors.nameTaken ||
     errors.inheritsInvalid ||
     errors.attributes.some(Boolean) ||
+    errors.components.some((component) => component.nameInvalid || component.classInvalid) ||
     errors.methods.some(
       (method) => method.nameInvalid || method.nameTaken || method.invalidParameters,
     )

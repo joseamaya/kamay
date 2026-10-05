@@ -39,6 +39,22 @@ describe('migrateProject', () => {
     expect(result.scenes[0]?.events[0]?.other).toBeNull()
   })
 
+  it('upgrades a v5 project by adding class components', () => {
+    const input = {
+      version: 5,
+      meta: { name: 'Demo' },
+      scenes: [{ id: 'scene-1', name: 'Principal', classes: [{ id: 'c', name: 'Heroe' }] }],
+    }
+
+    const result = migrateProject(input) as {
+      version: number
+      scenes: { classes: { components: unknown }[] }[]
+    }
+
+    expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
+    expect(result.scenes[0]?.classes[0]?.components).toEqual([])
+  })
+
   it('upgrades a v4 project by adding physics settings', () => {
     const input = {
       version: 4,

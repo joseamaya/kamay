@@ -539,3 +539,35 @@ describe('editableValues', () => {
     }
   })
 })
+
+describe('composition', () => {
+  const project = projectSchema.parse({
+    version: 1,
+    meta: { name: 'Robot' },
+    scenes: [
+      {
+        id: 'scene-1',
+        name: 'Principal',
+        classes: [
+          { id: 'c-bat', name: 'Bateria', inherits: 'Actor', attributes: [] },
+          {
+            id: 'c-robot',
+            name: 'Robot',
+            inherits: 'Actor',
+            attributes: [],
+            components: [{ name: 'bateria', class: 'Bateria' }],
+          },
+        ],
+        objects: [{ id: 'r1', name: 'r1', class: 'Robot', attributes: { x: 0, y: 0 } }],
+      },
+    ],
+  })
+
+  it('imports the component class and instantiates it in __init__', () => {
+    const { files } = generatePython(project)
+    const robot = files.find((file) => file.path === 'Robot.py')
+
+    expect(robot?.content).toContain('from Bateria import Bateria')
+    expect(robot?.content).toContain('self.bateria = Bateria("bateria")')
+  })
+})

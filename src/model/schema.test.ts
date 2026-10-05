@@ -32,6 +32,18 @@ describe('projectSchema', () => {
     expect(result.success).toBe(false)
   })
 
+  it('defaults a class components to an empty list', () => {
+    const result = projectSchema.safeParse({
+      ...minimalProject,
+      scenes: [{ id: 's', name: 'Principal', classes: [{ id: 'c', name: 'Heroe' }] }],
+    })
+
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.scenes[0]?.classes[0]?.components).toEqual([])
+    }
+  })
+
   it('rejects a project without scenes', () => {
     const result = projectSchema.safeParse({ ...minimalProject, scenes: [] })
     expect(result.success).toBe(false)

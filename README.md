@@ -20,7 +20,8 @@ The project has completed **Phase 4 — classroom and gamification**. Working to
   star) and characters/things drawn as emoji (cat, dog, robot, rocket, apple,
   ball, tree, house).
 - **Classes**: create your own classes with attributes and methods, instantiate
-  several objects from them and inherit from another class.
+  several objects from them, inherit from another class and compose them (a
+  class can contain other objects as components).
 - **Scenes**: create, rename, switch and delete scenes; the stage and the
   generated code follow the active scene.
 - **Stage**: custom Canvas 2D engine with background, selection and drag.
@@ -55,9 +56,9 @@ The project has completed **Phase 4 — classroom and gamification**. Working to
   **share by link** (the project travels encoded in the URL).
 - **Missions and badges**: short auto-checked goals ("add an object", "create
   your own class", "use inheritance") with progress kept locally.
-- **Guided levels**: a 1–5 learning path that unlocks language features (orders,
-  own classes, blocks, events, inheritance) as missions are completed, plus a
-  free mode for teachers and advanced users.
+- **Guided levels**: a 1–6 learning path that unlocks language features (orders,
+  own classes, blocks, events, inheritance, composition) as missions are
+  completed, plus a free mode for teachers and advanced users.
 - **Templates**: ready-to-use classroom starting points (greeting, collision,
   own class, inheritance, physics).
 - **Projector mode**: high-contrast theme with larger text for explaining in

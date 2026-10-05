@@ -10,6 +10,7 @@ const ORDER: RubricCriterionId[] = [
   'orders',
   'classes',
   'inheritance',
+  'composition',
   'events',
   'sequences',
 ]

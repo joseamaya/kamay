@@ -80,6 +80,14 @@ export const es = {
     value: 'Valor',
     addAttribute: 'Agregar atributo',
     removeAttribute: 'Quitar atributo',
+    components: 'Componentes',
+    noComponents: 'Sin componentes.',
+    componentName: 'Nombre del componente',
+    componentClass: 'Clase del componente',
+    addComponent: 'Agregar componente',
+    removeComponent: 'Quitar componente',
+    errorComponent: 'Revisa los nombres de los componentes.',
+    errorComponentClass: 'Un componente no puede contenerse a sí mismo.',
     methods: 'Métodos',
     methodName: 'Nombre del método',
     parameters: 'Parámetros',
@@ -209,6 +217,10 @@ export const es = {
         title: 'Física',
         description: 'Un objeto que cae por gravedad.',
       },
+      composition: {
+        title: 'Composición',
+        description: 'Una clase que contiene a otra como parte.',
+      },
     },
   },
   missions: {
@@ -264,6 +276,10 @@ export const es = {
         title: 'Envía una señal',
         description: 'Usa una señal (emitir o al recibir señal).',
       },
+      compose: {
+        title: 'Combina objetos',
+        description: 'Haz que una clase contenga a otra (composición).',
+      },
     },
     badges: {
       objects: { title: 'Objetos', description: 'Pones objetos en el escenario.' },
@@ -272,6 +288,7 @@ export const es = {
       inheritance: { title: 'Herencia', description: 'Reutilizas una clase como base.' },
       events: { title: 'Eventos', description: 'Reaccionas a choques y señales.' },
       sequences: { title: 'Secuencias', description: 'Encadenas acciones con pausas.' },
+      composition: { title: 'Composición', description: 'Una clase contiene a otra.' },
     },
   },
   levels: {
@@ -295,6 +312,10 @@ export const es = {
         description: 'Eventos de colisión, tecla y señal.',
       },
       5: { title: 'Familia de clases', description: 'Hereda y reutiliza.' },
+      6: {
+        title: 'Polimorfismo y composición',
+        description: 'Objetos que contienen objetos y mensajes que cambian según el objeto.',
+      },
     },
   },
   inspector: {
@@ -351,6 +372,7 @@ export const es = {
       orders: { title: 'Órdenes', description: 'Da órdenes a los objetos.' },
       classes: { title: 'Mi clase', description: 'Crea una clase con atributos y métodos.' },
       inheritance: { title: 'Herencia', description: 'Reutiliza una clase como base.' },
+      composition: { title: 'Composición', description: 'Una clase contiene a otra como parte.' },
       events: { title: 'Eventos', description: 'Reacciona a clics, teclas o choques.' },
       sequences: { title: 'Secuencias', description: 'Encadena acciones con pausas.' },
     },

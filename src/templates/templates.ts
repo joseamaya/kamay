@@ -7,9 +7,17 @@ import {
   createObject,
   createScene,
 } from '../model'
-import type { Attribute, ClassDefinition, Method, ObjectInstance, Project, Scene } from '../model'
+import type {
+  Attribute,
+  ClassDefinition,
+  Component,
+  Method,
+  ObjectInstance,
+  Project,
+  Scene,
+} from '../model'
 
-export type TemplateId = 'hello' | 'chase' | 'own_class' | 'inheritance' | 'physics'
+export type TemplateId = 'hello' | 'chase' | 'own_class' | 'inheritance' | 'physics' | 'composition'
 
 export interface Template {
   id: TemplateId
@@ -25,7 +33,12 @@ function projectWith(name: string, scene: Scene): Project {
 
 function klass(
   name: string,
-  options: { inherits?: string; attributes?: Attribute[]; methods?: Method[] } = {},
+  options: {
+    inherits?: string
+    attributes?: Attribute[]
+    components?: Component[]
+    methods?: Method[]
+  } = {},
 ): ClassDefinition {
   return {
     id: createId('class'),
@@ -37,6 +50,7 @@ function klass(
       { name: 'shape', type: 'string', initial: 'circle' },
       ...(options.attributes ?? []),
     ],
+    components: options.components ?? [],
     methods: options.methods ?? [],
   }
 }
@@ -128,12 +142,38 @@ function physics(): Project {
   })
 }
 
+function composition(): Project {
+  const bateria = klass('Bateria', {
+    attributes: [{ name: 'carga', type: 'number', initial: 100 }],
+    methods: [{ name: 'cargar', parameters: [], body: { kind: 'code', code: 'self.carga = 100' } }],
+  })
+  const robot = klass('Robot', {
+    components: [{ name: 'bateria', class: 'Bateria' }],
+    methods: [
+      { name: 'saludar', parameters: [], body: { kind: 'code', code: 'self.decir("¡Hola!")' } },
+    ],
+  })
+  const base: Scene = { ...createScene('Principal'), classes: [bateria, robot] }
+  let scene: Scene = {
+    ...base,
+    objects: [instance(base, 'Robot', { color: '#8f9aa8', shape: 'circle' })],
+  }
+  const name = scene.objects[0]!.name
+  scene = addEventAction(scene, 'on_start', null, null, {
+    target: name,
+    method: 'saludar',
+    args: {},
+  })
+  return projectWith('Composición', scene)
+}
+
 export const TEMPLATES: Template[] = [
   { id: 'hello', build: hello },
   { id: 'chase', build: chase },
   { id: 'own_class', build: ownClass },
   { id: 'inheritance', build: inheritance },
   { id: 'physics', build: physics },
+  { id: 'composition', build: composition },
 ]
 
 export function findTemplate(id: TemplateId): Template | undefined {

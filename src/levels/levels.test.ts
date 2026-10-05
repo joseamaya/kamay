@@ -15,7 +15,15 @@ function projectWithScene(scene: ReturnType<typeof createScene>) {
 }
 
 function klass(name: string, inherits = 'Actor'): ClassDefinition {
-  return { id: `c-${name}`, name, inherits, image: null, attributes: [], methods: [] }
+  return {
+    id: `c-${name}`,
+    name,
+    inherits,
+    image: null,
+    attributes: [],
+    components: [],
+    methods: [],
+  }
 }
 
 describe('capabilitiesFor', () => {
@@ -28,6 +36,7 @@ describe('capabilitiesFor', () => {
       events: false,
       freeCode: false,
       inheritance: false,
+      composition: false,
     })
     expect(capabilitiesFor(2).editValues).toBe(true)
     expect(capabilitiesFor(2).orders).toBe(true)
@@ -39,6 +48,8 @@ describe('capabilitiesFor', () => {
     expect(capabilitiesFor(4).freeCode).toBe(true)
     expect(capabilitiesFor(4).inheritance).toBe(false)
     expect(capabilitiesFor(5).inheritance).toBe(true)
+    expect(capabilitiesFor(5).composition).toBe(false)
+    expect(capabilitiesFor(6).composition).toBe(true)
     expect(capabilitiesFor(99)).toEqual(capabilitiesFor(MAX_LEVEL))
     expect(capabilitiesFor(0)).toEqual(capabilitiesFor(1))
   })
@@ -130,5 +141,16 @@ describe('requiredLevel', () => {
       classes: [klass('Personaje'), klass('Heroe', 'Personaje')],
     }
     expect(requiredLevel(projectWithScene(scene))).toBe(5)
+  })
+
+  it('requires level 6 for composition', () => {
+    const scene = {
+      ...createScene('Principal'),
+      classes: [
+        klass('Bateria'),
+        { ...klass('Robot'), components: [{ name: 'bateria', class: 'Bateria' }] },
+      ],
+    }
+    expect(requiredLevel(projectWithScene(scene))).toBe(6)
   })
 })

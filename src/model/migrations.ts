@@ -41,6 +41,17 @@ export const migrations: Record<number, SchemaMigration> = {
   // v4 -> v5: scenes gained optional physics settings.
   4: (data) =>
     mapScenes(data, 5, (scene) => ({ physics: { enabled: false, gravityY: -9.8 }, ...scene })),
+  // v5 -> v6: classes gained `components` for composition.
+  5: (data) =>
+    mapScenes(data, 6, (scene) => {
+      const classes = Array.isArray(scene.classes)
+        ? (scene.classes as Record<string, unknown>[])
+        : []
+      return {
+        ...scene,
+        classes: classes.map((definition) => ({ components: [], ...definition })),
+      }
+    }),
 }
 
 export class MigrationError extends Error {

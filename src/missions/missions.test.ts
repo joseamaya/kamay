@@ -52,6 +52,7 @@ describe('MISSIONS', () => {
       inherits: 'Actor',
       image: null,
       attributes: [{ name: 'vida', type: 'number', initial: 100 }],
+      components: [],
       methods: [{ name: 'saltar', parameters: [], body: { kind: 'code', code: 'pass' } }],
     }
     const enemigo: ClassDefinition = {
@@ -60,6 +61,7 @@ describe('MISSIONS', () => {
       inherits: 'Heroe',
       image: null,
       attributes: [],
+      components: [],
       methods: [],
     }
     let scene: Scene = { ...createScene('Principal'), classes: [heroe, enemigo] }
