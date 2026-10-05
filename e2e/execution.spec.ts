@@ -260,6 +260,25 @@ test('shows an attribute change after running with pyodide', async ({ page }) =>
   await expect(panel).toContainText('80')
 })
 
+test('runs step by step with pyodide', async ({ page }) => {
+  test.skip(!process.env.PYODIDE_E2E, 'set PYODIDE_E2E=1 to run the real Pyodide test')
+  test.setTimeout(180_000)
+
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByLabel('Mensaje').fill('hola')
+  await page.getByRole('button', { name: 'Agregar orden' }).click()
+
+  await page.getByRole('button', { name: 'Paso a paso' }).click()
+  await page.getByRole('button', { name: 'Ejecutar' }).click()
+
+  await expect(page.getByText(/Paso 1 de \d+/)).toBeVisible({ timeout: 150_000 })
+  await page.getByRole('button', { name: 'Paso', exact: true }).click()
+  await expect(page.getByText(/Paso 2 de \d+/)).toBeVisible()
+})
+
 test('runs the polymorphism template with pyodide', async ({ page }) => {
   test.skip(!process.env.PYODIDE_E2E, 'set PYODIDE_E2E=1 to run the real Pyodide test')
   test.setTimeout(180_000)

@@ -5,6 +5,9 @@ export const es = {
   bar: {
     run: 'Ejecutar',
     stop: 'Detener',
+    stepMode: 'Paso a paso',
+    step: 'Paso',
+    stepProgress: 'Paso {index} de {total}',
     save: 'Guardar',
     portfolio: 'Portafolio',
     export: 'Exportar',

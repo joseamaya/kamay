@@ -28,6 +28,7 @@ import { MissionsDialog } from '../missions/MissionsDialog'
 import { RubricDialog } from '../rubric/RubricDialog'
 import { TemplatesDialog } from '../templates/TemplatesDialog'
 import { PortfolioDialog } from './PortfolioDialog'
+import { StepControls } from './StepControls'
 
 export interface TopBarProps {
   persistence: PersistenceApi
@@ -224,6 +225,7 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
             {messages.bar.preparing}
           </span>
         ) : null}
+        <StepControls runtime={runtime} />
         {isRunning ? (
           <Button variant="secondary" size="sm" onClick={runtime.stop}>
             {messages.bar.stop}

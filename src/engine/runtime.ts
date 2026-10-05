@@ -19,6 +19,7 @@ export class RuntimeController {
   private bubbles: Bubble[] = []
   private tweens: Tween[] = []
   private reducedMotion = false
+  private instant = false
   private clock = 0
   private delay = 0
   private pending: { command: ActorCommand; at: number }[] = []
@@ -27,6 +28,11 @@ export class RuntimeController {
 
   setReducedMotion(value: boolean): void {
     this.reducedMotion = value
+  }
+
+  /** Applies commands without tweens, so each step is deterministic. */
+  setInstant(value: boolean): void {
+    this.instant = value
   }
 
   /** Physics only advances while the program is running, not while editing. */
@@ -79,7 +85,7 @@ export class RuntimeController {
           this.physics.teleport(actor.id, command.x, command.y)
           actor.transform.position.x = command.x
           actor.transform.position.y = command.y
-        } else if (this.reducedMotion) {
+        } else if (this.reducedMotion || this.instant) {
           actor.transform.position.x = command.x
           actor.transform.position.y = command.y
         } else {
@@ -95,7 +101,7 @@ export class RuntimeController {
         if (this.physics.isActive()) {
           this.physics.setAngle(actor.id, command.degrees)
           actor.transform.rotation = command.degrees
-        } else if (this.reducedMotion) {
+        } else if (this.reducedMotion || this.instant) {
           actor.transform.rotation = command.degrees
         } else {
           this.tweens.push(
@@ -110,7 +116,7 @@ export class RuntimeController {
         }
         break
       case 'scale':
-        if (this.physics.isActive() || this.reducedMotion) {
+        if (this.physics.isActive() || this.reducedMotion || this.instant) {
           actor.transform.scale = command.factor
         } else {
           this.tweens.push(
