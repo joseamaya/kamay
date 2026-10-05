@@ -1,6 +1,7 @@
 import { generatePython } from '../generator'
 import type { Project } from '../model'
-import type { MissionId } from '../missions'
+import { evaluateRubric } from '../missions'
+import type { MissionId, RubricEntry } from '../missions'
 import { projectSlug } from './file'
 
 export interface Delivery {
@@ -10,6 +11,7 @@ export interface Delivery {
   project: Project
   python: Record<string, string>
   missions: { completed: MissionId[]; total: number }
+  rubric: RubricEntry[]
 }
 
 export function buildDelivery(
@@ -26,6 +28,7 @@ export function buildDelivery(
     project,
     python: Object.fromEntries(files.map((file) => [file.path, file.content])),
     missions: { completed: [...completed], total },
+    rubric: evaluateRubric(project),
   }
 }
 

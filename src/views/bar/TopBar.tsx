@@ -25,6 +25,7 @@ import { Menu, MenuItem } from '../../ui/Menu'
 import { Select } from '../../ui/Select'
 import { LevelsDialog } from '../levels/LevelsDialog'
 import { MissionsDialog } from '../missions/MissionsDialog'
+import { RubricDialog } from '../rubric/RubricDialog'
 import { TemplatesDialog } from '../templates/TemplatesDialog'
 import { PortfolioDialog } from './PortfolioDialog'
 
@@ -65,6 +66,7 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
   const [missionsOpen, setMissionsOpen] = useState(false)
   const [levelsOpen, setLevelsOpen] = useState(false)
   const [templatesOpen, setTemplatesOpen] = useState(false)
+  const [rubricOpen, setRubricOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
   const [shareLink, setShareLink] = useState<string | null>(null)
   const [renameOpen, setRenameOpen] = useState(false)
@@ -317,6 +319,14 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
                 {messages.bar.templates}
               </MenuItem>
               <MenuItem
+                onClick={() => {
+                  close()
+                  setRubricOpen(true)
+                }}
+              >
+                {messages.rubric.title}
+              </MenuItem>
+              <MenuItem
                 pressed={projector}
                 onClick={() => {
                   close()
@@ -354,6 +364,8 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
         onClose={() => setTemplatesOpen(false)}
         onSelect={handleTemplate}
       />
+
+      <RubricDialog open={rubricOpen} onClose={() => setRubricOpen(false)} />
 
       <Dialog
         open={shareLink !== null}
