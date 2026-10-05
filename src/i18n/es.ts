@@ -231,66 +231,142 @@ export const es = {
     badgesTitle: 'Insignias',
     locked: 'Bloqueada',
     unlocked: 'Conseguida',
+    hint: 'Pista',
     list: {
       first_object: {
         title: 'Pon algo en el escenario',
         description: 'Agrega al menos un objeto desde la Fábrica.',
+        hints: [
+          'Empieza por la Fábrica: hay formas y personajes.',
+          'Toca un objeto del catálogo y aparecerá en el escenario.',
+          'Prueba con el Círculo o el Gato.',
+        ],
       },
       give_order: {
         title: 'Da una orden',
         description: 'Agrega una orden a un objeto.',
+        hints: [
+          'Selecciona un objeto del escenario.',
+          'En «Órdenes» elige qué quieres que haga.',
+          'Por ejemplo: orden «Decir» con el mensaje «hola».',
+        ],
       },
       say_hello: {
         title: 'Haz que salude',
         description: 'Usa la orden «Decir» con un mensaje.',
+        hints: [
+          'Quieres que tu objeto diga algo.',
+          'Usa la orden «Decir» y escribe un mensaje.',
+          'Mensaje: «¡Hola!».',
+        ],
       },
       move_it: {
         title: 'Muévelo',
         description: 'Usa la orden «Mover».',
+        hints: [
+          'Puedes cambiar dónde está un objeto.',
+          'Usa la orden «Mover» con una X y una Y.',
+          'Por ejemplo: X = 100, Y = 0.',
+        ],
       },
       own_class: {
         title: 'Crea tu propia clase',
         description: 'Crea una clase con «Nueva clase».',
+        hints: [
+          'Crea tu propio molde de objeto.',
+          'En la Fábrica, pulsa «Nueva clase» y ponle un nombre.',
+          'Por ejemplo: clase «Perro».',
+        ],
       },
       own_attribute: {
         title: 'Dale un atributo propio',
         description: 'Agrega un atributo a tu clase.',
+        hints: [
+          'Los objetos guardan datos.',
+          'En el editor de clase, agrega un atributo con nombre y tipo.',
+          'Por ejemplo: atributo «energia» de tipo número.',
+        ],
       },
       own_method: {
         title: 'Dale un método propio',
         description: 'Agrega un método a tu clase.',
+        hints: [
+          'Los objetos pueden saber hacer cosas.',
+          'En el editor de clase, agrega un método.',
+          'Por ejemplo: método «ladrar» que diga «¡Guau!».',
+        ],
       },
       inherit: {
         title: 'Hereda',
         description: 'Haz que una clase herede de otra.',
+        hints: [
+          'Una clase puede reutilizar otra.',
+          'En el editor, elige «Hereda de» otra clase.',
+          'Por ejemplo: «Perro» hereda de «Animal».',
+        ],
       },
       wait_sequence: {
         title: 'Haz una pausa',
         description: 'Usa la orden «Esperar».',
+        hints: [
+          'Puedes hacer una pausa entre órdenes.',
+          'Usa la orden «Esperar» con unos segundos.',
+          'Por ejemplo: Esperar 1 segundo.',
+        ],
       },
       collision: {
         title: 'Provoca un choque',
         description: 'Crea una acción «Al chocar con».',
+        hints: [
+          'Haz que algo ocurra cuando dos objetos chocan.',
+          'Selecciona un objeto y usa «Al chocar con».',
+          'Elige el otro objeto y una orden, por ejemplo «Decir».',
+        ],
       },
       signal: {
         title: 'Envía una señal',
         description: 'Usa una señal (emitir o al recibir señal).',
+        hints: [
+          'Un objeto puede avisar a otros.',
+          'Usa «Emitir» con un nombre de señal, o «Al recibir señal».',
+          'Por ejemplo: emitir «boom» y que otro diga «¡Ay!» al recibirlo.',
+        ],
       },
       compose: {
         title: 'Combina objetos',
         description: 'Haz que una clase contenga a otra (composición).',
+        hints: [
+          'Un objeto puede estar hecho de otros objetos.',
+          'En el editor, agrega un componente: nombre y clase.',
+          'Por ejemplo: «Auto» tiene un «motor» de clase «Motor».',
+        ],
       },
       two_instances: {
         title: 'Dos objetos, dos estados',
         description: 'Crea dos objetos de tu clase y dales estados distintos.',
+        hints: [
+          'Crea dos objetos de tu clase.',
+          'Haz que cada uno guarde un valor distinto.',
+          'Por ejemplo: perro1.energia = 20 y perro2.energia = 50.',
+        ],
       },
       inherited_behavior: {
         title: 'Hereda el comportamiento',
         description: 'Haz que un objeto use un método definido en su clase base.',
+        hints: [
+          'Quieres que la clase base defina el comportamiento.',
+          'Define un método en la clase base y no lo repitas en la subclase.',
+          'Por ejemplo: «Animal.comer()» y crea un objeto «Perro».',
+        ],
       },
       composed_part: {
         title: 'Contiene una parte',
         description: 'Haz que un objeto contenga otro con comportamiento propio.',
+        hints: [
+          'La parte debe aportar algo.',
+          'Dale a la clase de la parte un método o un atributo.',
+          'Por ejemplo: «Motor.arrancar()» y crea un objeto «Auto».',
+        ],
       },
     },
     badges: {
@@ -446,6 +522,28 @@ export const es = {
         'Sí se puede saber: cada instancia tiene su propio estado, así que {sibling} seguirá igual.',
       later: 'Ahora no',
       accept: 'Entendido',
+    },
+    misconceptions: {
+      class_is_object: {
+        title: 'Clase y objeto',
+        description:
+          '«{name}» es una clase, no un objeto. La clase describe cómo serán sus objetos; cada objeto es una instancia concreta.',
+      },
+      shared_state: {
+        title: 'Estado compartido',
+        description:
+          'Cada instancia guarda su propio estado: cambiar un objeto no cambia los demás.',
+      },
+      inheritance_for_reuse: {
+        title: 'Herencia para reutilizar',
+        description:
+          '«{name}» no añade nada nuevo a su clase base. La herencia expresa una relación «es un»; si solo quieres reutilizar código, considera la composición.',
+      },
+      inheritance_vs_composition: {
+        title: '¿Es un o tiene un?',
+        description:
+          '«{name}» hereda de una clase y además contiene un objeto de esa misma familia. Recuerda: un Perro ES un Animal (herencia) y un Auto TIENE un Motor (composición).',
+      },
     },
   },
   triggers: {

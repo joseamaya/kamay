@@ -15,6 +15,7 @@ export interface PredictionState {
   addressed: MisconceptionId[]
   ask: (scenario: PredictionScenario) => void
   answer: (choice: PredictionChoice) => void
+  note: (id: MisconceptionId) => void
   close: () => void
   reset: () => void
 }
@@ -44,6 +45,10 @@ export const usePredictionStore = create<PredictionState>((set, get) => ({
           : state.addressed,
     }))
   },
+  note: (id) =>
+    set((state) =>
+      state.addressed.includes(id) ? state : { addressed: [...state.addressed, id] },
+    ),
   close: () => set({ pending: null, outcome: null }),
   reset: () => set({ pending: null, outcome: null, askedClasses: [], addressed: [] }),
 }))

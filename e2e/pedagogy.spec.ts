@@ -29,3 +29,28 @@ test('detects the shared-state misconception when editing an instance', async ({
   await dialog.getByRole('button', { name: 'También cambiará a 20' }).click()
   await expect(dialog.getByText(/cada instancia guarda su propio estado/i)).toBeVisible()
 })
+
+test('warns when inheritance is only used to reuse', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      'kamay.progress',
+      JSON.stringify({ completed: [], freeMode: false, unlockedLevel: 5, onboardingDone: true }),
+    )
+  })
+
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Nueva clase' }).click()
+  let editor = page.getByRole('dialog', { name: 'Nueva clase' })
+  await page.getByLabel('Nombre de la clase').fill('Animal')
+  await editor.getByRole('button', { name: 'Agregar método' }).click()
+  await page.getByLabel('Nombre del método').fill('comer')
+  await editor.getByRole('button', { name: 'Guardar' }).click()
+
+  await page.getByRole('button', { name: 'Nueva clase' }).click()
+  editor = page.getByRole('dialog', { name: 'Nueva clase' })
+  await page.getByLabel('Nombre de la clase').fill('Perro')
+  await page.getByLabel('Hereda de').selectOption('Animal')
+
+  await expect(editor.getByText(/La herencia expresa una relación/)).toBeVisible()
+})
