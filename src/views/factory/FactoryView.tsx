@@ -1,7 +1,12 @@
 import { useState } from 'react'
 
 import { format, getMessages } from '../../i18n'
-import { ACTOR_CATALOG, classInheritanceUsageCount, classUsageCount } from '../../model'
+import {
+  ACTOR_CATALOG,
+  classInheritanceUsageCount,
+  classUsageCount,
+  isSystemClassName,
+} from '../../model'
 import type { ActorShape, CatalogItem, ClassDefinition } from '../../model'
 import { useActiveScene, useCapabilities, useEditorStore, useProjectStore } from '../../store'
 import { Button } from '../../ui/Button'
@@ -199,8 +204,9 @@ export function FactoryView() {
                   <button
                     type="button"
                     aria-label={format(messages.factory.deleteClass, { name: definition.name })}
+                    disabled={isSystemClassName(definition.name)}
                     onClick={() => requestDeleteClass(definition)}
-                    className="text-muted-foreground hover:text-destructive rounded-md px-1.5 text-lg leading-none"
+                    className="text-muted-foreground hover:text-destructive disabled:text-muted-foreground/40 disabled:hover:text-muted-foreground/40 rounded-md px-1.5 text-lg leading-none"
                   >
                     ×
                   </button>

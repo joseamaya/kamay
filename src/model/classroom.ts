@@ -1,5 +1,11 @@
 import type { AttributeValue } from './attributes'
-import { BASE_CLASS, createObject, nextObjectName } from './factory'
+import {
+  BASE_CLASS,
+  createObject,
+  DOMAIN_BASE_NAMES,
+  isDomainBaseName,
+  nextObjectName,
+} from './factory'
 import { createId } from './ids'
 import { identifierPattern } from './schema'
 import type { Attribute, ClassDefinition, Component, Method, ObjectInstance, Scene } from './schema'
@@ -37,7 +43,7 @@ export function createClassDraft(name = 'MiClase'): ClassDefinition {
   return {
     id: createId('class'),
     name,
-    inherits: BASE_CLASS,
+    inherits: 'Cosa',
     image: null,
     attributes: [
       { name: 'color', type: 'string', initial: DEFAULT_CLASS_COLOR },
@@ -102,10 +108,8 @@ export function availableBaseClasses(scene: Scene, draft: ClassDefinition): stri
     existing?.name ?? '',
     ...descendantNames(scene, draft.id),
   ])
-  return [
-    BASE_CLASS,
-    ...scene.classes.map((candidate) => candidate.name).filter((name) => !excluded.has(name)),
-  ]
+  const names = [...DOMAIN_BASE_NAMES, ...scene.classes.map((candidate) => candidate.name)]
+  return [...new Set(names)].filter((name) => !excluded.has(name))
 }
 
 function isValidBase(scene: Scene, definition: ClassDefinition): boolean {
@@ -117,7 +121,7 @@ function isValidBase(scene: Scene, definition: ClassDefinition): boolean {
   if (existing) selfNames.add(existing.name)
   if (selfNames.has(base) || descendantNames(scene, definition.id).has(base)) return false
 
-  return scene.classes.some((candidate) => candidate.name === base)
+  return isDomainBaseName(base) || scene.classes.some((candidate) => candidate.name === base)
 }
 
 /** Own methods plus inherited ones, with the class that declares each one. */

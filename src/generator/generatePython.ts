@@ -1,4 +1,4 @@
-import { collisionKey, findBuiltinMethod, resolveMethods } from '../model'
+import { collisionKey, DOMAIN_BASES, findBuiltinMethod, resolveMethods } from '../model'
 import type {
   Action,
   ClassDefinition,
@@ -81,6 +81,13 @@ function collectClasses(project: Project): ClassDefinition[] {
   for (const scene of project.scenes) {
     for (const definition of scene.classes) {
       if (!byName.has(definition.name)) byName.set(definition.name, definition)
+    }
+  }
+  // A class may inherit a domain base that is not placed in the scene; emit it.
+  for (const definition of [...byName.values()]) {
+    const base = definition.inherits
+    if (base && !byName.has(base) && base in DOMAIN_BASES) {
+      byName.set(base, DOMAIN_BASES[base]!)
     }
   }
   return [...byName.values()]

@@ -1,8 +1,7 @@
 import {
-  ACTOR_CATALOG,
   BASE_CLASS,
   classCustomAttributes,
-  DOMAIN_BASE_NAMES,
+  isSystemClassName,
   resolveAttributeDefaults,
   resolveCustomAttributes,
 } from '../model'
@@ -39,12 +38,6 @@ export interface Badge {
   missions: MissionId[]
 }
 
-const CATALOG_CLASS_NAMES = new Set([
-  ...ACTOR_CATALOG.map((item) => item.className),
-  ...DOMAIN_BASE_NAMES,
-  BASE_CLASS,
-])
-
 function classes(project: Project): ClassDefinition[] {
   return project.scenes.flatMap((scene) => scene.classes)
 }
@@ -62,7 +55,7 @@ function actions(project: Project): Action[] {
 }
 
 export function customClasses(project: Project): ClassDefinition[] {
-  return classes(project).filter((definition) => !CATALOG_CLASS_NAMES.has(definition.name))
+  return classes(project).filter((definition) => !isSystemClassName(definition.name))
 }
 
 function saysSomething(action: Action): boolean {
@@ -70,7 +63,7 @@ function saysSomething(action: Action): boolean {
 }
 
 function customClassDefinitions(scene: Scene): ClassDefinition[] {
-  return scene.classes.filter((definition) => !CATALOG_CLASS_NAMES.has(definition.name))
+  return scene.classes.filter((definition) => !isSystemClassName(definition.name))
 }
 
 /** A custom class that has both an attribute and a method (designed, not just declared). */
@@ -111,7 +104,7 @@ export function inheritsBehavior(project: Project): boolean {
       const base = definition.inherits
       if (!base || base === BASE_CLASS) continue
       const baseDefinition = scene.classes.find((candidate) => candidate.name === base)
-      if (!baseDefinition || CATALOG_CLASS_NAMES.has(baseDefinition.name)) continue
+      if (!baseDefinition || isSystemClassName(baseDefinition.name)) continue
       const own = new Set(definition.methods.map((method) => method.name))
       if (!baseDefinition.methods.some((method) => !own.has(method.name))) continue
       if (scene.objects.some((object) => object.class === definition.name)) return true
@@ -233,10 +226,12 @@ export const MISSIONS: Mission[] = [
   },
   {
     id: 'inherit',
-    isComplete: (project) =>
-      customClasses(project).some(
-        (definition) => definition.inherits != null && definition.inherits !== BASE_CLASS,
-      ),
+    isComplete: (project) => {
+      const customNames = new Set(customClasses(project).map((definition) => definition.name))
+      return customClasses(project).some(
+        (definition) => definition.inherits != null && customNames.has(definition.inherits),
+      )
+    },
   },
   {
     id: 'inherited_behavior',

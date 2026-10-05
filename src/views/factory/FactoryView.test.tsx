@@ -73,6 +73,16 @@ describe('FactoryView', () => {
     expect(objects[1]?.name).toBe('carro2')
   })
 
+  it('does not allow deleting system classes', () => {
+    const sceneId = useProjectStore.getState().project.scenes[0]!.id
+    useProjectStore.getState().addObject(sceneId, 'carro')
+
+    render(<FactoryView />)
+
+    expect(screen.getByRole('button', { name: 'Eliminar clase Vehiculo' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Eliminar clase Carro' })).toBeDisabled()
+  })
+
   it('removes an object after confirming the dialog', async () => {
     const user = userEvent.setup()
     const sceneId = useProjectStore.getState().project.scenes[0]!.id

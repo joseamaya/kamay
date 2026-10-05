@@ -245,6 +245,21 @@ const DOMAIN_CATALOG: CatalogItem[] = [
 
 export const ACTOR_CATALOG: CatalogItem[] = DOMAIN_CATALOG
 
+/** Names of the classes provided by the app (catalog entities and domain bases). */
+export const SYSTEM_CLASS_NAMES = new Set<string>([
+  ...ACTOR_CATALOG.map((item) => item.className),
+  ...DOMAIN_BASE_NAMES,
+  BASE_CLASS,
+])
+
+export function isSystemClassName(name: string): boolean {
+  return SYSTEM_CLASS_NAMES.has(name)
+}
+
+export function isDomainBaseName(name: string): boolean {
+  return name in DOMAIN_BASES
+}
+
 /** Order-independent key for a pair of objects that can collide. */
 export function collisionKey(a: string, b: string): string {
   return [a, b].sort().join('|')
