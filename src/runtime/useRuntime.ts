@@ -13,6 +13,7 @@ export interface RuntimeApi {
   stop: () => void
   setStepMode: (on: boolean) => void
   step: () => void
+  back: () => void
   resume: () => void
 }
 
@@ -100,6 +101,20 @@ export function useRuntime(): RuntimeApi {
     useRuntimeStore.getState().advanceStep()
   }, [])
 
+  const back = useCallback(() => {
+    const queue = useRuntimeStore.getState().stepQueue
+    const target = Math.max(0, queue.cursor - 1)
+    if (target === queue.cursor) return
+    emitRuntimeReset()
+    useObservationsStore.getState().reset()
+    for (let index = 0; index < target; index += 1) {
+      const step = queue.steps[index]
+      if (!step) continue
+      for (const message of step) applyRuntimeMessage(message)
+    }
+    useRuntimeStore.getState().setCursor(target)
+  }, [])
+
   const resume = useCallback(() => {
     const queue = useRuntimeStore.getState().stepQueue
     for (const group of remainingSteps(queue)) {
@@ -109,5 +124,5 @@ export function useRuntime(): RuntimeApi {
     useRuntimeStore.getState().setStepMode(false)
   }, [])
 
-  return { run, stop, setStepMode, step, resume }
+  return { run, stop, setStepMode, step, back, resume }
 }

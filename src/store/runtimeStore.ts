@@ -17,6 +17,7 @@ export interface RuntimeStoreState {
   setStepMode: (stepMode: boolean) => void
   enqueueStep: (message: RuntimeMessage) => void
   advanceStep: () => void
+  setCursor: (cursor: number) => void
   resetSteps: () => void
 }
 
@@ -32,5 +33,12 @@ export const useRuntimeStore = create<RuntimeStoreState>((set) => ({
   setStepMode: (stepMode) => set({ stepMode }),
   enqueueStep: (message) => set((state) => ({ stepQueue: pushMessage(state.stepQueue, message) })),
   advanceStep: () => set((state) => ({ stepQueue: advance(state.stepQueue) })),
+  setCursor: (cursor) =>
+    set((state) => ({
+      stepQueue: {
+        ...state.stepQueue,
+        cursor: Math.max(0, Math.min(cursor, state.stepQueue.steps.length)),
+      },
+    })),
   resetSteps: () => set({ stepQueue: createStepQueue() }),
 }))
