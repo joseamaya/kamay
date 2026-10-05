@@ -63,7 +63,7 @@ test('creates a class with a method and instantiates it', async ({ page }) => {
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
   await page.getByRole('button', { name: 'Heroe.py' }).click()
-  await expect(codeContent(page)).toContainText('class Heroe(Actor):')
+  await expect(codeContent(page)).toContainText('class Heroe(Cosa):')
   await expect(codeContent(page)).toContainText('def saludar(self):')
   await expect(codeContent(page)).toContainText('self.decir("hola")')
 
@@ -170,7 +170,7 @@ test('creates a class that inherits from another class', async ({ page }) => {
   await expect(codeContent(page)).toContainText('class Heroe(Personaje):')
 
   await page.getByRole('button', { name: 'Personaje.py' }).click()
-  await expect(codeContent(page)).toContainText('class Personaje(Actor):')
+  await expect(codeContent(page)).toContainText('class Personaje(Cosa):')
 
   await page.getByRole('button', { name: 'Crear objeto de Heroe' }).click()
   await page.getByRole('button', { name: 'heroe1', exact: true }).click()
@@ -178,7 +178,7 @@ test('creates a class that inherits from another class', async ({ page }) => {
 
   const overlay = page.locator('[data-selection-overlay]')
   await expect(overlay).toContainText('Instancia de Heroe')
-  await expect(overlay).toContainText('Heroe → Personaje → Actor')
+  await expect(overlay).toContainText('Heroe → Personaje → Cosa')
 })
 
 test('creates and switches between scenes', async ({ page }) => {

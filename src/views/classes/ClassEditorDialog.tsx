@@ -6,7 +6,6 @@ import {
   ACTOR_SHAPES,
   availableBaseClasses,
   availableComponentClasses,
-  BASE_CLASS,
   createClassDraft,
   hasClassDraftErrors,
   newAttribute,
@@ -69,6 +68,9 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
     value: name,
     label: name,
   }))
+  if (draft.inherits && !baseOptions.some((option) => option.value === draft.inherits)) {
+    baseOptions.unshift({ value: draft.inherits, label: messages.classEditor.noBase })
+  }
   const componentClasses = availableComponentClasses(scene, draft)
 
   const visual = (name: 'color' | 'shape', fallback: string): string => {
@@ -205,7 +207,7 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
               <div className="flex flex-col gap-1">
                 <Select
                   label={messages.classEditor.base}
-                  value={draft.inherits ?? BASE_CLASS}
+                  value={draft.inherits ?? baseOptions[0]?.value ?? ''}
                   options={baseOptions}
                   onChange={(value) => setDraft((current) => ({ ...current, inherits: value }))}
                 />

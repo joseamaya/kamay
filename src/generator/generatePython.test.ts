@@ -40,6 +40,27 @@ describe('generatePython', () => {
     expect(files.map((file) => file.path)).toEqual(['Heroe.py', 'principal.py'])
   })
 
+  it('emits a domain base that is only inherited', () => {
+    const project = projectSchema.parse({
+      version: 1,
+      meta: { name: 'X' },
+      scenes: [
+        {
+          id: 's',
+          name: 'Principal',
+          classes: [{ id: 'c', name: 'Heroe', inherits: 'Cosa', attributes: [], methods: [] }],
+        },
+      ],
+    })
+
+    const { files } = generatePython(project)
+
+    expect(files.map((file) => file.path)).toContain('Cosa.py')
+    expect(files.find((file) => file.path === 'Heroe.py')?.content).toContain(
+      'from Cosa import Cosa',
+    )
+  })
+
   it('generates the expected Heroe.py (golden)', () => {
     const { files } = generatePython(buildFixture())
     const heroe = files.find((file) => file.path === 'Heroe.py')

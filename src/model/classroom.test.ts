@@ -29,9 +29,9 @@ function sceneWithClass(definition: ClassDefinition) {
 }
 
 describe('createClassDraft', () => {
-  it('creates a valid draft inheriting Actor with color and shape', () => {
+  it('creates a valid draft inheriting a domain base with color and shape', () => {
     const draft = createClassDraft('Heroe')
-    expect(draft.inherits).toBe('Actor')
+    expect(draft.inherits).toBe('Cosa')
     expect(draft.attributes.map((attribute) => attribute.name)).toEqual(['color', 'shape'])
   })
 })
@@ -133,8 +133,13 @@ describe('inheritance', () => {
     return scene
   }
 
-  it('offers Actor and non-descendant classes as bases', () => {
-    expect(availableBaseClasses(sceneWithFamily(), heroe)).toEqual(['Actor', 'Personaje'])
+  it('offers the domain bases and non-descendant classes as bases', () => {
+    expect(availableBaseClasses(sceneWithFamily(), heroe)).toEqual([
+      'Vehiculo',
+      'Animal',
+      'Cosa',
+      'Personaje',
+    ])
   })
 
   it('excludes descendants to avoid cycles', () => {
@@ -292,6 +297,7 @@ describe('validateClassDraft', () => {
 describe('resolve with origin', () => {
   function hierarchy() {
     const animal = createClassDraft('Animal')
+    animal.inherits = 'Actor'
     animal.attributes.push({ name: 'energia', type: 'number', initial: 50 })
     animal.methods.push({ name: 'comer', parameters: [], body: { kind: 'blocks', ops: [] } })
     const collar = createClassDraft('Collar')

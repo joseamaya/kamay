@@ -1,4 +1,3 @@
-import { BASE_CLASS } from '../model'
 import type { Project } from '../model'
 import {
   composesMeaningfulPart,
@@ -45,12 +44,13 @@ export function evaluateRubric(project: Project): RubricEntry[] {
   const actions = events.flatMap((event) => event.actions)
 
   const ownClasses = customClasses(project)
+  const customNames = new Set(ownClasses.map((definition) => definition.name))
   const inheritanceCount = ownClasses.filter(
-    (definition) => definition.inherits != null && definition.inherits !== BASE_CLASS,
+    (definition) => definition.inherits != null && customNames.has(definition.inherits),
   ).length
   const polymorphismCount = ownClasses.filter((definition) => {
     const base = definition.inherits
-    if (!base || base === BASE_CLASS) return false
+    if (!base || !customNames.has(base)) return false
     const baseDefinition = classes.find((candidate) => candidate.name === base)
     return (
       baseDefinition?.methods.some((method) =>

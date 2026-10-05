@@ -72,6 +72,7 @@ export const es = {
     titleEdit: 'Editar clase',
     name: 'Nombre de la clase',
     base: 'Hereda de',
+    noBase: 'Sin base',
     color: 'Color',
     shape: 'Forma',
     image: 'Imagen',
