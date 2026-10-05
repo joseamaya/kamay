@@ -15,7 +15,7 @@ describe('buildDelivery', () => {
     expect(delivery.app).toBe('kamay')
     expect(delivery.kind).toBe('entrega')
     expect(delivery.project).toEqual(project)
-    expect(delivery.python['principal.py']).toContain('circle1 = Circle("circle1")')
+    expect(delivery.python['principal.py']).toContain('carro1 = Carro("carro1")')
     expect(delivery.missions).toEqual({ completed: ['first_object'], total: 11 })
     expect(delivery.rubric).toHaveLength(9)
     expect(delivery.rubric.find((entry) => entry.id === 'objects')?.status).toBe('practiced')

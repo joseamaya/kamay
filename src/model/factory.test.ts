@@ -15,31 +15,10 @@ import {
   updateObjectAttributes,
 } from './index'
 
-const circle = ACTOR_CATALOG.find((item) => item.id === 'circle')!
-const cat = ACTOR_CATALOG.find((item) => item.id === 'cat')!
+const carro = ACTOR_CATALOG.find((item) => item.id === 'carro')!
+const perro = ACTOR_CATALOG.find((item) => item.id === 'perro')!
 
 describe('ACTOR_CATALOG', () => {
-  it('exposes the geometric primitives', () => {
-    expect(ACTOR_CATALOG.filter((item) => item.kind === 'shape').map((item) => item.id)).toEqual([
-      'circle',
-      'square',
-      'triangle',
-      'rectangle',
-      'diamond',
-      'pentagon',
-      'hexagon',
-      'heart',
-      'star',
-    ])
-  })
-
-  it('exposes characters and things as glyphs', () => {
-    expect(
-      ACTOR_CATALOG.filter((item) => item.kind === 'glyph' && !item.group).map((item) => item.id),
-    ).toEqual(['cat', 'dog', 'robot', 'rocket', 'apple', 'ball', 'tree', 'house'])
-    expect(cat.glyph).toBe('🐱')
-  })
-
   it('exposes the real-world domain catalog with domain bases', () => {
     const domain = ACTOR_CATALOG.filter((item) => item.group)
 
@@ -61,42 +40,38 @@ describe('ACTOR_CATALOG', () => {
 })
 
 describe('addCatalogObject', () => {
-  it('adds the class once and creates named instances', () => {
-    const first = addCatalogObject(createScene('Principal'), circle)
-    const second = addCatalogObject(first, circle)
+  it('adds the base and entity classes once and creates named instances', () => {
+    const first = addCatalogObject(createScene('Principal'), carro)
+    const second = addCatalogObject(first, carro)
 
-    expect(first.classes).toHaveLength(1)
-    expect(first.classes[0]?.name).toBe('Circle')
-    expect(first.objects[0]?.name).toBe('circle1')
-    expect(second.classes).toHaveLength(1)
-    expect(second.objects.map((object) => object.name)).toEqual(['circle1', 'circle2'])
+    expect(first.classes.map((definition) => definition.name)).toEqual(['Vehiculo', 'Carro'])
+    expect(first.objects[0]?.name).toBe('carro1')
+    expect(second.classes).toHaveLength(2)
+    expect(second.objects.map((object) => object.name)).toEqual(['carro1', 'carro2'])
   })
 
   it('seeds the object visual attributes', () => {
-    const scene = addCatalogObject(createScene('Principal'), circle)
+    const scene = addCatalogObject(createScene('Principal'), carro)
     expect(scene.objects[0]?.attributes).toMatchObject({
       x: 0,
       y: 0,
       rotation: 0,
       scale: 1,
       shape: 'circle',
-      color: circle.color,
+      color: carro.color,
     })
   })
 
-  it('seeds the glyph attribute for characters and things', () => {
-    const scene = addCatalogObject(createScene('Principal'), cat)
-    expect(scene.classes[0]?.name).toBe('Cat')
-    expect(scene.classes[0]?.attributes).toContainEqual({
-      name: 'glyph',
-      type: 'string',
-      initial: '🐱',
-    })
-    expect(scene.objects[0]?.attributes.glyph).toBe('🐱')
+  it('seeds the glyph attribute for a real-world entity', () => {
+    const scene = addCatalogObject(createScene('Principal'), perro)
+    expect(scene.classes.map((definition) => definition.name)).toEqual(['Animal', 'Perro'])
+    expect(
+      scene.classes.find((definition) => definition.name === 'Perro')?.attributes,
+    ).toContainEqual({ name: 'glyph', type: 'string', initial: '🐶' })
+    expect(scene.objects[0]?.attributes.glyph).toBe('🐶')
   })
 
   it('adds the domain base chain for a real-world entity', () => {
-    const carro = ACTOR_CATALOG.find((item) => item.id === 'carro')!
     const scene = addCatalogObject(createScene('Principal'), carro)
 
     expect(scene.classes.map((definition) => definition.name)).toEqual(['Vehiculo', 'Carro'])
@@ -111,7 +86,7 @@ describe('addCatalogObject', () => {
 
 describe('setActionArg', () => {
   it('updates a single action argument immutably', () => {
-    let scene = addCatalogObject(createScene('Principal'), circle)
+    let scene = addCatalogObject(createScene('Principal'), carro)
     const name = scene.objects[0]!.name
     scene = addEventAction(scene, 'on_start', null, null, {
       target: name,
@@ -126,20 +101,20 @@ describe('setActionArg', () => {
   })
 
   it('ignores a missing event', () => {
-    const scene = addCatalogObject(createScene('Principal'), circle)
+    const scene = addCatalogObject(createScene('Principal'), carro)
     expect(setActionArg(scene, 'on_start', null, null, 0, 'mensaje', 'x')).toEqual(scene)
   })
 })
 
 describe('scene operations', () => {
   it('removes an object by id', () => {
-    const scene = addCatalogObject(createScene('Principal'), circle)
+    const scene = addCatalogObject(createScene('Principal'), carro)
     const id = scene.objects[0]!.id
     expect(removeObject(scene, id).objects).toHaveLength(0)
   })
 
   it('patches object attributes immutably', () => {
-    const scene = addCatalogObject(createScene('Principal'), circle)
+    const scene = addCatalogObject(createScene('Principal'), carro)
     const id = scene.objects[0]!.id
     const next = updateObjectAttributes(scene, id, { x: 42, color: '#000000' })
 
@@ -153,7 +128,7 @@ describe('scene operations', () => {
   })
 
   it('drops the object events and actions when deleting it', () => {
-    let scene = addCatalogObject(createScene('Principal'), circle)
+    let scene = addCatalogObject(createScene('Principal'), carro)
     const object = scene.objects[0]!
     const action = { target: object.name, method: 'decir', args: { mensaje: 'hola' } }
     scene = addEventAction(scene, 'on_click', object.name, null, action)

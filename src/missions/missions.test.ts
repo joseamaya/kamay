@@ -13,7 +13,7 @@ import {
 import type { ClassDefinition, Project, Scene } from '../model'
 import { BADGES, completedBadges, evaluateMissions, MISSIONS } from './missions'
 
-const circle = ACTOR_CATALOG.find((item) => item.id === 'circle')!
+const circle = ACTOR_CATALOG.find((item) => item.id === 'carro')!
 
 function projectWith(scene: Scene): Project {
   return { ...createEmptyProject(), scenes: [scene] }

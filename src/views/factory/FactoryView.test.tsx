@@ -16,9 +16,9 @@ describe('FactoryView', () => {
     const user = userEvent.setup()
     render(<FactoryView />)
 
-    await user.click(screen.getByRole('button', { name: 'Agregar Círculo al escenario' }))
+    await user.click(screen.getByRole('button', { name: 'Agregar Carro al escenario' }))
 
-    expect(screen.getByRole('button', { name: 'circle1' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'carro1' })).toBeInTheDocument()
     expect(useProjectStore.getState().project.scenes[0]?.objects).toHaveLength(1)
   })
 
@@ -57,23 +57,23 @@ describe('FactoryView', () => {
   it('duplicates an object', async () => {
     const user = userEvent.setup()
     const sceneId = useProjectStore.getState().project.scenes[0]!.id
-    useProjectStore.getState().addObject(sceneId, 'circle')
+    useProjectStore.getState().addObject(sceneId, 'carro')
 
     render(<FactoryView />)
-    await user.click(screen.getByRole('button', { name: 'Duplicar circle1' }))
+    await user.click(screen.getByRole('button', { name: 'Duplicar carro1' }))
 
     const objects = useProjectStore.getState().project.scenes[0]!.objects
     expect(objects).toHaveLength(2)
-    expect(objects[1]?.name).toBe('circle2')
+    expect(objects[1]?.name).toBe('carro2')
   })
 
   it('removes an object after confirming the dialog', async () => {
     const user = userEvent.setup()
     const sceneId = useProjectStore.getState().project.scenes[0]!.id
-    useProjectStore.getState().addObject(sceneId, 'circle')
+    useProjectStore.getState().addObject(sceneId, 'carro')
 
     render(<FactoryView />)
-    await user.click(screen.getByRole('button', { name: 'Eliminar circle1' }))
+    await user.click(screen.getByRole('button', { name: 'Eliminar carro1' }))
     await user.click(screen.getByRole('button', { name: 'Eliminar' }))
 
     expect(useProjectStore.getState().project.scenes[0]?.objects).toHaveLength(0)

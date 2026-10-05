@@ -8,7 +8,7 @@ import { SelectionOverlay } from './SelectionOverlay'
 
 function selectCircle(): void {
   const sceneId = useProjectStore.getState().project.scenes[0]!.id
-  useProjectStore.getState().addObject(sceneId, 'circle')
+  useProjectStore.getState().addObject(sceneId, 'carro')
   const objectId = useProjectStore.getState().project.scenes[0]!.objects[0]!.id
   useEditorStore.setState({ selectedObjectId: objectId })
 }
@@ -24,8 +24,8 @@ describe('SelectionOverlay', () => {
 
     render(<SelectionOverlay />)
 
-    expect(screen.getByText('circle1')).toBeInTheDocument()
-    expect(screen.getByText('Instancia de Circle')).toBeInTheDocument()
+    expect(screen.getByText('carro1')).toBeInTheDocument()
+    expect(screen.getByText('Instancia de Carro')).toBeInTheDocument()
     expect(screen.getByText('Aspecto')).toBeInTheDocument()
     expect(screen.getByText('Órdenes')).toBeInTheDocument()
     expect(screen.getByLabelText('Cuándo')).toBeInTheDocument()

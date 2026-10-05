@@ -25,8 +25,9 @@ export interface Template {
   build: () => Project
 }
 
-const CIRCLE = ACTOR_CATALOG.find((item) => item.id === 'circle')!
-const SQUARE = ACTOR_CATALOG.find((item) => item.id === 'square')!
+const CARRO = ACTOR_CATALOG.find((item) => item.id === 'carro')!
+const BICICLETA = ACTOR_CATALOG.find((item) => item.id === 'bicicleta')!
+const PELOTA = ACTOR_CATALOG.find((item) => item.id === 'pelota')!
 
 function projectWith(name: string, scene: Scene): Project {
   return { ...createEmptyProject({ name }), scenes: [scene] }
@@ -65,7 +66,7 @@ function instance(
 }
 
 function hello(): Project {
-  let scene = addCatalogObject(createScene('Principal'), CIRCLE)
+  let scene = addCatalogObject(createScene('Principal'), CARRO)
   const name = scene.objects[0]!.name
   scene = addEventAction(scene, 'on_start', null, null, {
     target: name,
@@ -76,8 +77,8 @@ function hello(): Project {
 }
 
 function chase(): Project {
-  let scene = addCatalogObject(createScene('Principal'), CIRCLE)
-  scene = addCatalogObject(scene, SQUARE)
+  let scene = addCatalogObject(createScene('Principal'), CARRO)
+  scene = addCatalogObject(scene, BICICLETA)
   const [first, second] = scene.objects
   scene = addEventAction(scene, 'on_collision', first!.name, second!.name, {
     target: first!.name,
@@ -131,19 +132,19 @@ function inheritance(): Project {
 }
 
 function polymorphism(): Project {
-  const animal = klass('Animal', {
+  const animal = klass('SerVivo', {
     methods: [
       { name: 'hablar', parameters: [], body: { kind: 'code', code: 'self.decir("...")' } },
     ],
   })
-  const perro = klass('Perro', {
-    inherits: 'Animal',
+  const perro = klass('Canino', {
+    inherits: 'SerVivo',
     methods: [
       { name: 'hablar', parameters: [], body: { kind: 'code', code: 'self.decir("¡Guau!")' } },
     ],
   })
-  const gato = klass('Gato', {
-    inherits: 'Animal',
+  const gato = klass('Felino', {
+    inherits: 'SerVivo',
     methods: [
       { name: 'hablar', parameters: [], body: { kind: 'code', code: 'self.decir("¡Miau!")' } },
     ],
@@ -152,8 +153,8 @@ function polymorphism(): Project {
   let scene: Scene = {
     ...base,
     objects: [
-      instance(base, 'Perro', { color: '#e2603a', shape: 'circle' }),
-      instance(base, 'Gato', { color: '#8f9aa8', shape: 'circle' }),
+      instance(base, 'Canino', { color: '#e2603a', shape: 'circle' }),
+      instance(base, 'Felino', { color: '#8f9aa8', shape: 'circle' }),
     ],
   }
   const [perroObject, gatoObject] = scene.objects
@@ -171,7 +172,7 @@ function polymorphism(): Project {
 }
 
 function physics(): Project {
-  const scene = addCatalogObject(createScene('Principal'), CIRCLE)
+  const scene = addCatalogObject(createScene('Principal'), PELOTA)
   return projectWith('Física', {
     ...scene,
     background: 'sky',
@@ -188,7 +189,7 @@ function composition(): Project {
     attributes: [{ name: 'carga', type: 'number', initial: 100 }],
     methods: [{ name: 'cargar', parameters: [], body: { kind: 'code', code: 'self.carga = 100' } }],
   })
-  const robot = klass('Robot', {
+  const robot = klass('Maquina', {
     components: [{ name: 'bateria', class: 'Bateria' }],
     methods: [
       { name: 'saludar', parameters: [], body: { kind: 'code', code: 'self.decir("¡Hola!")' } },
@@ -197,7 +198,7 @@ function composition(): Project {
   const base: Scene = { ...createScene('Principal'), classes: [bateria, robot] }
   let scene: Scene = {
     ...base,
-    objects: [instance(base, 'Robot', { color: '#8f9aa8', shape: 'circle' })],
+    objects: [instance(base, 'Maquina', { color: '#8f9aa8', shape: 'circle' })],
   }
   const name = scene.objects[0]!.name
   scene = addEventAction(scene, 'on_start', null, null, {
