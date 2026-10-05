@@ -17,7 +17,7 @@ describe('RubricDialog', () => {
     expect(screen.getByText('Objetos')).toBeInTheDocument()
     expect(screen.getByText('Estado')).toBeInTheDocument()
     expect(screen.getByText('Herencia')).toBeInTheDocument()
-    expect(screen.getAllByText('Presentado')).toHaveLength(8)
+    expect(screen.getAllByText('Presentado')).toHaveLength(9)
   })
 
   it('renders nothing when closed', () => {

@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures'
 
-import { methodBody, useCodeBody } from './helpers'
+import { methodBody, openMore, useCodeBody } from './helpers'
 
 test('runs the generated program with pyodide', async ({ page }) => {
   test.skip(!process.env.PYODIDE_E2E, 'set PYODIDE_E2E=1 to run the real Pyodide test')
@@ -258,6 +258,20 @@ test('shows an attribute change after running with pyodide', async ({ page }) =>
   await expect(panel).toContainText('heroe1.energia', { timeout: 150_000 })
   await expect(panel).toContainText('50')
   await expect(panel).toContainText('80')
+})
+
+test('runs the polymorphism template with pyodide', async ({ page }) => {
+  test.skip(!process.env.PYODIDE_E2E, 'set PYODIDE_E2E=1 to run the real Pyodide test')
+  test.setTimeout(180_000)
+
+  await page.goto('/')
+
+  await openMore(page)
+  await page.getByRole('menuitem', { name: 'Plantillas' }).click()
+  await page.getByRole('button', { name: /Polimorfismo/ }).click()
+
+  await page.getByRole('button', { name: 'Ejecutar' }).click()
+  await expect(page.getByText('Listo.')).toBeVisible({ timeout: 150_000 })
 })
 
 test('runs with physics enabled with pyodide', async ({ page }) => {

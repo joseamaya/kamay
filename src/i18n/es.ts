@@ -221,6 +221,10 @@ export const es = {
         title: 'Composición',
         description: 'Una clase que contiene a otra como parte.',
       },
+      polymorphism: {
+        title: 'Polimorfismo',
+        description: 'Dos animales que responden distinto al mismo mensaje.',
+      },
     },
   },
   missions: {
@@ -359,6 +363,15 @@ export const es = {
           'Por ejemplo: «Animal.comer()» y crea un objeto «Perro».',
         ],
       },
+      polymorphism: {
+        title: 'Mismo mensaje, distinto comportamiento',
+        description: 'Dos subclases que cambian el mismo método y responden distinto.',
+        hints: [
+          'Dos clases pueden compartir un método con el mismo nombre.',
+          'Crea una base con un método y que dos subclases lo redefinan.',
+          'Por ejemplo: «Animal.hablar()», «Perro» dice «¡Guau!» y «Gato» dice «¡Miau!».',
+        ],
+      },
       composed_part: {
         title: 'Contiene una parte',
         description: 'Haz que un objeto contenga otro con comportamiento propio.',
@@ -472,6 +485,10 @@ export const es = {
         description: 'Dos objetos de la misma clase con estados distintos.',
       },
       inheritance: { title: 'Herencia', description: 'Reutiliza una clase como base.' },
+      polymorphism: {
+        title: 'Polimorfismo',
+        description: 'El mismo mensaje con comportamientos distintos.',
+      },
       composition: { title: 'Composición', description: 'Una clase contiene a otra como parte.' },
       events: { title: 'Eventos', description: 'Reacciona a clics, teclas o choques.' },
       sequences: { title: 'Secuencias', description: 'Encadena acciones con pausas.' },

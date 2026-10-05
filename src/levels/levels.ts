@@ -15,7 +15,7 @@ export const LEVELS: Level[] = [
   { id: 2, missions: ['give_order', 'say_hello', 'move_it'] },
   { id: 3, missions: ['own_class', 'own_attribute', 'own_method', 'two_instances'] },
   { id: 4, missions: ['collision', 'wait_sequence', 'signal'] },
-  { id: 5, missions: ['inherit', 'inherited_behavior'] },
+  { id: 5, missions: ['inherit', 'inherited_behavior', 'polymorphism'] },
   { id: 6, missions: ['compose', 'composed_part'] },
 ]
 

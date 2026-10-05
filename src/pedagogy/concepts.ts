@@ -60,7 +60,7 @@ export const CONCEPTS: ConceptDefinition[] = [
   {
     id: 'polymorphism',
     prerequisites: ['inheritance', 'method_call'],
-    level: 6,
+    level: 5,
     misconceptions: [],
   },
 ]
@@ -82,6 +82,7 @@ const MISSION_CONCEPT: Partial<Record<MissionId, ConceptId>> = {
   own_method: 'method',
   inherit: 'inheritance',
   inherited_behavior: 'inheritance',
+  polymorphism: 'polymorphism',
   compose: 'composition',
   composed_part: 'composition',
   two_instances: 'state',
