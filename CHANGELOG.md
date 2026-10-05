@@ -53,6 +53,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Error hints**: runtime errors now come with a didactic hint that names the
   concept (e.g. "A «Heroe» le falta el método o atributo «saltar»"), shown in
   the activity bar and the inline diagnostic.
+- **Concept rubric**: evaluate the built project against a per-concept rubric
+  (objects, orders, classes, inheritance, events, sequences) from the toolbar,
+  and include it in the delivery bundle.
 
 ### Planned
 

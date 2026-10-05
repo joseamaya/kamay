@@ -44,7 +44,7 @@ function actions(project: Project): Action[] {
   return events(project).flatMap((event) => event.actions)
 }
 
-function customClasses(project: Project): ClassDefinition[] {
+export function customClasses(project: Project): ClassDefinition[] {
   return classes(project).filter((definition) => !CATALOG_CLASS_NAMES.has(definition.name))
 }
 

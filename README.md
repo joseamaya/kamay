@@ -67,7 +67,10 @@ The project has completed **Phase 4 — classroom and gamification**. Working to
   desert, space, city). The generated Python stays clean.
 - **Portfolio**: rename the project, browse saved projects with their dates,
   export or delete each one, and **deliver** a bundle with the project, the
-  generated Python and the completed missions.
+  generated Python, the completed missions and the concept rubric.
+- **Rubric**: a per-concept rubric (objects, orders, classes, inheritance,
+  events, sequences) evaluated from the built project and available from the
+  toolbar menu.
 - **Undo/redo** and error messages in Spanish.
 
 Pending (Phase 5): optional 3D, real-time collaboration, more asset catalogs and

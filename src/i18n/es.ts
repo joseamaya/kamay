@@ -337,6 +337,24 @@ export const es = {
     nextMission: 'Siguiente misión: {title}',
     allDone: '¡Completaste todas las misiones!',
   },
+  rubric: {
+    title: 'Rúbrica',
+    description: 'Qué conceptos demuestra el proyecto.',
+    progress: '{achieved} de {total} conceptos conseguidos',
+    status: {
+      none: 'No iniciado',
+      partial: 'En proceso',
+      achieved: 'Conseguido',
+    },
+    criteria: {
+      objects: { title: 'Objetos', description: 'Pone objetos en el escenario.' },
+      orders: { title: 'Órdenes', description: 'Da órdenes a los objetos.' },
+      classes: { title: 'Mi clase', description: 'Crea una clase con atributos y métodos.' },
+      inheritance: { title: 'Herencia', description: 'Reutiliza una clase como base.' },
+      events: { title: 'Eventos', description: 'Reacciona a clics, teclas o choques.' },
+      sequences: { title: 'Secuencias', description: 'Encadena acciones con pausas.' },
+    },
+  },
   triggers: {
     onStart: 'Al iniciar',
     onClick: 'Al hacer clic',
