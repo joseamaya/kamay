@@ -4,6 +4,7 @@ import {
   ACTOR_CATALOG,
   addCatalogObject,
   addEventAction,
+  createClassDraft,
   createEmptyProject,
   createScene,
   DOMAIN_BASES,
@@ -14,7 +15,10 @@ import {
   setActionArg,
   setSceneBackground,
   updateObjectAttributes,
+  upsertClass,
+  withDomainBases,
 } from './index'
+import type { ClassDefinition } from './index'
 
 const carro = ACTOR_CATALOG.find((item) => item.id === 'carro')!
 const perro = ACTOR_CATALOG.find((item) => item.id === 'perro')!
@@ -50,6 +54,17 @@ describe('ACTOR_CATALOG', () => {
         expect(method.body.kind).toBe('blocks')
       }
     }
+  })
+})
+
+describe('withDomainBases', () => {
+  it('adds a domain base inherited but not placed in the scene', () => {
+    const heroe: ClassDefinition = { ...createClassDraft('Heroe'), inherits: 'Vehiculo' }
+    const scene = upsertClass(createScene('Principal'), heroe)
+
+    expect(withDomainBases(scene).classes.map((definition) => definition.name)).toContain(
+      'Vehiculo',
+    )
   })
 })
 

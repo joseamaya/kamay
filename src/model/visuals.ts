@@ -1,7 +1,7 @@
 import { readString } from './attributes'
 import type { AttributeValue } from './attributes'
 import { resolveAttributeDefaults } from './classroom'
-import { isActorShape } from './factory'
+import { isActorShape, withDomainBases } from './factory'
 import { createId } from './ids'
 import type { ObjectInstance, Scene, VisualVariant } from './schema'
 
@@ -72,12 +72,13 @@ export function objectAppearance(
   object: ObjectInstance,
   runtimeValues: Record<string, AttributeValue> = {},
 ): ResolvedAppearance {
+  const resolved = withDomainBases(scene)
   const attributes: Record<string, AttributeValue> = {
-    ...resolveAttributeDefaults(scene, object.class),
+    ...resolveAttributeDefaults(resolved, object.class),
     ...object.attributes,
     ...runtimeValues,
   }
-  const definition = scene.classes.find((candidate) => candidate.name === object.class)
+  const definition = resolved.classes.find((candidate) => candidate.name === object.class)
 
   const base: ResolvedAppearance = {
     glyph: readString(attributes, 'glyph', '') || null,
@@ -86,7 +87,7 @@ export function objectAppearance(
     shape: isActorShape(attributes.shape) ? attributes.shape : DEFAULT_SHAPE,
   }
 
-  const variant = matchVisualVariant(resolveVisualVariants(scene, object.class), attributes)
+  const variant = matchVisualVariant(resolveVisualVariants(resolved, object.class), attributes)
   if (!variant) return base
 
   return {

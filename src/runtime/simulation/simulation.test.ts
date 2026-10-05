@@ -110,6 +110,22 @@ describe('Simulation', () => {
     expect(stateValue(run(scene).messages, 'vida')).toBe(120)
   })
 
+  it('resolves a domain base inherited but not placed in the scene', () => {
+    const heroe: ClassDefinition = { ...createClassDraft('Heroe'), inherits: 'Vehiculo' }
+    let scene = upsertClass(createScene('Principal'), heroe)
+    scene = { ...scene, objects: [createObject(scene, 'Heroe', {})] }
+    scene = addEventAction(scene, 'on_start', null, null, {
+      target: 'heroe1',
+      method: 'prender',
+      args: {},
+    })
+
+    const { messages, errors } = run(scene)
+
+    expect(stateValue(messages, 'encendido')).toBe(true)
+    expect(errors).toEqual([])
+  })
+
   it('dispatches signals to on_signal handlers', () => {
     let scene = baseScene()
     scene = addEventAction(scene, 'on_start', null, null, {

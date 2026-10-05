@@ -286,6 +286,23 @@ export function isDomainBaseName(name: string): boolean {
   return name in DOMAIN_BASES
 }
 
+/**
+ * Adds the domain bases a class inherits but that are not placed in the scene,
+ * mirroring what the generator emits, so resolution and simulation see them.
+ */
+export function withDomainBases(scene: Scene): Scene {
+  const names = new Set(scene.classes.map((definition) => definition.name))
+  const extra: ClassDefinition[] = []
+  for (const definition of scene.classes) {
+    const base = definition.inherits
+    if (base && !names.has(base) && base in DOMAIN_BASES) {
+      extra.push(DOMAIN_BASES[base]!)
+      names.add(base)
+    }
+  }
+  return extra.length > 0 ? { ...scene, classes: [...scene.classes, ...extra] } : scene
+}
+
 /** Order-independent key for a pair of objects that can collide. */
 export function collisionKey(a: string, b: string): string {
   return [a, b].sort().join('|')

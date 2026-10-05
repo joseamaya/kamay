@@ -3,6 +3,7 @@ import {
   findBuiltinMethod,
   resolveAttributeDefaults,
   resolveMethods,
+  withDomainBases,
 } from '../../model'
 import type { Action, AttributeValue, Operation, Project, Scene, SceneEvent } from '../../model'
 import type { RuntimeError, RuntimeMessage, RuntimeStatus, TriggerKind } from '../types'
@@ -46,7 +47,7 @@ export class Simulation {
     const scene = options.sceneId
       ? options.project.scenes.find((candidate) => candidate.id === options.sceneId)
       : options.project.scenes[0]
-    this.scene = scene ?? options.project.scenes[0]!
+    this.scene = withDomainBases(scene ?? options.project.scenes[0]!)
   }
 
   start(): void {
