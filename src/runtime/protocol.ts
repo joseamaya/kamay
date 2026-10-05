@@ -1,6 +1,6 @@
 import type {
-  RuntimeCommand,
   RuntimeError,
+  RuntimeMessage,
   RuntimeStatus,
   TriggerKind,
   WarmupStatus,
@@ -14,5 +14,5 @@ export type WorkerRequest =
 export type WorkerResponse =
   | { type: 'status'; status: RuntimeStatus }
   | { type: 'warmup'; status: WarmupStatus }
-  | { type: 'command'; command: RuntimeCommand }
+  | { type: 'command'; command: RuntimeMessage }
   | { type: 'error'; error: RuntimeError }

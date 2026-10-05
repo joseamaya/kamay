@@ -1,6 +1,7 @@
 export * from './store'
 export * from './editorStore'
 export * from './runtimeStore'
+export * from './observationsStore'
 export * from './preferencesStore'
 export * from './progressStore'
 export * from './usePreferencesEffects'

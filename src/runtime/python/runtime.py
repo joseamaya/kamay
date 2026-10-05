@@ -31,6 +31,14 @@ class Actor:
     def __init__(self, name=None):
         self._kamay_name = name or "actor"
 
+    def __setattr__(self, name, value):
+        object.__setattr__(self, name, value)
+        # Report public data attributes so the app can show state changes.
+        if name.startswith("_") or callable(value):
+            return
+        if isinstance(value, (bool, int, float, str)):
+            _emit({"type": "state", "target": self._kamay_name, "name": name, "value": value})
+
     def decir(self, mensaje):
         _emit({"type": "say", "target": self._kamay_name, "message": str(mensaje)})
 

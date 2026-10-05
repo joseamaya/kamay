@@ -6,6 +6,7 @@ import { NumberField } from '../../ui/NumberField'
 import { Panel } from '../../ui/Panel'
 import { Select } from '../../ui/Select'
 import { ScenarioCanvas } from './ScenarioCanvas'
+import { StatePanel } from './StatePanel'
 import { WelcomeCard } from './WelcomeCard'
 
 export function ScenarioView() {
@@ -58,6 +59,7 @@ export function ScenarioView() {
         ) : null}
         <div className="relative min-h-0 flex-1">
           <ScenarioCanvas />
+          <StatePanel />
           {scene && scene.objects.length === 0 ? (
             onboardingDone ? (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
