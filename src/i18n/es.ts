@@ -329,6 +329,11 @@ export const es = {
     color: 'Color',
     customAttributes: 'Atributos propios',
     resetToClass: 'Restablecer al valor de la clase',
+    behavior: 'Comportamiento',
+    inheritance: 'Herencia',
+    composition: 'Composición',
+    own: 'Propio',
+    inheritedFrom: 'Heredado de {name}',
   },
   actions: {
     title: 'Acciones',
@@ -346,7 +351,7 @@ export const es = {
   },
   selection: {
     menu: 'Menú del objeto',
-    class: 'Clase: {name}',
+    class: 'Instancia de {name}',
     appearance: 'Aspecto',
     orders: 'Órdenes',
     duplicate: 'Duplicar',
@@ -378,6 +383,37 @@ export const es = {
       composition: { title: 'Composición', description: 'Una clase contiene a otra como parte.' },
       events: { title: 'Eventos', description: 'Reacciona a clics, teclas o choques.' },
       sequences: { title: 'Secuencias', description: 'Encadena acciones con pausas.' },
+    },
+  },
+  pedagogy: {
+    concepts: {
+      object: { title: 'Objeto', description: 'Una cosa del escenario con su propio estado.' },
+      class: { title: 'Clase', description: 'El molde que describe cómo serán sus objetos.' },
+      instance: {
+        title: 'Instancia',
+        description: 'Un objeto concreto creado a partir de una clase.',
+      },
+      attribute: { title: 'Atributo', description: 'Un dato que guarda cada objeto.' },
+      state: {
+        title: 'Estado',
+        description: 'El valor que tienen los atributos en un momento dado.',
+      },
+      method: { title: 'Método', description: 'Lo que un objeto sabe hacer.' },
+      method_call: { title: 'Llamada', description: 'Pedirle a un objeto que haga algo.' },
+      parameter: {
+        title: 'Parámetro',
+        description: 'El dato que le das a un método para hacer su trabajo.',
+      },
+      event: { title: 'Evento', description: 'Un momento que dispara órdenes.' },
+      inheritance: { title: 'Herencia', description: 'Una clase que reutiliza otra: «es un».' },
+      composition: {
+        title: 'Composición',
+        description: 'Una clase que contiene a otra: «tiene un».',
+      },
+      polymorphism: {
+        title: 'Polimorfismo',
+        description: 'El mismo mensaje, comportamientos distintos.',
+      },
     },
   },
   triggers: {

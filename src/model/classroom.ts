@@ -10,6 +10,16 @@ export const DEFAULT_CLASS_SHAPE = 'circle'
 const VISUAL_ATTRIBUTES = new Set(['color', 'shape'])
 const RESERVED_ATTRIBUTE_NAMES = new Set(['x', 'y', 'rotation', 'scale', 'color', 'shape'])
 
+/** A resolved member together with the class that declares it. */
+export interface ResolvedMember<T> {
+  value: T
+  owner: string
+}
+
+export type ResolvedAttribute = ResolvedMember<Attribute>
+export type ResolvedMethod = ResolvedMember<Method>
+export type ResolvedComponent = ResolvedMember<Component>
+
 export interface ClassDraftErrors {
   nameInvalid: boolean
   nameTaken: boolean
@@ -110,9 +120,9 @@ function isValidBase(scene: Scene, definition: ClassDefinition): boolean {
   return scene.classes.some((candidate) => candidate.name === base)
 }
 
-/** Own methods plus inherited ones (nearest definition wins). */
-export function resolveMethods(scene: Scene, className: string): Method[] {
-  const result: Method[] = []
+/** Own methods plus inherited ones, with the class that declares each one. */
+export function resolveMethodsWithOrigin(scene: Scene, className: string): ResolvedMethod[] {
+  const result: ResolvedMethod[] = []
   const seen = new Set<string>()
   const visited = new Set<string>()
   let current: string | null = className
@@ -124,7 +134,7 @@ export function resolveMethods(scene: Scene, className: string): Method[] {
     for (const method of definition.methods) {
       if (!seen.has(method.name)) {
         seen.add(method.name)
-        result.push(method)
+        result.push({ value: method, owner: definition.name })
       }
     }
     current = definition.inherits
@@ -133,9 +143,14 @@ export function resolveMethods(scene: Scene, className: string): Method[] {
   return result
 }
 
-/** Own components plus inherited ones (nearest definition wins). */
-export function resolveComponents(scene: Scene, className: string): Component[] {
-  const result: Component[] = []
+/** Own methods plus inherited ones (nearest definition wins). */
+export function resolveMethods(scene: Scene, className: string): Method[] {
+  return resolveMethodsWithOrigin(scene, className).map((entry) => entry.value)
+}
+
+/** Own components plus inherited ones, with the class that declares each one. */
+export function resolveComponentsWithOrigin(scene: Scene, className: string): ResolvedComponent[] {
+  const result: ResolvedComponent[] = []
   const seen = new Set<string>()
   const visited = new Set<string>()
   let current: string | null = className
@@ -147,13 +162,34 @@ export function resolveComponents(scene: Scene, className: string): Component[] 
     for (const component of definition.components) {
       if (!seen.has(component.name)) {
         seen.add(component.name)
-        result.push(component)
+        result.push({ value: component, owner: definition.name })
       }
     }
     current = definition.inherits
   }
 
   return result
+}
+
+/** Own components plus inherited ones (nearest definition wins). */
+export function resolveComponents(scene: Scene, className: string): Component[] {
+  return resolveComponentsWithOrigin(scene, className).map((entry) => entry.value)
+}
+
+/** Class names from the class up to the base (including `Actor` when inherited). */
+export function classAncestry(scene: Scene, className: string): string[] {
+  const chain: string[] = []
+  const visited = new Set<string>()
+  let current: string | null = className
+
+  while (current && !visited.has(current)) {
+    visited.add(current)
+    chain.push(current)
+    const definition = scene.classes.find((candidate) => candidate.name === current)
+    current = definition?.inherits ?? null
+  }
+
+  return chain
 }
 
 /** Number of classes that contain the given class as a component. */
@@ -191,9 +227,9 @@ export function newComponent(className: string): Component {
   return { name: 'parte', class: className }
 }
 
-/** Own attributes plus inherited ones (nearest definition wins). */
-export function resolveAttributes(scene: Scene, className: string): Attribute[] {
-  const result: Attribute[] = []
+/** Own attributes plus inherited ones, with the class that declares each one. */
+export function resolveAttributesWithOrigin(scene: Scene, className: string): ResolvedAttribute[] {
+  const result: ResolvedAttribute[] = []
   const seen = new Set<string>()
   const visited = new Set<string>()
   let current: string | null = className
@@ -205,13 +241,18 @@ export function resolveAttributes(scene: Scene, className: string): Attribute[] 
     for (const attribute of definition.attributes) {
       if (!seen.has(attribute.name)) {
         seen.add(attribute.name)
-        result.push(attribute)
+        result.push({ value: attribute, owner: definition.name })
       }
     }
     current = definition.inherits
   }
 
   return result
+}
+
+/** Own attributes plus inherited ones (nearest definition wins). */
+export function resolveAttributes(scene: Scene, className: string): Attribute[] {
+  return resolveAttributesWithOrigin(scene, className).map((entry) => entry.value)
 }
 
 /** Inherited and own attributes excluding the visual `color`/`shape`. */

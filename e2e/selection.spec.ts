@@ -9,7 +9,7 @@ test('opens a contextual menu anchored to the selected object', async ({ page })
   const overlay = page.locator('[data-selection-overlay]')
   await expect(overlay).toBeVisible()
   await expect(overlay).toContainText('circle1')
-  await expect(overlay).toContainText('Clase: Circle')
+  await expect(overlay).toContainText('Instancia de Circle')
   await expect(overlay.getByText('Aspecto')).toBeVisible()
   await expect(overlay.getByLabel('Cuándo')).toBeVisible()
 

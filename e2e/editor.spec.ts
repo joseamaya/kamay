@@ -162,6 +162,10 @@ test('creates a class that inherits from another class', async ({ page }) => {
   await page.getByRole('button', { name: 'Crear objeto de Heroe' }).click()
   await page.getByRole('button', { name: 'heroe1', exact: true }).click()
   await expect(page.getByLabel('vida', { exact: true })).toBeVisible()
+
+  const overlay = page.locator('[data-selection-overlay]')
+  await expect(overlay).toContainText('Instancia de Heroe')
+  await expect(overlay).toContainText('Heroe → Personaje → Actor')
 })
 
 test('creates and switches between scenes', async ({ page }) => {

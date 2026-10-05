@@ -13,6 +13,7 @@ import {
 import { Dialog } from '../../ui/Dialog'
 import { OrderComposer } from '../actions/OrderComposer'
 import { ObjectAttributes } from '../inspector/ObjectAttributes'
+import { ObjectConcept } from '../inspector/ObjectConcept'
 
 export const SelectionOverlay = forwardRef<HTMLDivElement>(function SelectionOverlay(_props, ref) {
   const messages = getMessages()
@@ -57,6 +58,8 @@ export const SelectionOverlay = forwardRef<HTMLDivElement>(function SelectionOve
             {format(messages.selection.class, { name: object.class })}
           </span>
         </header>
+
+        <ObjectConcept scene={scene} object={object} />
 
         {capabilities.orders ? (
           <section className="flex flex-col">
