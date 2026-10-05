@@ -1,7 +1,7 @@
 {
   "name": "kamay",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.2.0",
   "type": "module",
   "description": "Interactive, playful and didactic environment to learn Object-Oriented Programming",
   "engines": {

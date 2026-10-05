@@ -6,6 +6,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Planned
+
+- Phase 5: optional 3D, real-time collaboration and translations.
+
+## [0.2.0] - 2026-10-05
+
+Covers Phases 3–4, the guided levels, the didactic UX pass and the first
+evaluation tools.
+
 ### Added
 
 - **Catalog**: more geometric shapes (rectangle, diamond, pentagon, hexagon,
@@ -56,10 +65,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Concept rubric**: evaluate the built project against a per-concept rubric
   (objects, orders, classes, inheritance, events, sequences) from the toolbar,
   and include it in the delivery bundle.
-
-### Planned
-
-- Phase 5: optional 3D and more asset catalogs/worlds.
 
 ## [0.1.0] - 2026-10-02
 

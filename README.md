@@ -155,6 +155,12 @@ src/
 The `pnpm build` output is **fully static** (`dist/`): deployable to GitHub
 Pages, Netlify or Cloudflare Pages.
 
+The repository ships a **GitHub Pages** workflow
+(`.github/workflows/deploy.yml`) that builds with `VITE_BASE=/kamay/` and
+publishes `dist/`. Enable it once in **Settings → Pages → Source: GitHub
+Actions**; afterwards every push to `main` deploys to
+`https://<owner>.github.io/kamay/`.
+
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for the release history.
