@@ -2,7 +2,7 @@ import { ACTOR_CATALOG, BASE_CLASS } from '../model'
 import type { Project } from '../model'
 import type { MissionId } from '../missions'
 
-export const MAX_LEVEL = 5
+export const MAX_LEVEL = 6
 
 export interface Level {
   id: number
@@ -16,6 +16,7 @@ export const LEVELS: Level[] = [
   { id: 3, missions: ['own_class', 'own_attribute', 'own_method'] },
   { id: 4, missions: ['collision', 'wait_sequence', 'signal'] },
   { id: 5, missions: ['inherit'] },
+  { id: 6, missions: ['compose'] },
 ]
 
 export interface Capabilities {
@@ -33,6 +34,8 @@ export interface Capabilities {
   freeCode: boolean
   /** Choose a base class. */
   inheritance: boolean
+  /** Give a class components (composition). */
+  composition: boolean
 }
 
 export const FREE_CAPABILITIES: Capabilities = {
@@ -43,6 +46,7 @@ export const FREE_CAPABILITIES: Capabilities = {
   events: true,
   freeCode: true,
   inheritance: true,
+  composition: true,
 }
 
 export const BASIC_METHODS = ['decir', 'mover', 'girar', 'cambiar_escala']
@@ -60,6 +64,7 @@ export function capabilitiesFor(level: number): Capabilities {
     events: value >= 4,
     freeCode: value >= 4,
     inheritance: value >= 5,
+    composition: value >= 6,
   }
 }
 
@@ -80,6 +85,8 @@ export function requiredLevel(project: Project): number {
   const classes = project.scenes.flatMap((scene) => scene.classes)
   const events = project.scenes.flatMap((scene) => scene.events)
   const actions = events.flatMap((event) => event.actions)
+
+  if (classes.some((definition) => definition.components.length > 0)) return 6
 
   if (classes.some((definition) => definition.inherits && definition.inherits !== BASE_CLASS))
     return 5

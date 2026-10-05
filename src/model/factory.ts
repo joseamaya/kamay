@@ -125,6 +125,7 @@ export function catalogClass(item: CatalogItem): ClassDefinition {
     inherits: BASE_CLASS,
     image: null,
     attributes,
+    components: [],
     methods: [],
   }
 }

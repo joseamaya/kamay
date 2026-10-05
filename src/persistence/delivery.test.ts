@@ -17,7 +17,7 @@ describe('buildDelivery', () => {
     expect(delivery.project).toEqual(project)
     expect(delivery.python['principal.py']).toContain('circle1 = Circle("circle1")')
     expect(delivery.missions).toEqual({ completed: ['first_object'], total: 11 })
-    expect(delivery.rubric).toHaveLength(6)
+    expect(delivery.rubric).toHaveLength(7)
     expect(delivery.rubric.find((entry) => entry.id === 'objects')?.status).toBe('partial')
   })
 

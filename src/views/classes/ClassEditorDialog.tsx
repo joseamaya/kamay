@@ -5,16 +5,19 @@ import { getMessages } from '../../i18n'
 import {
   ACTOR_SHAPES,
   availableBaseClasses,
+  availableComponentClasses,
   BASE_CLASS,
   createClassDraft,
   hasClassDraftErrors,
   newAttribute,
+  newComponent,
   validateClassDraft,
 } from '../../model'
 import type {
   Attribute,
   AttributeType,
   ClassDefinition,
+  Component,
   Method,
   Parameter,
   Scene,
@@ -65,6 +68,7 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
     value: name,
     label: name,
   }))
+  const componentClasses = availableComponentClasses(scene, draft)
 
   const visual = (name: 'color' | 'shape', fallback: string): string => {
     const attribute = draft.attributes.find((candidate) => candidate.name === name)
@@ -106,6 +110,15 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
     }))
   }
 
+  const updateComponent = (index: number, patch: Partial<Component>) => {
+    setDraft((current) => ({
+      ...current,
+      components: current.components.map((component, i) =>
+        i === index ? { ...component, ...patch } : component,
+      ),
+    }))
+  }
+
   const updateMethod = (index: number, patch: Partial<Method>) => {
     setDraft((current) => ({
       ...current,
@@ -141,6 +154,10 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
       attributes: draft.attributes.map((attribute) => ({
         ...attribute,
         name: attribute.name.trim(),
+      })),
+      components: draft.components.map((component) => ({
+        ...component,
+        name: component.name.trim(),
       })),
       methods: draft.methods.map((method) => ({
         ...method,
@@ -339,6 +356,77 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
             </ul>
           )}
         </section>
+
+        {capabilities.composition ? (
+          <section className="flex flex-col gap-2">
+            <header className="flex items-center justify-between">
+              <h3 className="font-semibold">{messages.classEditor.components}</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={componentClasses.length === 0}
+                onClick={() =>
+                  setDraft((current) => ({
+                    ...current,
+                    components: [...current.components, newComponent(componentClasses[0] ?? '')],
+                  }))
+                }
+              >
+                {messages.classEditor.addComponent}
+              </Button>
+            </header>
+            {draft.components.length === 0 ? (
+              <p className="text-muted-foreground text-xs">{messages.classEditor.noComponents}</p>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {draft.components.map((component, index) => (
+                  <li key={index} className="grid grid-cols-[1fr_1fr_auto] items-center gap-2">
+                    <input
+                      aria-label={messages.classEditor.componentName}
+                      className={INPUT_CLASS}
+                      value={component.name}
+                      onChange={(event) => updateComponent(index, { name: event.target.value })}
+                    />
+                    <select
+                      aria-label={messages.classEditor.componentClass}
+                      className={INPUT_CLASS}
+                      value={component.class}
+                      onChange={(event) => updateComponent(index, { class: event.target.value })}
+                    >
+                      {componentClasses.map((name) => (
+                        <option key={name} value={name}>
+                          {name}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      aria-label={messages.classEditor.removeComponent}
+                      onClick={() =>
+                        setDraft((current) => ({
+                          ...current,
+                          components: current.components.filter((_, i) => i !== index),
+                        }))
+                      }
+                      className="text-muted-foreground hover:text-destructive px-1 text-lg leading-none"
+                    >
+                      ×
+                    </button>
+                    {errors.components[index]?.nameInvalid ? (
+                      <span className="text-destructive col-span-3 text-xs">
+                        {messages.classEditor.errorComponent}
+                      </span>
+                    ) : errors.components[index]?.classInvalid ? (
+                      <span className="text-destructive col-span-3 text-xs">
+                        {messages.classEditor.errorComponentClass}
+                      </span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ) : null}
 
         <section className="flex flex-col gap-2">
           <header className="flex items-center justify-between">

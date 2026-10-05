@@ -5,7 +5,7 @@ import { customClasses } from './missions'
 export type RubricStatus = 'none' | 'partial' | 'achieved'
 
 export type RubricCriterionId =
-  'objects' | 'orders' | 'classes' | 'inheritance' | 'events' | 'sequences'
+  'objects' | 'orders' | 'classes' | 'inheritance' | 'composition' | 'events' | 'sequences'
 
 export interface RubricEntry {
   id: RubricCriterionId
@@ -39,6 +39,7 @@ export function evaluateRubric(project: Project): RubricEntry[] {
       event.type === 'on_collision' || event.type === 'on_key' || event.type === 'on_signal',
   ).length
   const sequencesCount = actions.filter((action) => action.method === 'esperar').length
+  const compositionCount = classes.filter((definition) => definition.components.length > 0).length
 
   return [
     { id: 'objects', status: statusFromCount(objects.length), count: objects.length },
@@ -52,6 +53,11 @@ export function evaluateRubric(project: Project): RubricEntry[] {
       id: 'inheritance',
       status: inheritanceCount > 0 ? 'achieved' : 'none',
       count: inheritanceCount,
+    },
+    {
+      id: 'composition',
+      status: compositionCount > 0 ? 'achieved' : 'none',
+      count: compositionCount,
     },
     { id: 'events', status: statusFromCount(eventsCount), count: eventsCount },
     { id: 'sequences', status: statusFromCount(sequencesCount), count: sequencesCount },

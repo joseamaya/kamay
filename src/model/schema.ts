@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /** Current version of the persisted project model. Bump when the shape changes. */
-export const CURRENT_SCHEMA_VERSION = 5
+export const CURRENT_SCHEMA_VERSION = 6
 
 /** Identifier pattern shared by class and variable names in the generated Python. */
 export const identifierPattern = /^[A-Za-z_][A-Za-z0-9_]*$/
@@ -46,12 +46,19 @@ export const methodSchema = z.object({
   body: methodBodySchema.default({ kind: 'blocks', ops: [] }),
 })
 
+/** A part a class "has": another object it contains (composition). */
+export const componentSchema = z.object({
+  name: z.string().regex(identifierPattern, 'invalid_identifier'),
+  class: z.string().regex(identifierPattern, 'invalid_identifier'),
+})
+
 export const classSchema = z.object({
   id: z.string(),
   name: z.string().regex(identifierPattern, 'invalid_identifier'),
   inherits: z.string().regex(identifierPattern, 'invalid_identifier').nullable().default(null),
   image: z.string().nullable().default(null),
   attributes: z.array(attributeSchema).default([]),
+  components: z.array(componentSchema).default([]),
   methods: z.array(methodSchema).default([]),
 })
 
@@ -129,6 +136,7 @@ export const projectSchema = z
 export type AttributeType = z.infer<typeof attributeTypeSchema>
 export type Parameter = z.infer<typeof parameterSchema>
 export type Attribute = z.infer<typeof attributeSchema>
+export type Component = z.infer<typeof componentSchema>
 export type MethodBody = z.infer<typeof methodBodySchema>
 export type Method = z.infer<typeof methodSchema>
 export type ClassDefinition = z.infer<typeof classSchema>

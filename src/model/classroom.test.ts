@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   availableBaseClasses,
+  availableComponentClasses,
   classUsageCount,
   createClassDraft,
   createScene,
@@ -10,6 +11,7 @@ import {
   instantiateClass,
   removeClass,
   resolveAttributeDefaults,
+  resolveComponents,
   resolveCustomAttributes,
   resolveMethods,
   updateObjectAttributes,
@@ -186,6 +188,55 @@ describe('inheritance', () => {
 
   it('accepts a valid base', () => {
     expect(validateClassDraft(sceneWithFamily(), heroe).inheritsInvalid).toBe(false)
+  })
+})
+
+describe('composition', () => {
+  const bateria = createClassDraft('Bateria')
+  const robot = {
+    ...createClassDraft('Robot'),
+    components: [{ name: 'bateria', class: 'Bateria' }],
+  }
+
+  function sceneWithParts() {
+    let scene = upsertClass(createScene('Principal'), bateria)
+    scene = upsertClass(scene, robot)
+    return scene
+  }
+
+  it('resolves own components', () => {
+    expect(resolveComponents(sceneWithParts(), 'Robot')).toEqual([
+      { name: 'bateria', class: 'Bateria' },
+    ])
+  })
+
+  it('propagates the class name when the component class is renamed', () => {
+    const scene = upsertClass(sceneWithParts(), { ...bateria, name: 'Pila' })
+    expect(
+      scene.classes.find((candidate) => candidate.name === 'Robot')?.components[0]?.class,
+    ).toBe('Pila')
+  })
+
+  it('keeps a class that is used as a component', () => {
+    expect(removeClass(sceneWithParts(), bateria.id).classes).toHaveLength(2)
+  })
+
+  it('flags self and cyclic components', () => {
+    const scene = sceneWithParts()
+    expect(
+      validateClassDraft(scene, { ...robot, components: [{ name: 'yo', class: 'Robot' }] })
+        .components[0]?.classInvalid,
+    ).toBe(true)
+    expect(
+      validateClassDraft(scene, { ...bateria, components: [{ name: 'r', class: 'Robot' }] })
+        .components[0]?.classInvalid,
+    ).toBe(true)
+  })
+
+  it('excludes self and cycle-forming classes from available components', () => {
+    const scene = sceneWithParts()
+    expect(availableComponentClasses(scene, robot)).not.toContain('Robot')
+    expect(availableComponentClasses(scene, robot)).toContain('Bateria')
   })
 })
 

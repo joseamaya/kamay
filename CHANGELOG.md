@@ -6,6 +6,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Composition (level 6)**: a class can contain other objects as components;
+  the class editor lets you pick the part class, the generated Python imports it
+  and creates it in `__init__` (e.g. `self.bateria = Bateria("bateria")`), the
+  level 6 path and a "combine objects" mission/badge are added, the rubric gains
+  a composition criterion, and a composition template ships. The schema is
+  migrated to v6.
+
 ### Planned
 
 - Phase 5: optional 3D, real-time collaboration and translations.

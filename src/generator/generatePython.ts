@@ -104,22 +104,32 @@ function generateClassFile(definition: ClassDefinition, scene: Scene): string {
   const bases = definition.inherits ? `(${definition.inherits})` : ''
   const lines: string[] = [ENCODING_HEADER, `# Clase ${definition.name}`]
 
+  const componentClasses = [
+    ...new Set(definition.components.map((component) => component.class)),
+  ].filter((name) => name !== definition.name && name !== definition.inherits)
+
+  const imports: string[] = []
   if (definition.inherits === 'Actor') {
-    lines.push('', 'from kamay_runtime import Actor')
+    imports.push('from kamay_runtime import Actor')
   } else if (definition.inherits) {
-    lines.push('', `from ${definition.inherits} import ${definition.inherits}`)
+    imports.push(`from ${definition.inherits} import ${definition.inherits}`)
   }
+  for (const name of componentClasses) imports.push(`from ${name} import ${name}`)
+  if (imports.length > 0) lines.push('', ...imports)
 
   lines.push('', `class ${definition.name}${bases}:`)
 
   const members: string[] = []
 
-  if (definition.inherits || definition.attributes.length > 0) {
+  if (definition.inherits || definition.attributes.length > 0 || definition.components.length > 0) {
     const initLines = ['def __init__(self, name=None):']
     const body: string[] = []
     if (definition.inherits) body.push('super().__init__(name)')
     for (const attribute of definition.attributes) {
       body.push(`self.${attribute.name} = ${pyLiteral(attribute.initial)}`)
+    }
+    for (const component of definition.components) {
+      body.push(`self.${component.name} = ${component.class}(${pyLiteral(component.name)})`)
     }
     if (body.length === 0) body.push('pass')
     initLines.push(indent(body.join('\n')))

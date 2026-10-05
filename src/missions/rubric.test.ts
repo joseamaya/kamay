@@ -24,7 +24,7 @@ function status(project: Project, id: RubricCriterionId) {
 describe('evaluateRubric', () => {
   it('reports nothing for an empty project', () => {
     const entries = evaluateRubric(createEmptyProject({ name: 'Demo' }))
-    expect(entries).toHaveLength(6)
+    expect(entries).toHaveLength(7)
     expect(entries.every((entry) => entry.status === 'none')).toBe(true)
   })
 
