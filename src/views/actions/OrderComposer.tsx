@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { getMessages } from '../../i18n'
+import { format, getMessages } from '../../i18n'
 import { BASIC_METHODS } from '../../levels'
 import { BUILTIN_METHODS, findEvent, resolveMethods } from '../../model'
 import type { Action, AttributeType, BuiltinMethod, ObjectInstance, Scene } from '../../model'
@@ -161,6 +161,11 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
           options={triggerOptions}
           onChange={(value) => setTrigger(value as Trigger)}
         />
+        {!capabilities.events ? (
+          <p className="text-muted-foreground text-xs">
+            {format(messages.actions.unlockEvents, { level: 4 })}
+          </p>
+        ) : null}
         {trigger === 'on_key' ? (
           <Select
             label={messages.actions.key}

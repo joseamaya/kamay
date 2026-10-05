@@ -342,6 +342,7 @@ export const es = {
     method: 'Orden',
     add: 'Agregar orden',
     remove: 'Quitar orden',
+    unlockEvents: 'En el Nivel {level} podrás usar choques, teclas y señales.',
   },
   selection: {
     menu: 'Menú del objeto',
@@ -356,6 +357,7 @@ export const es = {
     noObjects: 'Toca un objeto de la Fábrica para empezar.',
     select: 'Selecciona un objeto en el escenario para ver qué puede hacer.',
     selected: 'Usa el menú junto al objeto para cambiar sus propiedades o darle órdenes.',
+    selectedProperties: 'Usa el menú junto al objeto para cambiar sus propiedades.',
     nextMission: 'Siguiente misión: {title}',
     allDone: '¡Completaste todas las misiones!',
   },

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { createEmptyProject } from '../../model'
+import { ACTOR_CATALOG, addCatalogObject, createEmptyProject, createScene } from '../../model'
 import { useEditorStore, useProgressStore, useProjectStore } from '../../store'
 import { GuideBanner } from './GuideBanner'
 
@@ -38,5 +38,24 @@ describe('GuideBanner', () => {
     expect(screen.getByText('Nivel 4')).toBeInTheDocument()
     expect(screen.getByText('Siguiente misión: Provoca un choque')).toBeInTheDocument()
     expect(screen.queryByText(/Hereda/)).not.toBeInTheDocument()
+  })
+
+  it('tailors the selected hint to the available capabilities', () => {
+    const circle = ACTOR_CATALOG.find((item) => item.id === 'circle')!
+    const scene = addCatalogObject(createScene('Principal'), circle)
+    useProjectStore.setState({
+      project: { ...createEmptyProject({ name: 'Demo' }), scenes: [scene] },
+      past: [],
+      future: [],
+    })
+    useProgressStore.setState({ freeMode: false, unlockedLevel: 1, completed: [] })
+    useEditorStore.setState({ selectedObjectId: scene.objects[0]!.id })
+
+    render(<GuideBanner />)
+
+    expect(
+      screen.getByText('Usa el menú junto al objeto para cambiar sus propiedades.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/darle órdenes/)).not.toBeInTheDocument()
   })
 })
