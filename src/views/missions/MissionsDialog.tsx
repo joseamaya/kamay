@@ -1,10 +1,11 @@
 import { useState } from 'react'
 
-import { getMessages } from '../../i18n'
+import { format, getMessages } from '../../i18n'
+import { missionLevel } from '../../levels'
 import { BADGES, completedBadges, MISSIONS } from '../../missions'
 import type { MissionId } from '../../missions'
 import { revealNext } from '../../pedagogy'
-import { useEvidenceStore, useProgressStore } from '../../store'
+import { useEvidenceStore, useLevel, useProgressStore } from '../../store'
 import { Button } from '../../ui/Button'
 import { cn } from '../../ui/cn'
 import { Dialog } from '../../ui/Dialog'
@@ -17,8 +18,10 @@ export interface MissionsDialogProps {
 export function MissionsDialog({ open, onClose }: MissionsDialogProps) {
   const messages = getMessages()
   const completed = useProgressStore((state) => state.completed)
+  const freeMode = useProgressStore((state) => state.freeMode)
   const reset = useProgressStore((state) => state.reset)
   const resetEvidence = useEvidenceStore((state) => state.reset)
+  const level = useLevel()
   const unlocked = completedBadges(completed)
   const [revealed, setRevealed] = useState<Record<string, number>>({})
 
@@ -75,22 +78,35 @@ export function MissionsDialog({ open, onClose }: MissionsDialogProps) {
                 const done = completed.includes(id)
                 const mission = messages.missions.list[id]
                 const shown = revealed[id] ?? 0
+                const requiredLevel = missionLevel(id)
+                const locked = !freeMode && requiredLevel > level
                 return (
                   <li key={id} className="flex items-start gap-2">
                     <span
                       aria-hidden="true"
-                      className={done ? 'text-primary' : 'text-muted-foreground'}
+                      className={cn(
+                        done ? 'text-primary' : 'text-muted-foreground',
+                        locked && 'opacity-60',
+                      )}
                     >
-                      {done ? '✓' : '○'}
+                      {done ? '✓' : locked ? '🔒' : '○'}
                     </span>
                     <span className="flex flex-col">
                       <span
-                        className={cn('block', done ? 'text-foreground' : 'text-muted-foreground')}
+                        className={cn(
+                          'block',
+                          done ? 'text-foreground' : 'text-muted-foreground',
+                          locked && 'opacity-60',
+                        )}
                       >
                         {mission.title}
                       </span>
                       <span className="text-xs">{mission.description}</span>
-                      {!done ? (
+                      {locked ? (
+                        <span className="text-muted-foreground mt-1 text-xs">
+                          {format(messages.levels.lockedHint, { level: requiredLevel })}
+                        </span>
+                      ) : !done ? (
                         <span className="mt-1 flex flex-col gap-1">
                           {shown < mission.hints.length ? (
                             <button
