@@ -55,6 +55,22 @@ describe('ObjectAttributes', () => {
     expect(currentScene().objects[0]!.attributes.vida).toBe(100)
   })
 
+  it('labels inherited attributes with their origin', () => {
+    const animal = createClassDraft('Animal')
+    animal.attributes.push({ name: 'energia', type: 'number', initial: 50 })
+    useProjectStore.getState().saveClass(currentScene().id, animal)
+    const perro = createClassDraft('Perro')
+    perro.inherits = 'Animal'
+    useProjectStore.getState().saveClass(currentScene().id, perro)
+    useProjectStore.getState().instantiateClass(currentScene().id, perro.id)
+    useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
+
+    render(<Harness />)
+
+    expect(screen.getByLabelText('energia')).toBeInTheDocument()
+    expect(screen.getByText('Heredado de Animal')).toBeInTheDocument()
+  })
+
   it('edits the object position', async () => {
     const user = userEvent.setup()
     useProjectStore.getState().addObject(currentScene().id, 'circle')

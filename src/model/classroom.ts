@@ -255,11 +255,19 @@ export function resolveAttributes(scene: Scene, className: string): Attribute[] 
   return resolveAttributesWithOrigin(scene, className).map((entry) => entry.value)
 }
 
+/** Inherited and own custom attributes (excluding `color`/`shape`), with origin. */
+export function resolveCustomAttributesWithOrigin(
+  scene: Scene,
+  className: string,
+): ResolvedAttribute[] {
+  return resolveAttributesWithOrigin(scene, className).filter(
+    (entry) => !VISUAL_ATTRIBUTES.has(entry.value.name),
+  )
+}
+
 /** Inherited and own attributes excluding the visual `color`/`shape`. */
 export function resolveCustomAttributes(scene: Scene, className: string): Attribute[] {
-  return resolveAttributes(scene, className).filter(
-    (attribute) => !VISUAL_ATTRIBUTES.has(attribute.name),
-  )
+  return resolveCustomAttributesWithOrigin(scene, className).map((entry) => entry.value)
 }
 
 /** Default values of every resolved attribute, used to reset instances. */

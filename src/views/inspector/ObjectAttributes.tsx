@@ -1,9 +1,9 @@
-import { getMessages } from '../../i18n'
+import { format, getMessages } from '../../i18n'
 import {
   readNumber,
   readString,
   resolveAttributeDefaults,
-  resolveCustomAttributes,
+  resolveCustomAttributesWithOrigin,
 } from '../../model'
 import type { ObjectInstance, Scene } from '../../model'
 import { buildPrediction } from '../../pedagogy'
@@ -32,7 +32,7 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
     if (scenario) usePredictionStore.getState().ask(scenario)
   }
 
-  const customAttributes = resolveCustomAttributes(scene, object.class)
+  const customAttributes = resolveCustomAttributesWithOrigin(scene, object.class)
   const defaults = resolveAttributeDefaults(scene, object.class)
 
   return (
@@ -77,7 +77,7 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
           <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
             {messages.inspector.customAttributes}
           </h3>
-          {customAttributes.map((attribute) => {
+          {customAttributes.map(({ value: attribute, owner }) => {
             const fallback = defaults[attribute.name] ?? 0
             const value = object.attributes[attribute.name] ?? fallback
             const resetLabel = `${messages.inspector.resetToClass}: ${attribute.name}`
@@ -109,6 +109,11 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
                     />
                   )}
                 </div>
+                {owner !== object.class ? (
+                  <span className="text-muted-foreground pb-2 text-xs">
+                    {format(messages.inspector.inheritedFrom, { name: owner })}
+                  </span>
+                ) : null}
                 <button
                   type="button"
                   aria-label={resetLabel}

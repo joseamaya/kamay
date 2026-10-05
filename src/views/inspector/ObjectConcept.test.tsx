@@ -18,8 +18,14 @@ function klass(name: string, inherits: string, methods: string[] = []): ClassDef
 }
 
 describe('ObjectConcept', () => {
-  it('shows behavior with its origin, the inheritance chain and the parts', () => {
-    const animal = klass('Animal', 'Actor', ['comer'])
+  it('shows behavior, inherited state, the inheritance chain and the parts', () => {
+    const animal: ClassDefinition = {
+      ...klass('Animal', 'Actor', ['comer']),
+      attributes: [
+        ...createClassDraft('Animal').attributes,
+        { name: 'energia', type: 'number', initial: 50 },
+      ],
+    }
     const collar = klass('Collar', 'Actor', ['ajustar'])
     const perro: ClassDefinition = {
       ...klass('Perro', 'Animal', ['ladrar']),
@@ -35,14 +41,15 @@ describe('ObjectConcept', () => {
     expect(screen.getByText('ladrar()')).toBeInTheDocument()
     expect(screen.getByText('comer()')).toBeInTheDocument()
     expect(screen.getByText('Propio')).toBeInTheDocument()
-    expect(screen.getByText('Heredado de Animal')).toBeInTheDocument()
+    expect(screen.getAllByText('Heredado de Animal')).toHaveLength(2)
 
     expect(screen.getByText('Herencia')).toBeInTheDocument()
     expect(screen.getByText('Perro → Animal → Actor')).toBeInTheDocument()
+    expect(screen.getByText('energia')).toBeInTheDocument()
 
     expect(screen.getByText('Composición')).toBeInTheDocument()
     expect(screen.getByText('collar')).toBeInTheDocument()
-    expect(screen.getByText('Collar')).toBeInTheDocument()
+    expect(screen.getByText('Collar · ajustar()')).toBeInTheDocument()
   })
 
   it('stays empty for a plain catalog object', () => {
