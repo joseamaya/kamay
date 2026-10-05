@@ -11,5 +11,5 @@ test('shows the concept rubric from the toolbar menu', async ({ page }) => {
 
   const dialog = page.getByRole('dialog', { name: 'Rúbrica' })
   await expect(dialog.getByText('Objetos', { exact: true })).toBeVisible()
-  await expect(dialog.getByText('En proceso', { exact: true })).toBeVisible()
+  await expect(dialog.getByText('Practicado', { exact: true })).toBeVisible()
 })
