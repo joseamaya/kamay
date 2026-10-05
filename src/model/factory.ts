@@ -57,12 +57,16 @@ export interface CatalogItem {
 
 export const BASE_CLASS = 'Actor'
 
-function domainMethod(name: string, code: string): Method {
-  return { name, parameters: [], body: { kind: 'code', code } }
-}
-
 function domainBlockMethod(name: string, ops: Operation[]): Method {
   return { name, parameters: [], body: { kind: 'blocks', ops } }
+}
+
+function setOp(name: string, value: boolean): Operation {
+  return { id: createId('block'), op: 'set', args: { name, value }, children: [] }
+}
+
+function callOp(method: string, values: Record<string, unknown>): Operation {
+  return { id: createId('block'), op: 'call', args: { method, values }, children: [] }
 }
 
 function changeOp(name: string, amount: number, operator: '+' | '-' = '+'): Operation {
@@ -82,9 +86,9 @@ const VEHICULO: ClassDefinition = {
   ],
   components: [],
   methods: [
-    domainMethod('prender', 'self.encendido = True'),
-    domainMethod('apagar', 'self.encendido = False'),
-    domainMethod('moverse', 'self.mover(50, 0)'),
+    domainBlockMethod('prender', [setOp('encendido', true)]),
+    domainBlockMethod('apagar', [setOp('encendido', false)]),
+    domainBlockMethod('moverse', [callOp('mover', { x: 50, y: 0 })]),
   ],
   visuals: [
     {
@@ -151,7 +155,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     group: 'vehiculos',
     base: 'Vehiculo',
     attributes: [{ name: 'anio', type: 'number', initial: 2024 }],
-    methods: [domainMethod('tocar_bocina', 'self.decir("¡Beep!")')],
+    methods: [domainBlockMethod('tocar_bocina', [callOp('decir', { mensaje: '¡Beep!' })])],
   },
   {
     id: 'bicicleta',
@@ -163,7 +167,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     group: 'vehiculos',
     base: 'Vehiculo',
     attributes: [{ name: 'rodado', type: 'number', initial: 26 }],
-    methods: [domainMethod('pedalear', 'self.mover(30, 0)')],
+    methods: [domainBlockMethod('pedalear', [callOp('mover', { x: 30, y: 0 })])],
   },
   {
     id: 'moto',
@@ -175,7 +179,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     group: 'vehiculos',
     base: 'Vehiculo',
     attributes: [{ name: 'cilindrada', type: 'number', initial: 150 }],
-    methods: [domainMethod('acelerar', 'self.mover(80, 0)')],
+    methods: [domainBlockMethod('acelerar', [callOp('mover', { x: 80, y: 0 })])],
   },
   {
     id: 'perro',
@@ -186,7 +190,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     color: '#c98a4b',
     group: 'animales',
     base: 'Animal',
-    methods: [domainMethod('ladrar', 'self.decir("¡Guau!")')],
+    methods: [domainBlockMethod('ladrar', [callOp('decir', { mensaje: '¡Guau!' })])],
   },
   {
     id: 'gato',
@@ -197,7 +201,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     color: '#e0a23c',
     group: 'animales',
     base: 'Animal',
-    methods: [domainMethod('maullar', 'self.decir("¡Miau!")')],
+    methods: [domainBlockMethod('maullar', [callOp('decir', { mensaje: '¡Miau!' })])],
   },
   {
     id: 'pajaro',
@@ -208,7 +212,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     color: '#5b8def',
     group: 'animales',
     base: 'Animal',
-    methods: [domainMethod('volar', 'self.mover(0, 80)')],
+    methods: [domainBlockMethod('volar', [callOp('mover', { x: 0, y: 80 })])],
   },
   {
     id: 'casa',
@@ -239,7 +243,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     color: '#8f9aa8',
     group: 'cosas',
     base: 'Cosa',
-    methods: [domainMethod('saludar', 'self.decir("¡Hola!")')],
+    methods: [domainBlockMethod('saludar', [callOp('decir', { mensaje: '¡Hola!' })])],
   },
   {
     id: 'cohete',
@@ -250,7 +254,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     color: '#5b8def',
     group: 'cosas',
     base: 'Cosa',
-    methods: [domainMethod('despegar', 'self.mover(0, 120)')],
+    methods: [domainBlockMethod('despegar', [callOp('mover', { x: 0, y: 120 })])],
   },
   {
     id: 'pelota',
@@ -261,7 +265,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     color: '#3f9a86',
     group: 'cosas',
     base: 'Cosa',
-    methods: [domainMethod('rodar', 'self.mover(60, 0)')],
+    methods: [domainBlockMethod('rodar', [callOp('mover', { x: 60, y: 0 })])],
   },
 ]
 
