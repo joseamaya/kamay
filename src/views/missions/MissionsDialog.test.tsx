@@ -30,4 +30,19 @@ describe('MissionsDialog', () => {
       screen.getByText('Toca un objeto del catálogo y aparecerá en el escenario.'),
     ).toBeInTheDocument()
   })
+
+  it('marks missions above the current level as locked', () => {
+    useProgressStore.setState({
+      completed: [],
+      freeMode: false,
+      unlockedLevel: 1,
+      onboardingDone: true,
+    })
+
+    render(<MissionsDialog open onClose={() => undefined} />)
+
+    const dialog = screen.getByRole('dialog', { name: 'Misiones' })
+    expect(within(dialog).getAllByText('Se desbloquea en el Nivel 3.').length).toBeGreaterThan(0)
+    expect(within(dialog).getAllByText('Se desbloquea en el Nivel 5.').length).toBeGreaterThan(0)
+  })
 })

@@ -24,6 +24,7 @@ export function GuideBanner() {
   if (!scene || scene.objects.length === 0) hint = messages.guide.noObjects
   else if (object)
     hint = capabilities.orders ? messages.guide.selected : messages.guide.selectedProperties
+  if (nextId === 'own_class') hint = messages.guide.createClass
 
   return (
     <div className="border-border bg-card flex flex-wrap items-center gap-x-3 gap-y-1 border-b px-4 py-1.5 text-xs">

@@ -4,6 +4,7 @@ import { format, getMessages } from '../../i18n'
 import { ACTOR_CATALOG, classInheritanceUsageCount, classUsageCount } from '../../model'
 import type { ActorShape, CatalogItem, ClassDefinition } from '../../model'
 import { useActiveScene, useCapabilities, useEditorStore, useProjectStore } from '../../store'
+import { Button } from '../../ui/Button'
 import { cn } from '../../ui/cn'
 import { Dialog } from '../../ui/Dialog'
 import { Panel } from '../../ui/Panel'
@@ -153,13 +154,9 @@ export function FactoryView() {
               {messages.factory.classesTitle}
             </h3>
             {capabilities.ownClasses ? (
-              <button
-                type="button"
-                onClick={() => setEditorClass(null)}
-                className="text-primary text-xs font-medium hover:underline"
-              >
+              <Button variant="secondary" size="sm" onClick={() => setEditorClass(null)}>
                 {messages.factory.newClass}
-              </button>
+              </Button>
             ) : null}
           </div>
           {!capabilities.ownClasses ? (
@@ -167,7 +164,12 @@ export function FactoryView() {
               {format(messages.levels.lockedHint, { level: 3 })}
             </p>
           ) : scene.classes.length === 0 ? (
-            <p className="text-muted-foreground text-sm">{messages.factory.noClasses}</p>
+            <div className="flex flex-col items-start gap-2">
+              <p className="text-muted-foreground text-sm">{messages.factory.noClasses}</p>
+              <Button variant="secondary" size="sm" onClick={() => setEditorClass(null)}>
+                {messages.factory.createFirstClass}
+              </Button>
+            </div>
           ) : (
             <ul className="flex flex-col gap-1">
               {scene.classes.map((definition) => (

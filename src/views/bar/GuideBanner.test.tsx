@@ -41,6 +41,20 @@ describe('GuideBanner', () => {
     expect(screen.queryByText(/Hereda/)).not.toBeInTheDocument()
   })
 
+  it('points to the factory when the next mission is creating a class', () => {
+    useProgressStore.setState({
+      freeMode: false,
+      unlockedLevel: 3,
+      completed: ['first_object', 'give_order', 'say_hello', 'move_it'],
+    })
+
+    render(<GuideBanner />)
+
+    expect(
+      screen.getByText('Crea tu clase desde la Fábrica, sección «Clases».'),
+    ).toBeInTheDocument()
+  })
+
   it('tailors the selected hint to the available capabilities', () => {
     const circle = ACTOR_CATALOG.find((item) => item.id === 'carro')!
     const scene = addCatalogObject(createScene('Principal'), circle)

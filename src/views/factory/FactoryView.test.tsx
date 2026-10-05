@@ -22,6 +22,12 @@ describe('FactoryView', () => {
     expect(useProjectStore.getState().project.scenes[0]?.objects).toHaveLength(1)
   })
 
+  it('offers a create-class call to action when there are no classes', () => {
+    render(<FactoryView />)
+
+    expect(screen.getByRole('button', { name: 'Crear mi primera clase' })).toBeInTheDocument()
+  })
+
   it('creates a class from the editor', async () => {
     const user = userEvent.setup()
     render(<FactoryView />)
