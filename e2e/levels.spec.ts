@@ -12,6 +12,7 @@ test('guides a new browser from level 1 to level 2', async ({ page }) => {
 
   await expect(page.getByRole('button', { name: 'Nivel 2' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Editar valores' })).toBeVisible()
+  await expect(page.getByText('¡Nivel 2 desbloqueado!')).toBeVisible()
 
   await page.getByRole('button', { name: 'circle1', exact: true }).click()
   await expect(page.getByLabel('Cuándo')).toBeVisible()

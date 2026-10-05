@@ -300,6 +300,7 @@ export const es = {
     freeMode: 'Modo libre',
     freeModeHint: 'Desbloquea todas las capacidades para explorar sin límites.',
     lockedHint: 'Se desbloquea en el Nivel {level}.',
+    unlockedToast: '¡Nivel {level} desbloqueado!',
     list: {
       1: { title: 'Cosas en el escenario', description: 'Objetos del catálogo y sus propiedades.' },
       2: { title: 'Órdenes', description: 'Dale órdenes a los objetos.' },

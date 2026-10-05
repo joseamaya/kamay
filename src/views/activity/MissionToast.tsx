@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { getMessages } from '../../i18n'
+import { format, getMessages } from '../../i18n'
 import { useEditorStore } from '../../store'
 
 const TOAST_MS = 4000
@@ -18,6 +18,15 @@ export function MissionToast() {
 
   if (!toast) return null
 
+  const title =
+    toast.kind === 'level'
+      ? format(messages.levels.unlockedToast, { level: toast.level })
+      : messages.missions.completedToast
+  const detail =
+    toast.kind === 'level'
+      ? messages.levels.list[toast.level as keyof typeof messages.levels.list].title
+      : toast.detail
+
   return (
     <div
       aria-hidden="true"
@@ -25,11 +34,11 @@ export function MissionToast() {
     >
       <div className="kamay-toast border-border bg-card text-card-foreground flex items-center gap-3 rounded-full border px-4 py-2 shadow-lg">
         <span className="bg-primary text-primary-foreground flex h-6 w-6 flex-none items-center justify-center rounded-full text-sm font-bold">
-          ✓
+          {toast.kind === 'level' ? '★' : '✓'}
         </span>
         <div>
-          <p className="text-sm font-semibold">{messages.missions.completedToast}</p>
-          <p className="text-muted-foreground text-xs">{toast}</p>
+          <p className="text-sm font-semibold">{title}</p>
+          <p className="text-muted-foreground text-xs">{detail}</p>
         </div>
       </div>
     </div>

@@ -42,7 +42,7 @@ export function App() {
       complete(id)
       if (missionsInitialized.current) {
         pushLog(format(messages.missions.completed, { title: messages.missions.list[id].title }))
-        showToast(messages.missions.list[id].title)
+        showToast({ kind: 'mission', detail: messages.missions.list[id].title })
       }
     }
     missionsInitialized.current = true
