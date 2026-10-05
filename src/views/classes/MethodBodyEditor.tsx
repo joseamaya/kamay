@@ -7,6 +7,7 @@ import {
   availableBlockMethods,
   codeToBlocks,
   createCallBlock,
+  createChangeBlock,
   createRepeatBlock,
   createSetBlock,
   defaultValueFor,
@@ -160,6 +161,36 @@ function BlockCard({
     )
   }
 
+  if (op.op === 'change') {
+    const numeric = attributes.filter((attribute) => attribute.type === 'number')
+    const name = String(op.args.name ?? numeric[0]?.name ?? '')
+
+    return (
+      <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+        <Select
+          label={messages.classEditor.blockAttribute}
+          value={name}
+          options={numeric.map((attribute) => ({ value: attribute.name, label: attribute.name }))}
+          onChange={(next) => onChange({ ...op, args: { ...op.args, name: next } })}
+        />
+        <Select
+          label={messages.classEditor.blockOperator}
+          value={String(op.args.operator ?? '+')}
+          options={[
+            { value: '+', label: messages.classEditor.operatorAdd },
+            { value: '-', label: messages.classEditor.operatorSubtract },
+          ]}
+          onChange={(operator) => onChange({ ...op, args: { ...op.args, operator } })}
+        />
+        <NumberField
+          label={messages.classEditor.blockAmount}
+          value={Number(op.args.amount) || 0}
+          onChange={(amount) => onChange({ ...op, args: { ...op.args, amount } })}
+        />
+      </div>
+    )
+  }
+
   if (op.op === 'code') {
     return (
       <pre className="border-border bg-muted/40 overflow-auto rounded-md border p-2 font-mono text-xs whitespace-pre">
@@ -181,6 +212,7 @@ function opLabel(op: Operation): string {
   const messages = getMessages().classEditor
   if (op.op === 'call') return messages.blockCall
   if (op.op === 'set') return messages.blockSet
+  if (op.op === 'change') return messages.blockChange
   if (op.op === 'code') return messages.advancedCode
   return messages.blockRepeat
 }
@@ -295,6 +327,7 @@ export function MethodBodyEditor({ scene, definition, method, onChange }: Method
   const body = method.body
   const methods = availableBlockMethods(scene, definition)
   const attributes = availableBlockAttributes(scene, definition)
+  const numericAttributes = attributes.filter((attribute) => attribute.type === 'number')
   const preview = blocksToCode(scene, definition, body.kind === 'blocks' ? body.ops : [])
 
   return (
@@ -375,6 +408,21 @@ export function MethodBodyEditor({ scene, definition, method, onChange }: Method
               }}
             >
               {messages.classEditor.addSet}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={numericAttributes.length === 0}
+              onClick={() => {
+                const attribute = numericAttributes[0]
+                if (!attribute) return
+                onChange({
+                  kind: 'blocks',
+                  ops: [...body.ops, createChangeBlock(attribute.name)],
+                })
+              }}
+            >
+              {messages.classEditor.addChange}
             </Button>
             <Button
               variant="ghost"

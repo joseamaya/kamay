@@ -2,10 +2,12 @@ import {
   availableBlockAttributes,
   availableBlockMethods,
   createCallBlock,
+  createChangeBlock,
   createCodeBlock,
   createRepeatBlock,
   createSetBlock,
 } from './blocks'
+import type { ChangeOperator } from './blocks'
 import type { BuiltinMethod } from './methods'
 import type { Attribute, ClassDefinition, Operation, Scene } from './schema'
 
@@ -21,6 +23,8 @@ interface ParseContext {
 
 const REPEAT_PATTERN = /^for\s+_\s+in\s+range\(\s*(-?\d+)\s*\)\s*:\s*$/
 const CALL_PATTERN = /^self\.([A-Za-z_]\w*)\s*\((.*)\)\s*$/
+const CHANGE_PATTERN =
+  /^self\.([A-Za-z_]\w*)\s*=\s*self\.([A-Za-z_]\w*)\s*([+-])\s*(-?\d+(?:\.\d+)?)\s*$/
 const SET_PATTERN = /^self\.([A-Za-z_]\w*)\s*=\s*(.+)$/
 
 function toLines(code: string): Line[] {
@@ -125,6 +129,24 @@ function parseSet(text: string, context: ParseContext): { name: string; value: u
   return { name, value }
 }
 
+interface ParsedChange {
+  name: string
+  operator: ChangeOperator
+  amount: number
+}
+
+function parseChange(text: string, context: ParseContext): ParsedChange | null {
+  const match = text.match(CHANGE_PATTERN)
+  if (!match) return null
+
+  const name = match[1]!
+  if (match[2] !== name) return null
+  const attribute = context.attributes.find((candidate) => candidate.name === name)
+  if (!attribute || attribute.type !== 'number') return null
+
+  return { name, operator: match[3] as ChangeOperator, amount: Number(match[4]) }
+}
+
 function matchCall(text: string, context: ParseContext): Operation | null {
   const parsed = parseCall(text, context)
   return parsed ? createCallBlock(parsed.name, parsed.values) : null
@@ -133,6 +155,11 @@ function matchCall(text: string, context: ParseContext): Operation | null {
 function matchSet(text: string, context: ParseContext): Operation | null {
   const parsed = parseSet(text, context)
   return parsed ? createSetBlock(parsed.name, parsed.value) : null
+}
+
+function matchChange(text: string, context: ParseContext): Operation | null {
+  const parsed = parseChange(text, context)
+  return parsed ? createChangeBlock(parsed.name, parsed.operator, parsed.amount) : null
 }
 
 function matchRepeat(text: string): number | null {
@@ -144,6 +171,7 @@ function isRecognized(text: string, context: ParseContext): boolean {
   return (
     matchRepeat(text) !== null ||
     parseCall(text, context) !== null ||
+    parseChange(text, context) !== null ||
     parseSet(text, context) !== null
   )
 }
@@ -177,6 +205,13 @@ function parseLines(
       const call = matchCall(content, context)
       if (call) {
         ops.push(call)
+        index += 1
+        continue
+      }
+
+      const change = matchChange(content, context)
+      if (change) {
+        ops.push(change)
         index += 1
         continue
       }

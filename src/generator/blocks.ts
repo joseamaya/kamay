@@ -34,6 +34,13 @@ function blockToLines(scene: Scene, definition: ClassDefinition, op: Operation):
     return [`self.${name} = ${pyLiteral(op.args.value)}`]
   }
 
+  if (op.op === 'change') {
+    const name = String(op.args.name ?? '')
+    const operator = op.args.operator === '-' ? '-' : '+'
+    const amount = Number(op.args.amount) || 0
+    return [`self.${name} = self.${name} ${operator} ${pyLiteral(amount)}`]
+  }
+
   if (op.op === 'code') {
     const code = String(op.args.code ?? '')
     return code.length > 0 ? code.split('\n') : []

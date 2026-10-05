@@ -58,6 +58,27 @@ self.mover(1, 2)`,
     expect(codeToBlocks(scene, draft, 'self.desconocido = 1')[0]?.op).toBe('code')
   })
 
+  it('parses attribute increments and decrements', () => {
+    const { scene, draft } = setup()
+    const ops = codeToBlocks(
+      scene,
+      draft,
+      `self.vida = self.vida + 10
+self.vida = self.vida - 5`,
+    )
+
+    expect(ops.map((op) => op.op)).toEqual(['change', 'change'])
+    expect(ops[0]?.args).toMatchObject({ name: 'vida', operator: '+', amount: 10 })
+    expect(ops[1]?.args).toMatchObject({ name: 'vida', operator: '-', amount: 5 })
+  })
+
+  it('round-trips an attribute change', () => {
+    const { scene, draft } = setup()
+    const code = 'self.vida = self.vida + 10'
+
+    expect(blocksToCode(scene, draft, codeToBlocks(scene, draft, code))).toBe(code)
+  })
+
   it('round-trips representable code', () => {
     const { scene, draft } = setup()
     const code = `self.decir("hola")

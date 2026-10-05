@@ -61,6 +61,45 @@ describe('generatePython', () => {
     )
   })
 
+  it('generates an attribute change from a change block', () => {
+    const project = projectSchema.parse({
+      version: 1,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 's',
+          name: 'Principal',
+          classes: [
+            {
+              id: 'c',
+              name: 'Animal',
+              attributes: [{ name: 'energia', type: 'number', initial: 50 }],
+              methods: [
+                {
+                  name: 'comer',
+                  body: {
+                    kind: 'blocks',
+                    ops: [
+                      {
+                        id: 'b',
+                        op: 'change',
+                        args: { name: 'energia', operator: '+', amount: 10 },
+                        children: [],
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+
+    const animal = generatePython(project).files.find((file) => file.path === 'Animal.py')
+    expect(animal?.content).toContain('self.energia = self.energia + 10')
+  })
+
   it('generates the expected Heroe.py (golden)', () => {
     const { files } = generatePython(buildFixture())
     const heroe = files.find((file) => file.path === 'Heroe.py')
