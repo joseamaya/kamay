@@ -55,6 +55,22 @@ describe('migrateProject', () => {
     expect(result.scenes[0]?.classes[0]?.components).toEqual([])
   })
 
+  it('upgrades a v6 project by adding class visuals', () => {
+    const input = {
+      version: 6,
+      meta: { name: 'Demo' },
+      scenes: [{ id: 'scene-1', name: 'Principal', classes: [{ id: 'c', name: 'Heroe' }] }],
+    }
+
+    const result = migrateProject(input) as {
+      version: number
+      scenes: { classes: { visuals: unknown }[] }[]
+    }
+
+    expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
+    expect(result.scenes[0]?.classes[0]?.visuals).toEqual([])
+  })
+
   it('upgrades a v4 project by adding physics settings', () => {
     const input = {
       version: 4,

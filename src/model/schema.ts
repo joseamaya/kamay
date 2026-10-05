@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /** Current version of the persisted project model. Bump when the shape changes. */
-export const CURRENT_SCHEMA_VERSION = 6
+export const CURRENT_SCHEMA_VERSION = 7
 
 /** Identifier pattern shared by class and variable names in the generated Python. */
 export const identifierPattern = /^[A-Za-z_][A-Za-z0-9_]*$/
@@ -52,6 +52,26 @@ export const componentSchema = z.object({
   class: z.string().regex(identifierPattern, 'invalid_identifier'),
 })
 
+/** A single `attribute == value` condition of a visual variant. */
+export const visualConditionSchema = z.object({
+  attribute: z.string().regex(identifierPattern, 'invalid_identifier'),
+  value: z.union([z.number(), z.string(), z.boolean()]),
+})
+
+/**
+ * A named look a class shows while its conditions hold. The first matching
+ * variant (own variants before inherited ones) overrides the base appearance.
+ */
+export const visualVariantSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1),
+  when: z.array(visualConditionSchema).default([]),
+  glyph: z.string().nullable().default(null),
+  image: z.string().nullable().default(null),
+  color: z.string().nullable().default(null),
+  shape: z.string().nullable().default(null),
+})
+
 export const classSchema = z.object({
   id: z.string(),
   name: z.string().regex(identifierPattern, 'invalid_identifier'),
@@ -60,6 +80,7 @@ export const classSchema = z.object({
   attributes: z.array(attributeSchema).default([]),
   components: z.array(componentSchema).default([]),
   methods: z.array(methodSchema).default([]),
+  visuals: z.array(visualVariantSchema).default([]),
 })
 
 export const objectSchema = z.object({
@@ -137,6 +158,8 @@ export type AttributeType = z.infer<typeof attributeTypeSchema>
 export type Parameter = z.infer<typeof parameterSchema>
 export type Attribute = z.infer<typeof attributeSchema>
 export type Component = z.infer<typeof componentSchema>
+export type VisualCondition = z.infer<typeof visualConditionSchema>
+export type VisualVariant = z.infer<typeof visualVariantSchema>
 export type MethodBody = z.infer<typeof methodBodySchema>
 export type Method = z.infer<typeof methodSchema>
 export type ClassDefinition = z.infer<typeof classSchema>

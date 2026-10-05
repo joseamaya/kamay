@@ -1,5 +1,5 @@
-import { isActorShape, readNumber, readString } from '../model'
-import type { ObjectInstance, Scene } from '../model'
+import { isActorShape, objectAppearance, readNumber, readString } from '../model'
+import type { ObjectInstance, ResolvedAppearance, Scene } from '../model'
 import type { Actor, SceneState } from './types'
 
 export const DEFAULT_SHAPE = 'circle'
@@ -31,13 +31,25 @@ export function toActor(
   }
 }
 
+/** Overrides an actor's look with a resolved appearance. */
+export function applyAppearance(actor: Actor, appearance: ResolvedAppearance): Actor {
+  return {
+    ...actor,
+    glyph: appearance.glyph ?? undefined,
+    image: appearance.image ?? undefined,
+    color: appearance.color,
+    shape: isActorShape(appearance.shape) ? appearance.shape : actor.shape,
+  }
+}
+
 export function toSceneState(scene: Scene): SceneState {
   const images = new Map(scene.classes.map((definition) => [definition.name, definition.image]))
   return {
     background: scene.background,
-    actors: scene.objects.map((object, index) =>
-      toActor(object, index, images.get(object.class) ?? null),
-    ),
+    actors: scene.objects.map((object, index) => {
+      const actor = toActor(object, index, images.get(object.class) ?? null)
+      return applyAppearance(actor, objectAppearance(scene, object))
+    }),
     physics: { enabled: scene.physics.enabled, gravityY: scene.physics.gravityY },
   }
 }

@@ -77,6 +77,17 @@ const VEHICULO: ClassDefinition = {
     domainMethod('apagar', 'self.encendido = False'),
     domainMethod('moverse', 'self.mover(50, 0)'),
   ],
+  visuals: [
+    {
+      id: 'variant-vehiculo-prendido',
+      name: 'Prendido',
+      when: [{ attribute: 'encendido', value: true }],
+      glyph: null,
+      image: null,
+      color: '#f4c542',
+      shape: null,
+    },
+  ],
 }
 
 const ANIMAL: ClassDefinition = {
@@ -94,6 +105,7 @@ const ANIMAL: ClassDefinition = {
     domainMethod('comer', 'self.energia = self.energia + 10'),
     domainMethod('dormir', 'self.energia = self.energia + 20'),
   ],
+  visuals: [],
 }
 
 const COSA: ClassDefinition = {
@@ -107,6 +119,7 @@ const COSA: ClassDefinition = {
   ],
   components: [],
   methods: [],
+  visuals: [],
 }
 
 /** Domain base classes provided by the catalog (system classes). */
@@ -295,6 +308,7 @@ export function catalogClass(item: CatalogItem): ClassDefinition {
     attributes: [...attributes, ...(item.attributes ?? [])],
     components: [],
     methods: item.methods ?? [],
+    visuals: [],
   }
 }
 

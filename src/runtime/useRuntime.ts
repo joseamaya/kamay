@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { generatePython } from '../generator'
+import { objectAppearance } from '../model'
 import { useEditorStore, useObservationsStore, useProjectStore, useRuntimeStore } from '../store'
 import { createRuntimeBridge } from './bridge'
 import { emitRuntimeCommand, emitRuntimeReset, onRuntimeTrigger } from './bus'
@@ -17,9 +18,22 @@ export interface RuntimeApi {
   resume: () => void
 }
 
+function emitAppearance(target: string): void {
+  const project = useProjectStore.getState().project
+  const scene = project.scenes.find((candidate) =>
+    candidate.objects.some((object) => object.name === target),
+  )
+  const object = scene?.objects.find((candidate) => candidate.name === target)
+  if (!scene || !object) return
+  const runtimeValues = useObservationsStore.getState().values[target] ?? {}
+  const appearance = objectAppearance(scene, object, runtimeValues)
+  emitRuntimeCommand({ type: 'appearance', target, ...appearance })
+}
+
 function applyRuntimeMessage(message: RuntimeMessage): void {
   if (message.type === 'state') {
     useObservationsStore.getState().record(message)
+    emitAppearance(message.target)
     return
   }
   emitRuntimeCommand(message)

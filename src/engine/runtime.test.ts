@@ -39,3 +39,24 @@ describe('RuntimeController instant mode', () => {
     expect(controller.getActors()[0]!.transform.position).toEqual({ x: 0, y: 0 })
   })
 })
+
+describe('RuntimeController appearance', () => {
+  it('updates glyph, color and shape immediately', () => {
+    const controller = new RuntimeController()
+    controller.reset(scene())
+
+    controller.apply({
+      type: 'appearance',
+      target: 'circle1',
+      glyph: '🔥',
+      image: null,
+      color: '#f4c542',
+      shape: 'triangle',
+    })
+
+    const actor = controller.getActors()[0]!
+    expect(actor.glyph).toBe('🔥')
+    expect(actor.color).toBe('#f4c542')
+    expect(actor.shape).toBe('triangle')
+  })
+})

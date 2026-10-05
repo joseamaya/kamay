@@ -64,6 +64,19 @@ describe('toSceneState', () => {
     expect(state.actors.map((actor) => actor.zIndex)).toEqual([0, 1])
   })
 
+  it('applies a matching visual variant to the actor', () => {
+    let scene = addCatalogObject(createScene('Principal'), ACTOR_CATALOG[0]!)
+    scene = {
+      ...scene,
+      objects: scene.objects.map((object) => ({
+        ...object,
+        attributes: { ...object.attributes, encendido: true },
+      })),
+    }
+
+    expect(toSceneState(scene).actors[0]?.color).toBe('#f4c542')
+  })
+
   it('propagates the class image to its objects', () => {
     let scene = createScene('Principal')
     scene = addCatalogObject(scene, ACTOR_CATALOG[0]!)
