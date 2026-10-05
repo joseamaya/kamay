@@ -3,7 +3,13 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { createClassDraft, createEmptyProject } from '../../model'
-import { useActiveScene, useEditorStore, useProjectStore, useSelectedObject } from '../../store'
+import {
+  useActiveScene,
+  useEditorStore,
+  useProgressStore,
+  useProjectStore,
+  useSelectedObject,
+} from '../../store'
 import { OrderComposer } from './OrderComposer'
 
 function Harness() {
@@ -78,6 +84,19 @@ describe('OrderComposer', () => {
     const event = currentScene().events.find((candidate) => candidate.type === 'on_collision')
     expect(event?.source).toBe('circle1')
     expect(event?.other).toBe('circle2')
+  })
+
+  it('hints where advanced triggers unlock', () => {
+    useProgressStore.setState({ freeMode: false, unlockedLevel: 2 })
+    useProjectStore.getState().addObject(currentScene().id, 'circle')
+    useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
+
+    render(<Harness />)
+
+    expect(
+      screen.getByText('En el Nivel 4 podrás usar choques, teclas y señales.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'Al chocar con' })).not.toBeInTheDocument()
   })
 
   it('adds an action for the object', async () => {

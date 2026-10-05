@@ -1,11 +1,18 @@
 import { format, getMessages } from '../../i18n'
 import { MAX_LEVEL, nextMission } from '../../levels'
-import { useActiveScene, useLevel, useProgressStore, useSelectedObject } from '../../store'
+import {
+  useActiveScene,
+  useCapabilities,
+  useLevel,
+  useProgressStore,
+  useSelectedObject,
+} from '../../store'
 
 export function GuideBanner() {
   const messages = getMessages()
   const scene = useActiveScene()
   const object = useSelectedObject()
+  const capabilities = useCapabilities()
   const level = useLevel()
   const freeMode = useProgressStore((state) => state.freeMode)
   const completed = useProgressStore((state) => state.completed)
@@ -15,7 +22,8 @@ export function GuideBanner() {
 
   let hint: string = messages.guide.select
   if (!scene || scene.objects.length === 0) hint = messages.guide.noObjects
-  else if (object) hint = messages.guide.selected
+  else if (object)
+    hint = capabilities.orders ? messages.guide.selected : messages.guide.selectedProperties
 
   return (
     <div className="border-border bg-card flex flex-wrap items-center gap-x-3 gap-y-1 border-b px-4 py-1.5 text-xs">
@@ -27,7 +35,7 @@ export function GuideBanner() {
           ? format(messages.guide.nextMission, { title: messages.missions.list[nextId].title })
           : messages.guide.allDone}
       </span>
-      <span className="text-muted-foreground ml-auto hidden lg:inline">{hint}</span>
+      <span className="text-muted-foreground basis-full lg:ml-auto lg:basis-auto">{hint}</span>
     </div>
   )
 }

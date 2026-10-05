@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { ChangeEventHandler } from 'react'
 
-import { getMessages } from '../../i18n'
+import { format, getMessages } from '../../i18n'
 import {
   ACTOR_SHAPES,
   availableBaseClasses,
@@ -213,7 +213,14 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
                   </span>
                 ) : null}
               </div>
-            ) : null}
+            ) : (
+              <div className="flex flex-col gap-1">
+                <span className="text-muted-foreground text-xs">{messages.classEditor.base}</span>
+                <span className="text-muted-foreground text-xs">
+                  {format(messages.levels.lockedHint, { level: 5 })}
+                </span>
+              </div>
+            )}
           </div>
           <div className="flex flex-col justify-center gap-2">
             <ColorInput
@@ -426,7 +433,14 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
               </ul>
             )}
           </section>
-        ) : null}
+        ) : (
+          <section className="flex flex-col gap-2">
+            <h3 className="font-semibold">{messages.classEditor.components}</h3>
+            <p className="text-muted-foreground text-xs">
+              {format(messages.levels.lockedHint, { level: 6 })}
+            </p>
+          </section>
+        )}
 
         <section className="flex flex-col gap-2">
           <header className="flex items-center justify-between">
