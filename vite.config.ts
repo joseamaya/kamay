@@ -4,6 +4,9 @@ import { defineConfig } from 'vitest/config'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Project sites on GitHub Pages are served from a subpath; the deploy
+  // workflow sets VITE_BASE=/kamay/. Local dev and tests use the root.
+  base: process.env.VITE_BASE ?? '/',
   plugins: [react(), tailwindcss()],
   test: {
     globals: true,
