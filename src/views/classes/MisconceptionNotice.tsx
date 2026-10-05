@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { format, getMessages } from '../../i18n'
 import type { ClassDefinition, Scene } from '../../model'
 import { detectMisconceptions } from '../../pedagogy'
-import { usePredictionStore } from '../../store'
+import { useEvidenceStore } from '../../store'
 
 export interface MisconceptionNoticeProps {
   scene: Scene
@@ -12,13 +12,13 @@ export interface MisconceptionNoticeProps {
 
 export function MisconceptionNotice({ scene, definition }: MisconceptionNoticeProps) {
   const messages = getMessages()
-  const note = usePredictionStore((state) => state.note)
+  const recordMisconception = useEvidenceStore((state) => state.recordMisconception)
   const ids = detectMisconceptions(scene, definition)
   const signature = ids.join('|')
 
   useEffect(() => {
-    for (const id of signature ? (signature.split('|') as typeof ids) : []) note(id)
-  }, [signature, note])
+    for (const id of signature ? (signature.split('|') as typeof ids) : []) recordMisconception(id)
+  }, [signature, recordMisconception])
 
   if (ids.length === 0) return null
 

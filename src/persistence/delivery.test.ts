@@ -19,6 +19,18 @@ describe('buildDelivery', () => {
     expect(delivery.missions).toEqual({ completed: ['first_object'], total: 11 })
     expect(delivery.rubric).toHaveLength(9)
     expect(delivery.rubric.find((entry) => entry.id === 'objects')?.status).toBe('practiced')
+    expect(delivery.evidence).toEqual({ version: 1, misconceptions: [], predictions: {} })
+  })
+
+  it('includes the learning evidence when provided', () => {
+    const delivery = buildDelivery(createEmptyProject({ name: 'X' }), [], 16, new Date(), {
+      version: 1,
+      misconceptions: ['shared_state'],
+      predictions: { state: { correct: 1, misconception: 0, explained: 0 } },
+    })
+
+    expect(delivery.evidence.misconceptions).toEqual(['shared_state'])
+    expect(delivery.evidence.predictions.state?.correct).toBe(1)
   })
 
   it('exports a json blob', async () => {

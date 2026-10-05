@@ -2,6 +2,8 @@ import { generatePython } from '../generator'
 import type { Project } from '../model'
 import { evaluateRubric } from '../missions'
 import type { MissionId, RubricEntry } from '../missions'
+import { emptyEvidence } from '../pedagogy'
+import type { Evidence } from '../pedagogy'
 import { projectSlug } from './file'
 
 export interface Delivery {
@@ -12,6 +14,7 @@ export interface Delivery {
   python: Record<string, string>
   missions: { completed: MissionId[]; total: number }
   rubric: RubricEntry[]
+  evidence: Evidence
 }
 
 export function buildDelivery(
@@ -19,6 +22,7 @@ export function buildDelivery(
   completed: readonly MissionId[],
   total: number,
   now: Date = new Date(),
+  evidence: Evidence = emptyEvidence(),
 ): Delivery {
   const files = generatePython(project).files
   return {
@@ -29,6 +33,7 @@ export function buildDelivery(
     python: Object.fromEntries(files.map((file) => [file.path, file.content])),
     missions: { completed: [...completed], total },
     rubric: evaluateRubric(project),
+    evidence,
   }
 }
 

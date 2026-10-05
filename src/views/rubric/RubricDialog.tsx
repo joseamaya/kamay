@@ -3,7 +3,7 @@ import { evaluateRubric } from '../../missions'
 import type { RubricCriterionId, RubricStatus } from '../../missions'
 import { findConcept } from '../../pedagogy'
 import type { ConceptId } from '../../pedagogy'
-import { useLevel, useProjectStore } from '../../store'
+import { useEvidenceStore, useLevel, useProjectStore } from '../../store'
 import { cn } from '../../ui/cn'
 import { Dialog } from '../../ui/Dialog'
 
@@ -46,11 +46,20 @@ export function RubricDialog({ open, onClose }: RubricDialogProps) {
   const messages = getMessages()
   const project = useProjectStore((state) => state.project)
   const level = useLevel()
+  const misconceptions = useEvidenceStore((state) => state.misconceptions)
+  const predictions = useEvidenceStore((state) => state.predictions)
 
   if (!open) return null
 
   const entries = evaluateRubric(project)
   const demonstrated = entries.filter((entry) => entry.status === 'demonstrated').length
+  const predictionTotals = Object.values(predictions).reduce(
+    (totals, tally) => ({
+      correct: totals.correct + tally.correct,
+      total: totals.total + tally.correct + tally.misconception + tally.explained,
+    }),
+    { correct: 0, total: 0 },
+  )
 
   return (
     <Dialog
@@ -66,6 +75,28 @@ export function RubricDialog({ open, onClose }: RubricDialogProps) {
       <p className="text-foreground mb-3 text-sm font-medium">
         {format(messages.rubric.progress, { demonstrated, total: entries.length })}
       </p>
+      {misconceptions.length > 0 || predictionTotals.total > 0 ? (
+        <div className="mb-3 flex flex-col gap-1 text-xs">
+          {misconceptions.length > 0 ? (
+            <p>
+              <span className="text-foreground font-medium">
+                {messages.rubric.evidence.misconceptions}:{' '}
+              </span>
+              <span className="text-muted-foreground">
+                {misconceptions.map((id) => messages.pedagogy.misconceptions[id].title).join(', ')}
+              </span>
+            </p>
+          ) : null}
+          {predictionTotals.total > 0 ? (
+            <p className="text-muted-foreground">
+              {format(messages.rubric.evidence.predictions, {
+                correct: predictionTotals.correct,
+                total: predictionTotals.total,
+              })}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       <ul className="flex flex-col gap-2">
         {ORDER.map((id) => {
           const entry = entries.find((candidate) => candidate.id === id)!

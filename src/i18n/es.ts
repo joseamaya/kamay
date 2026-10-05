@@ -476,6 +476,10 @@ export const es = {
       practiced: 'Practicado',
       demonstrated: 'Demostrado',
     },
+    evidence: {
+      misconceptions: 'Para repasar',
+      predictions: 'Predicciones acertadas: {correct} de {total}',
+    },
     criteria: {
       objects: { title: 'Objetos', description: 'Pone objetos en el escenario.' },
       orders: { title: 'Órdenes', description: 'Da órdenes a los objetos.' },
