@@ -112,14 +112,12 @@ describe('generatePython', () => {
     const project = { ...createEmptyProject(), scenes: [scene] }
     const files = generatePython(project).files
 
-    expect(files.find((file) => file.path === 'Vehiculo.py')?.content).toContain(
-      'self.encendido = True',
-    )
-    expect(files.find((file) => file.path === 'Vehiculo.py')?.content).toContain(
-      'self.mover(50, 0)',
-    )
+    const vehiculo = files.find((file) => file.path === 'Vehiculo.py')?.content ?? ''
+    expect(vehiculo).toContain('self.encendido = True')
+    expect(vehiculo).toContain('self.x = 50')
+    expect(vehiculo).toContain('self.y = 0')
     expect(files.find((file) => file.path === 'Carro.py')?.content).toContain(
-      'self.decir("¡Beep!")',
+      'self.mensaje = "¡Beep!"',
     )
   })
 
