@@ -30,6 +30,9 @@ test('detects the shared-state misconception when editing an instance', async ({
   await expect(dialog).toBeVisible()
   await dialog.getByRole('button', { name: 'También cambiará a 20' }).click()
   await expect(dialog.getByText(/cada instancia guarda su propio estado/i)).toBeVisible()
+  await dialog.getByRole('button', { name: 'Volver a intentar' }).click()
+  await dialog.getByRole('button', { name: 'Seguirá siendo 50' }).click()
+  await expect(dialog.getByText(/Cada instancia tiene su propio estado/)).toBeVisible()
   await dialog.getByRole('button', { name: 'Entendido' }).click()
 
   await openMore(page)

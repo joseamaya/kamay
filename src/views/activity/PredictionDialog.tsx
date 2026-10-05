@@ -14,6 +14,7 @@ export function PredictionDialog() {
   const pending = usePredictionStore((state) => state.pending)
   const outcome = usePredictionStore((state) => state.outcome)
   const answer = usePredictionStore((state) => state.answer)
+  const retry = usePredictionStore((state) => state.retry)
   const close = usePredictionStore((state) => state.close)
 
   if (!pending) return null
@@ -53,13 +54,20 @@ export function PredictionDialog() {
           </div>
         </div>
       ) : (
-        <p>
-          {outcome === 'correct'
-            ? format(prediction.correct, values)
-            : outcome === 'misconception'
-              ? format(prediction.sharedState, values)
-              : format(prediction.explained, values)}
-        </p>
+        <div className="flex flex-col gap-3">
+          <p>
+            {outcome === 'correct'
+              ? format(prediction.correct, values)
+              : outcome === 'misconception'
+                ? format(prediction.sharedState, values)
+                : format(prediction.explained, values)}
+          </p>
+          {outcome === 'misconception' ? (
+            <Button variant="ghost" size="sm" className="self-start" onClick={retry}>
+              {prediction.retry}
+            </Button>
+          ) : null}
+        </div>
       )}
     </Dialog>
   )

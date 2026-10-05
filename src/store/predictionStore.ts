@@ -13,6 +13,8 @@ export interface PredictionState {
   askedClasses: string[]
   ask: (scenario: PredictionScenario) => void
   answer: (choice: PredictionChoice) => void
+  /** Lets the student answer again after seeing the explanation. */
+  retry: () => void
   close: () => void
   reset: () => void
 }
@@ -34,8 +36,14 @@ export const usePredictionStore = create<PredictionState>((set, get) => ({
       choice === 'changed' ? 'misconception' : choice === 'unchanged' ? 'correct' : 'explained'
     useEvidenceStore.getState().recordPrediction(pending.concept, outcome)
     if (outcome === 'misconception') useEvidenceStore.getState().recordMisconception('shared_state')
-    set((state) => ({ outcome, askedClasses: [...state.askedClasses, pending.className] }))
+    set((state) => ({
+      outcome,
+      askedClasses: state.askedClasses.includes(pending.className)
+        ? state.askedClasses
+        : [...state.askedClasses, pending.className],
+    }))
   },
+  retry: () => set({ outcome: null }),
   close: () => set({ pending: null, outcome: null }),
   reset: () => set({ pending: null, outcome: null, askedClasses: [] }),
 }))
