@@ -86,13 +86,6 @@ export const MISSIONS: Mission[] = [
       customClasses(project).some((definition) => definition.methods.length > 0),
   },
   {
-    id: 'inherit',
-    isComplete: (project) =>
-      classes(project).some(
-        (definition) => definition.inherits != null && definition.inherits !== BASE_CLASS,
-      ),
-  },
-  {
     id: 'wait_sequence',
     isComplete: (project) => actions(project).some((action) => action.method === 'esperar'),
   },
@@ -105,6 +98,13 @@ export const MISSIONS: Mission[] = [
     isComplete: (project) =>
       events(project).some((event) => event.type === 'on_signal') ||
       actions(project).some((action) => action.method === 'emitir'),
+  },
+  {
+    id: 'inherit',
+    isComplete: (project) =>
+      classes(project).some(
+        (definition) => definition.inherits != null && definition.inherits !== BASE_CLASS,
+      ),
   },
   {
     id: 'compose',

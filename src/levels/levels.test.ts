@@ -8,7 +8,17 @@ import {
   createScene,
 } from '../model'
 import type { ClassDefinition } from '../model'
-import { capabilitiesFor, levelFromMissions, MAX_LEVEL, requiredLevel } from './levels'
+import { MISSIONS } from '../missions'
+import type { MissionId } from '../missions'
+import {
+  capabilitiesFor,
+  LEVELS,
+  levelFromMissions,
+  MAX_LEVEL,
+  missionLevel,
+  nextMission,
+  requiredLevel,
+} from './levels'
 
 function projectWithScene(scene: ReturnType<typeof createScene>) {
   return { ...createEmptyProject(), scenes: [scene] }
@@ -101,6 +111,50 @@ describe('levelFromMissions', () => {
         'inherit',
       ]),
     ).toBe(MAX_LEVEL)
+  })
+})
+
+describe('missionLevel', () => {
+  it('maps missions to their level', () => {
+    expect(missionLevel('first_object')).toBe(1)
+    expect(missionLevel('collision')).toBe(4)
+    expect(missionLevel('inherit')).toBe(5)
+    expect(missionLevel('compose')).toBe(MAX_LEVEL)
+  })
+})
+
+describe('nextMission', () => {
+  const levels123: MissionId[] = [
+    'first_object',
+    'give_order',
+    'say_hello',
+    'move_it',
+    'own_class',
+    'own_attribute',
+    'own_method',
+  ]
+
+  it('starts at the first mission when nothing is done', () => {
+    expect(nextMission([], 1)).toBe('first_object')
+  })
+
+  it('never suggests a mission above the reachable level', () => {
+    expect(nextMission(levels123, 4)).toBe('collision')
+  })
+
+  it('advances to inheritance once level 4 is complete', () => {
+    expect(nextMission([...levels123, 'collision', 'wait_sequence', 'signal'], 5)).toBe('inherit')
+  })
+
+  it('returns null when everything reachable is done', () => {
+    const all = MISSIONS.map((mission) => mission.id)
+    expect(nextMission(all, MAX_LEVEL)).toBeNull()
+  })
+
+  it('assigns every mission to exactly one level', () => {
+    const fromLevels = LEVELS.flatMap((level) => level.missions)
+    expect(new Set(fromLevels).size).toBe(fromLevels.length)
+    expect([...fromLevels].sort()).toEqual(MISSIONS.map((mission) => mission.id).sort())
   })
 })
 
