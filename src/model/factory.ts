@@ -6,6 +6,7 @@ import type {
   EventType,
   Method,
   ObjectInstance,
+  Operation,
   Project,
   Scene,
 } from './schema'
@@ -60,6 +61,14 @@ function domainMethod(name: string, code: string): Method {
   return { name, parameters: [], body: { kind: 'code', code } }
 }
 
+function domainBlockMethod(name: string, ops: Operation[]): Method {
+  return { name, parameters: [], body: { kind: 'blocks', ops } }
+}
+
+function changeOp(name: string, amount: number, operator: '+' | '-' = '+'): Operation {
+  return { id: createId('block'), op: 'change', args: { name, operator, amount }, children: [] }
+}
+
 const VEHICULO: ClassDefinition = {
   id: 'base-vehiculo',
   name: 'Vehiculo',
@@ -102,8 +111,8 @@ const ANIMAL: ClassDefinition = {
   ],
   components: [],
   methods: [
-    domainMethod('comer', 'self.energia = self.energia + 10'),
-    domainMethod('dormir', 'self.energia = self.energia + 20'),
+    domainBlockMethod('comer', [changeOp('energia', 10)]),
+    domainBlockMethod('dormir', [changeOp('energia', 20)]),
   ],
   visuals: [],
 }

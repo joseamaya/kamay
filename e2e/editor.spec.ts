@@ -40,6 +40,20 @@ test('adds a real-world entity that inherits its domain base', async ({ page }) 
   await expect(codeContent(page)).toContainText('def tocar_bocina(self):')
 })
 
+test('adds an attribute change block', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Nueva clase' }).click()
+  await page.getByLabel('Nombre de la clase').fill('Heroe')
+  await page.getByRole('button', { name: 'Agregar atributo' }).click()
+  await page.getByLabel('Nombre del atributo').fill('vida')
+  await page.getByRole('button', { name: 'Agregar método' }).click()
+  await page.getByRole('button', { name: 'Cambiar', exact: true }).click()
+
+  await expect(page.getByLabel('Operación')).toHaveValue('+')
+  await expect(page.getByLabel('Cantidad')).toHaveValue('1')
+})
+
 test('shows the catalog visual variants in the class editor', async ({ page }) => {
   await page.goto('/')
 

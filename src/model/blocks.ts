@@ -15,6 +15,17 @@ export function createSetBlock(name: string, value: unknown = 0): Operation {
   return { id: createId('block'), op: 'set', args: { name, value }, children: [] }
 }
 
+export type ChangeOperator = '+' | '-'
+
+/** Adds or subtracts a literal from a numeric attribute. */
+export function createChangeBlock(
+  name: string,
+  operator: ChangeOperator = '+',
+  amount = 1,
+): Operation {
+  return { id: createId('block'), op: 'change', args: { name, operator, amount }, children: [] }
+}
+
 export function createRepeatBlock(times = 3): Operation {
   return { id: createId('block'), op: 'repeat', args: { times }, children: [] }
 }
