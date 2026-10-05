@@ -1,5 +1,9 @@
+import { useState } from 'react'
+
 import { getMessages } from '../../i18n'
 import { BADGES, completedBadges, MISSIONS } from '../../missions'
+import type { MissionId } from '../../missions'
+import { revealNext } from '../../pedagogy'
 import { useProgressStore } from '../../store'
 import { Button } from '../../ui/Button'
 import { cn } from '../../ui/cn'
@@ -15,6 +19,10 @@ export function MissionsDialog({ open, onClose }: MissionsDialogProps) {
   const completed = useProgressStore((state) => state.completed)
   const reset = useProgressStore((state) => state.reset)
   const unlocked = completedBadges(completed)
+  const [revealed, setRevealed] = useState<Record<string, number>>({})
+
+  const revealHint = (id: MissionId) =>
+    setRevealed((current) => ({ ...current, [id]: revealNext(current[id] ?? 0) }))
 
   return (
     <Dialog
@@ -65,6 +73,7 @@ export function MissionsDialog({ open, onClose }: MissionsDialogProps) {
               {badge.missions.map((id) => {
                 const done = completed.includes(id)
                 const mission = messages.missions.list[id]
+                const shown = revealed[id] ?? 0
                 return (
                   <li key={id} className="flex items-start gap-2">
                     <span
@@ -73,13 +82,31 @@ export function MissionsDialog({ open, onClose }: MissionsDialogProps) {
                     >
                       {done ? '✓' : '○'}
                     </span>
-                    <span>
+                    <span className="flex flex-col">
                       <span
                         className={cn('block', done ? 'text-foreground' : 'text-muted-foreground')}
                       >
                         {mission.title}
                       </span>
                       <span className="text-xs">{mission.description}</span>
+                      {!done ? (
+                        <span className="mt-1 flex flex-col gap-1">
+                          {shown < mission.hints.length ? (
+                            <button
+                              type="button"
+                              onClick={() => revealHint(id)}
+                              className="text-primary self-start text-xs hover:underline"
+                            >
+                              {messages.missions.hint}
+                            </button>
+                          ) : null}
+                          {mission.hints.slice(0, shown).map((hint) => (
+                            <span key={hint} className="text-muted-foreground text-xs">
+                              {hint}
+                            </span>
+                          ))}
+                        </span>
+                      ) : null}
                     </span>
                   </li>
                 )

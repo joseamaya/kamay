@@ -29,6 +29,7 @@ import { Dialog } from '../../ui/Dialog'
 import { fileToSpriteDataUrl } from '../../ui/image'
 import { Select } from '../../ui/Select'
 import { MethodBodyEditor } from './MethodBodyEditor'
+import { MisconceptionNotice } from './MisconceptionNotice'
 
 const INPUT_CLASS =
   'border-border bg-background focus-visible:ring-ring h-8 w-full rounded-md border px-2 text-sm focus-visible:ring-2 focus-visible:outline-none'
@@ -182,6 +183,7 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
       onCancel={onClose}
     >
       <div className="flex flex-col gap-4">
+        <MisconceptionNotice scene={scene} definition={draft} />
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-3">
             <label className="flex flex-col gap-1 text-xs">
