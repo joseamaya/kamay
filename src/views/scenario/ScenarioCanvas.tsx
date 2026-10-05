@@ -91,6 +91,7 @@ export function ScenarioCanvas() {
   const selectObject = useEditorStore((state) => state.selectObject)
   const updateObjectAttributes = useProjectStore((state) => state.updateObjectAttributes)
   const runtimeStatus = useRuntimeStore((state) => state.status)
+  const stepMode = useRuntimeStore((state) => state.stepMode)
   const reducedMotion = usePreferencesStore((state) => state.reducedMotion)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -107,6 +108,7 @@ export function ScenarioCanvas() {
   const sizeRef = useRef(size)
   const lastSizeRef = useRef<Point>({ x: 0, y: 0 })
   const runtimeStatusRef = useRef(runtimeStatus)
+  const stepModeRef = useRef(stepMode)
   const collisionsRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
@@ -139,6 +141,11 @@ export function ScenarioCanvas() {
   }, [runtimeStatus])
 
   useEffect(() => {
+    stepModeRef.current = stepMode
+    controllerRef.current.setInstant(stepMode)
+  }, [stepMode])
+
+  useEffect(() => {
     const element = containerRef.current
     if (!element) return
 
@@ -163,13 +170,15 @@ export function ScenarioCanvas() {
 
   useEffect(() => {
     controllerRef.current.setSimulating(
-      runtimeStatus === 'loading' || runtimeStatus === 'running' || runtimeStatus === 'ready',
+      !stepMode &&
+        (runtimeStatus === 'loading' || runtimeStatus === 'running' || runtimeStatus === 'ready'),
     )
-  }, [runtimeStatus])
+  }, [runtimeStatus, stepMode])
 
   useEffect(() => {
     if (runtimeStatus !== 'ready' && runtimeStatus !== 'running') return
     const handleKey = (event: KeyboardEvent) => {
+      if (stepModeRef.current) return
       const target = event.target as HTMLElement | null
       if (
         target &&
@@ -198,6 +207,10 @@ export function ScenarioCanvas() {
   )
 
   const detectCollisions = useCallback(() => {
+    if (stepModeRef.current) {
+      collisionsRef.current.clear()
+      return
+    }
     // Only detect once the program finished registering its handlers.
     if (runtimeStatusRef.current !== 'ready') {
       collisionsRef.current.clear()
@@ -356,7 +369,11 @@ export function ScenarioCanvas() {
       })
     }
 
-    if (!moved && (runtimeStatus === 'ready' || runtimeStatus === 'running')) {
+    if (
+      !moved &&
+      !stepModeRef.current &&
+      (runtimeStatus === 'ready' || runtimeStatus === 'running')
+    ) {
       emitRuntimeTrigger({ kind: 'click', source: drag.name })
     }
   }
@@ -367,7 +384,7 @@ export function ScenarioCanvas() {
     const running = runtimeStatus === 'ready' || runtimeStatus === 'running'
 
     // Enter/Space emulate a click on the selected object, even while running.
-    if (running && (event.key === 'Enter' || event.key === ' ')) {
+    if (running && !stepModeRef.current && (event.key === 'Enter' || event.key === ' ')) {
       const selected = scene.objects.find((candidate) => candidate.id === selectedObjectId)
       if (selected) {
         event.preventDefault()

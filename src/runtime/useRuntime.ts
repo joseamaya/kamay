@@ -4,11 +4,24 @@ import { generatePython } from '../generator'
 import { useEditorStore, useObservationsStore, useProjectStore, useRuntimeStore } from '../store'
 import { createRuntimeBridge } from './bridge'
 import { emitRuntimeCommand, emitRuntimeReset, onRuntimeTrigger } from './bus'
+import { currentStep, remainingSteps } from './steps'
+import type { RuntimeMessage } from './types'
 import { scheduleWarmup } from './warmup'
 
 export interface RuntimeApi {
   run: () => void
   stop: () => void
+  setStepMode: (on: boolean) => void
+  step: () => void
+  resume: () => void
+}
+
+function applyRuntimeMessage(message: RuntimeMessage): void {
+  if (message.type === 'state') {
+    useObservationsStore.getState().record(message)
+    return
+  }
+  emitRuntimeCommand(message)
 }
 
 export function useRuntime(): RuntimeApi {
@@ -20,11 +33,12 @@ export function useRuntime(): RuntimeApi {
 
   useEffect(() => {
     const offCommand = bridge.onCommand((message) => {
-      if (message.type === 'state') {
-        useObservationsStore.getState().record(message)
+      const runtime = useRuntimeStore.getState()
+      if (runtime.stepMode) {
+        runtime.enqueueStep(message)
         return
       }
-      emitRuntimeCommand(message)
+      applyRuntimeMessage(message)
     })
     const offError = bridge.onError((error) => setError(error))
     const offStatus = bridge.onStatus((status) => setStatus(status))
@@ -61,6 +75,7 @@ export function useRuntime(): RuntimeApi {
     setError(null)
     setStatus('loading')
     useObservationsStore.getState().reset()
+    useRuntimeStore.getState().resetSteps()
     emitRuntimeReset()
     void bridge.run(files, 'principal.py')
   }, [bridge, setError, setStatus])
@@ -69,8 +84,30 @@ export function useRuntime(): RuntimeApi {
     bridge.stop()
     emitRuntimeReset()
     useObservationsStore.getState().reset()
+    useRuntimeStore.getState().resetSteps()
     setStatus('idle')
   }, [bridge, setStatus])
 
-  return { run, stop }
+  const setStepMode = useCallback((on: boolean) => {
+    useRuntimeStore.getState().setStepMode(on)
+  }, [])
+
+  const step = useCallback(() => {
+    const queue = useRuntimeStore.getState().stepQueue
+    const next = currentStep(queue)
+    if (!next) return
+    for (const message of next) applyRuntimeMessage(message)
+    useRuntimeStore.getState().advanceStep()
+  }, [])
+
+  const resume = useCallback(() => {
+    const queue = useRuntimeStore.getState().stepQueue
+    for (const group of remainingSteps(queue)) {
+      for (const message of group) applyRuntimeMessage(message)
+    }
+    useRuntimeStore.getState().resetSteps()
+    useRuntimeStore.getState().setStepMode(false)
+  }, [])
+
+  return { run, stop, setStepMode, step, resume }
 }
