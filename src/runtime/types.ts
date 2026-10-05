@@ -5,6 +5,17 @@ export type RuntimeCommand =
   | { type: 'scale'; target: string; factor: number }
   | { type: 'wait'; seconds: number }
 
+/** A data attribute the running program assigned to an object. */
+export interface RuntimeState {
+  type: 'state'
+  target: string
+  name: string
+  value: number | string | boolean
+}
+
+/** Everything the worker can stream back: engine commands plus observations. */
+export type RuntimeMessage = RuntimeCommand | RuntimeState
+
 export interface RuntimeErrorDetails {
   /** Missing name from a NameError. */
   name?: string
@@ -42,7 +53,7 @@ export interface RuntimeBridge {
   trigger: (kind: TriggerKind, source: string) => void
   /** Stops the current run by terminating and dropping the worker. */
   stop: () => void
-  onCommand: (listener: (command: RuntimeCommand) => void) => () => void
+  onCommand: (listener: (message: RuntimeMessage) => void) => () => void
   onError: (listener: (error: RuntimeError) => void) => () => void
   onStatus: (listener: (status: RuntimeStatus) => void) => () => void
   onWarmup: (listener: (status: WarmupStatus) => void) => () => void

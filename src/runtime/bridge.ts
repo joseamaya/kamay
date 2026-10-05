@@ -1,8 +1,8 @@
 import type { WorkerRequest, WorkerResponse } from './protocol'
 import type {
   RuntimeBridge,
-  RuntimeCommand,
   RuntimeError,
+  RuntimeMessage,
   RuntimeStatus,
   WarmupStatus,
 } from './types'
@@ -23,7 +23,7 @@ export function createRuntimeBridge(): RuntimeBridge {
     warmupSettlers = []
   }
 
-  const commandListeners = new Set<(command: RuntimeCommand) => void>()
+  const commandListeners = new Set<(message: RuntimeMessage) => void>()
   const errorListeners = new Set<(error: RuntimeError) => void>()
   const statusListeners = new Set<(status: RuntimeStatus) => void>()
   const warmupListeners = new Set<(status: WarmupStatus) => void>()

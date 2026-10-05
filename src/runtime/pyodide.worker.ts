@@ -4,7 +4,7 @@ import { EventRegistry } from './eventRegistry'
 import type { WorkerRequest, WorkerResponse } from './protocol'
 import { toRuntimeError } from './pythonError'
 import runtimeSource from './python/runtime.py?raw'
-import type { RuntimeCommand, TriggerKind } from './types'
+import type { RuntimeMessage, TriggerKind } from './types'
 
 interface PyodideLike {
   FS: {
@@ -57,7 +57,7 @@ async function run(files: Record<string, string>, entry: string): Promise<void> 
 
     ;(globalThis as Record<string, unknown>).__kamay_emit = (payload: string) => {
       try {
-        post({ type: 'command', command: JSON.parse(payload) as RuntimeCommand })
+        post({ type: 'command', command: JSON.parse(payload) as RuntimeMessage })
       } catch {
         // Ignore malformed commands coming from user code.
       }

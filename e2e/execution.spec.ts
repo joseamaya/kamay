@@ -229,6 +229,37 @@ test('runs a signal handler with pyodide', async ({ page }) => {
   await expect(page.getByText('Listo.')).toBeVisible({ timeout: 150_000 })
 })
 
+test('shows an attribute change after running with pyodide', async ({ page }) => {
+  test.skip(!process.env.PYODIDE_E2E, 'set PYODIDE_E2E=1 to run the real Pyodide test')
+  test.setTimeout(180_000)
+
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Nueva clase' }).click()
+  const dialog = page.getByRole('dialog')
+  await page.getByLabel('Nombre de la clase').fill('Heroe')
+  await dialog.getByRole('button', { name: 'Agregar atributo' }).click()
+  await page.getByLabel('Nombre del atributo').fill('energia')
+  await page.getByLabel('Valor').fill('50')
+  await dialog.getByRole('button', { name: 'Agregar método' }).click()
+  await page.getByLabel('Nombre del método').fill('alimentar')
+  await useCodeBody(page)
+  await methodBody(page).fill('self.energia = 80')
+  await dialog.getByRole('button', { name: 'Guardar' }).click()
+
+  await page.getByRole('button', { name: 'Crear objeto de Heroe' }).click()
+  await page.getByRole('button', { name: 'heroe1', exact: true }).click()
+  await page.getByLabel('Orden').selectOption('alimentar')
+  await page.getByRole('button', { name: 'Agregar orden' }).click()
+
+  await page.getByRole('button', { name: 'Ejecutar' }).click()
+
+  const panel = page.locator('[data-state-panel]')
+  await expect(panel).toContainText('heroe1.energia', { timeout: 150_000 })
+  await expect(panel).toContainText('50')
+  await expect(panel).toContainText('80')
+})
+
 test('runs with physics enabled with pyodide', async ({ page }) => {
   test.skip(!process.env.PYODIDE_E2E, 'set PYODIDE_E2E=1 to run the real Pyodide test')
   test.setTimeout(180_000)

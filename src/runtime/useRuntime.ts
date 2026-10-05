@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { generatePython } from '../generator'
-import { useEditorStore, useProjectStore, useRuntimeStore } from '../store'
+import { useEditorStore, useObservationsStore, useProjectStore, useRuntimeStore } from '../store'
 import { createRuntimeBridge } from './bridge'
 import { emitRuntimeCommand, emitRuntimeReset, onRuntimeTrigger } from './bus'
 import { scheduleWarmup } from './warmup'
@@ -19,7 +19,13 @@ export function useRuntime(): RuntimeApi {
   const setError = useRuntimeStore((state) => state.setError)
 
   useEffect(() => {
-    const offCommand = bridge.onCommand((command) => emitRuntimeCommand(command))
+    const offCommand = bridge.onCommand((message) => {
+      if (message.type === 'state') {
+        useObservationsStore.getState().record(message)
+        return
+      }
+      emitRuntimeCommand(message)
+    })
     const offError = bridge.onError((error) => setError(error))
     const offStatus = bridge.onStatus((status) => setStatus(status))
     const offTrigger = onRuntimeTrigger((trigger) => bridge.trigger(trigger.kind, trigger.source))
@@ -54,6 +60,7 @@ export function useRuntime(): RuntimeApi {
     )
     setError(null)
     setStatus('loading')
+    useObservationsStore.getState().reset()
     emitRuntimeReset()
     void bridge.run(files, 'principal.py')
   }, [bridge, setError, setStatus])
@@ -61,6 +68,7 @@ export function useRuntime(): RuntimeApi {
   const stop = useCallback(() => {
     bridge.stop()
     emitRuntimeReset()
+    useObservationsStore.getState().reset()
     setStatus('idle')
   }, [bridge, setStatus])
 
