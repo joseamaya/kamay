@@ -26,7 +26,7 @@ function status(project: Project, id: RubricCriterionId) {
 describe('evaluateRubric', () => {
   it('reports everything as introduced for an empty project', () => {
     const entries = evaluateRubric(createEmptyProject({ name: 'Demo' }))
-    expect(entries).toHaveLength(8)
+    expect(entries).toHaveLength(9)
     expect(entries.every((entry) => entry.status === 'introduced')).toBe(true)
   })
 
@@ -81,6 +81,35 @@ describe('evaluateRubric', () => {
 
     scene = instantiateClass(scene, perro.id)
     expect(status(projectWithScene(scene), 'inheritance')).toBe('demonstrated')
+  })
+
+  it('demonstrates polymorphism with two overriding subclasses in use', () => {
+    const animal = createClassDraft('Animal')
+    animal.methods.push({ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } })
+    const perro = createClassDraft('Perro')
+    perro.inherits = 'Animal'
+    perro.methods.push({ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } })
+    const gato = createClassDraft('Gato')
+    gato.inherits = 'Animal'
+    gato.methods.push({ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } })
+
+    let scene: Scene = upsertClass(createScene('Principal'), animal)
+    scene = upsertClass(scene, perro)
+    scene = upsertClass(scene, gato)
+    scene = instantiateClass(scene, perro.id)
+    scene = instantiateClass(scene, gato.id)
+    scene = addEventAction(scene, 'on_start', null, null, {
+      target: scene.objects[0]!.name,
+      method: 'hablar',
+      args: {},
+    })
+    scene = addEventAction(scene, 'on_start', null, null, {
+      target: scene.objects[1]!.name,
+      method: 'hablar',
+      args: {},
+    })
+
+    expect(status(projectWithScene(scene), 'polymorphism')).toBe('demonstrated')
   })
 
   it('detects events and sequences', () => {

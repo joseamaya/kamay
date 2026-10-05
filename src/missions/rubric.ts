@@ -4,6 +4,7 @@ import {
   composesMeaningfulPart,
   customClassInstanceCount,
   customClasses,
+  demonstratesPolymorphism,
   hasDesignedClass,
   hasDistinctInstances,
   inheritsBehavior,
@@ -18,6 +19,7 @@ export type RubricCriterionId =
   | 'classes'
   | 'state'
   | 'inheritance'
+  | 'polymorphism'
   | 'composition'
   | 'events'
   | 'sequences'
@@ -46,6 +48,16 @@ export function evaluateRubric(project: Project): RubricEntry[] {
   const inheritanceCount = classes.filter(
     (definition) => definition.inherits != null && definition.inherits !== BASE_CLASS,
   ).length
+  const polymorphismCount = classes.filter((definition) => {
+    const base = definition.inherits
+    if (!base || base === BASE_CLASS) return false
+    const baseDefinition = classes.find((candidate) => candidate.name === base)
+    return (
+      baseDefinition?.methods.some((method) =>
+        definition.methods.some((own) => own.name === method.name),
+      ) ?? false
+    )
+  }).length
   const compositionCount = classes.filter((definition) => definition.components.length > 0).length
   const eventsCount = events.filter(
     (event) =>
@@ -67,6 +79,11 @@ export function evaluateRubric(project: Project): RubricEntry[] {
       id: 'inheritance',
       status: evidence(inheritanceCount, inheritsBehavior(project)),
       count: inheritanceCount,
+    },
+    {
+      id: 'polymorphism',
+      status: evidence(polymorphismCount, demonstratesPolymorphism(project)),
+      count: polymorphismCount,
     },
     {
       id: 'composition',

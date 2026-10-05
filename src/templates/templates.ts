@@ -17,7 +17,8 @@ import type {
   Scene,
 } from '../model'
 
-export type TemplateId = 'hello' | 'chase' | 'own_class' | 'inheritance' | 'physics' | 'composition'
+export type TemplateId =
+  'hello' | 'chase' | 'own_class' | 'inheritance' | 'polymorphism' | 'physics' | 'composition'
 
 export interface Template {
   id: TemplateId
@@ -129,6 +130,46 @@ function inheritance(): Project {
   return projectWith('Herencia', scene)
 }
 
+function polymorphism(): Project {
+  const animal = klass('Animal', {
+    methods: [
+      { name: 'hablar', parameters: [], body: { kind: 'code', code: 'self.decir("...")' } },
+    ],
+  })
+  const perro = klass('Perro', {
+    inherits: 'Animal',
+    methods: [
+      { name: 'hablar', parameters: [], body: { kind: 'code', code: 'self.decir("¡Guau!")' } },
+    ],
+  })
+  const gato = klass('Gato', {
+    inherits: 'Animal',
+    methods: [
+      { name: 'hablar', parameters: [], body: { kind: 'code', code: 'self.decir("¡Miau!")' } },
+    ],
+  })
+  const base: Scene = { ...createScene('Principal'), classes: [animal, perro, gato] }
+  let scene: Scene = {
+    ...base,
+    objects: [
+      instance(base, 'Perro', { color: '#e2603a', shape: 'circle' }),
+      instance(base, 'Gato', { color: '#8f9aa8', shape: 'circle' }),
+    ],
+  }
+  const [perroObject, gatoObject] = scene.objects
+  scene = addEventAction(scene, 'on_start', null, null, {
+    target: perroObject!.name,
+    method: 'hablar',
+    args: {},
+  })
+  scene = addEventAction(scene, 'on_start', null, null, {
+    target: gatoObject!.name,
+    method: 'hablar',
+    args: {},
+  })
+  return projectWith('Polimorfismo', scene)
+}
+
 function physics(): Project {
   const scene = addCatalogObject(createScene('Principal'), CIRCLE)
   return projectWith('Física', {
@@ -172,6 +213,7 @@ export const TEMPLATES: Template[] = [
   { id: 'chase', build: chase },
   { id: 'own_class', build: ownClass },
   { id: 'inheritance', build: inheritance },
+  { id: 'polymorphism', build: polymorphism },
   { id: 'physics', build: physics },
   { id: 'composition', build: composition },
 ]

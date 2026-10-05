@@ -18,6 +18,7 @@ export type MissionId =
   | 'two_instances'
   | 'inherit'
   | 'inherited_behavior'
+  | 'polymorphism'
   | 'wait_sequence'
   | 'collision'
   | 'signal'
@@ -130,6 +131,52 @@ export function composesMeaningfulPart(project: Project): boolean {
   return false
 }
 
+function inheritsFrom(scene: Scene, className: string, baseName: string): boolean {
+  const visited = new Set<string>()
+  let current = scene.classes.find((candidate) => candidate.name === className)?.inherits ?? null
+
+  while (current && current !== BASE_CLASS && !visited.has(current)) {
+    if (current === baseName) return true
+    visited.add(current)
+    current = scene.classes.find((candidate) => candidate.name === current)?.inherits ?? null
+  }
+
+  return false
+}
+
+/**
+ * Same message, different behavior: two subclasses override the same base method
+ * and that method is called on instances of both.
+ */
+export function demonstratesPolymorphism(project: Project): boolean {
+  for (const scene of project.scenes) {
+    const classOf = (target: string) =>
+      scene.objects.find((object) => object.id === target || object.name === target)?.class ?? null
+    const sceneActions = scene.events.flatMap((event) => event.actions)
+
+    for (const base of customClassDefinitions(scene)) {
+      for (const method of base.methods) {
+        const overriders = scene.classes.filter(
+          (candidate) =>
+            inheritsFrom(scene, candidate.name, base.name) &&
+            candidate.methods.some((own) => own.name === method.name),
+        )
+        if (overriders.length < 2) continue
+
+        const names = new Set(overriders.map((candidate) => candidate.name))
+        const targets = new Set(
+          sceneActions
+            .filter((action) => action.method === method.name)
+            .map((action) => classOf(action.target))
+            .filter((name): name is string => name != null && names.has(name)),
+        )
+        if (targets.size >= 2) return true
+      }
+    }
+  }
+  return false
+}
+
 export const MISSIONS: Mission[] = [
   {
     id: 'first_object',
@@ -191,6 +238,10 @@ export const MISSIONS: Mission[] = [
     isComplete: (project) => inheritsBehavior(project),
   },
   {
+    id: 'polymorphism',
+    isComplete: (project) => demonstratesPolymorphism(project),
+  },
+  {
     id: 'compose',
     isComplete: (project) =>
       classes(project).some((definition) => definition.components.length > 0),
@@ -205,7 +256,7 @@ export const BADGES: Badge[] = [
   { id: 'objects', missions: ['first_object'] },
   { id: 'orders', missions: ['give_order', 'say_hello', 'move_it'] },
   { id: 'classes', missions: ['own_class', 'own_attribute', 'own_method', 'two_instances'] },
-  { id: 'inheritance', missions: ['inherit', 'inherited_behavior'] },
+  { id: 'inheritance', missions: ['inherit', 'inherited_behavior', 'polymorphism'] },
   { id: 'events', missions: ['collision', 'signal'] },
   { id: 'sequences', missions: ['wait_sequence'] },
   { id: 'composition', missions: ['compose', 'composed_part'] },

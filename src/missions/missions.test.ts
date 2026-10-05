@@ -136,6 +136,34 @@ describe('comprehension missions', () => {
     expect(evaluateMissions(projectWith(scene))).toContain('inherited_behavior')
   })
 
+  it('requires two overriding subclasses called with the same message', () => {
+    const animal = createClassDraft('Animal')
+    animal.methods.push({ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } })
+    const perro = createClassDraft('Perro')
+    perro.inherits = 'Animal'
+    perro.methods.push({ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } })
+    const gato = createClassDraft('Gato')
+    gato.inherits = 'Animal'
+    gato.methods.push({ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } })
+
+    let scene: Scene = { ...createScene('Principal'), classes: [animal, perro, gato] }
+    scene = instantiateClass(scene, perro.id)
+    scene = instantiateClass(scene, gato.id)
+    expect(evaluateMissions(projectWith(scene))).not.toContain('polymorphism')
+
+    scene = addEventAction(scene, 'on_start', null, null, {
+      target: scene.objects[0]!.name,
+      method: 'hablar',
+      args: {},
+    })
+    scene = addEventAction(scene, 'on_start', null, null, {
+      target: scene.objects[1]!.name,
+      method: 'hablar',
+      args: {},
+    })
+    expect(evaluateMissions(projectWith(scene))).toContain('polymorphism')
+  })
+
   it('requires a composed part with behavior of its own', () => {
     const motor: ClassDefinition = {
       ...createClassDraft('Motor'),
