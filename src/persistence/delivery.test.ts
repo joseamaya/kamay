@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { ACTOR_CATALOG, addCatalogObject, createEmptyProject, createScene } from '../model'
-import { buildDelivery, deliveryFileName, exportDelivery } from './delivery'
+import { buildDelivery, deliveryFileName, exportDelivery, parseDelivery } from './delivery'
 
 describe('buildDelivery', () => {
   it('bundles the project, the generated python and the missions', () => {
@@ -19,7 +19,12 @@ describe('buildDelivery', () => {
     expect(delivery.missions).toEqual({ completed: ['first_object'], total: 11 })
     expect(delivery.rubric).toHaveLength(9)
     expect(delivery.rubric.find((entry) => entry.id === 'objects')?.status).toBe('practiced')
-    expect(delivery.evidence).toEqual({ version: 1, misconceptions: [], predictions: {} })
+    expect(delivery.evidence).toEqual({
+      version: 1,
+      misconceptions: [],
+      predictions: {},
+      missionDates: {},
+    })
   })
 
   it('includes the learning evidence when provided', () => {
@@ -27,6 +32,7 @@ describe('buildDelivery', () => {
       version: 1,
       misconceptions: ['shared_state'],
       predictions: { state: { correct: 1, misconception: 0, explained: 0 } },
+      missionDates: { first_object: '2026-01-01T00:00:00Z' },
     })
 
     expect(delivery.evidence.misconceptions).toEqual(['shared_state'])
@@ -38,6 +44,23 @@ describe('buildDelivery', () => {
       buildDelivery(createEmptyProject({ name: 'X' }), [], 11),
     ).text()
     expect(JSON.parse(text).kind).toBe('entrega')
+  })
+})
+
+describe('parseDelivery', () => {
+  it('round-trips a valid delivery', () => {
+    const delivery = buildDelivery(createEmptyProject({ name: 'Demo' }), ['first_object'], 16)
+
+    const parsed = parseDelivery(JSON.parse(JSON.stringify(delivery)))
+
+    expect(parsed?.project.meta.name).toBe('Demo')
+    expect(parsed?.missions.completed).toEqual(['first_object'])
+    expect(parsed?.evidence.version).toBe(1)
+  })
+
+  it('rejects invalid input', () => {
+    expect(parseDelivery(null)).toBeNull()
+    expect(parseDelivery({ app: 'other' })).toBeNull()
   })
 })
 

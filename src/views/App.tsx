@@ -6,6 +6,7 @@ import { decodeSharePayload, readSharePayload, usePersistence } from '../persist
 import { useRuntime } from '../runtime'
 import {
   useEditorStore,
+  useEvidenceStore,
   useLevelsEffects,
   usePreferencesEffects,
   useProgressStore,
@@ -41,6 +42,7 @@ export function App() {
     for (const id of evaluateMissions(project)) {
       if (completed.includes(id)) continue
       complete(id)
+      useEvidenceStore.getState().recordMission(id)
       if (missionsInitialized.current) {
         pushLog(format(messages.missions.completed, { title: messages.missions.list[id].title }))
         showToast({ kind: 'mission', detail: messages.missions.list[id].title })

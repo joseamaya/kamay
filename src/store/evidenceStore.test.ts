@@ -28,6 +28,15 @@ describe('evidenceStore', () => {
     })
   })
 
+  it('records a mission date once', () => {
+    useEvidenceStore.getState().recordMission('first_object')
+    const first = useEvidenceStore.getState().missionDates.first_object
+    expect(first).toBeTruthy()
+
+    useEvidenceStore.getState().recordMission('first_object')
+    expect(useEvidenceStore.getState().missionDates.first_object).toBe(first)
+  })
+
   it('persists to localStorage', () => {
     useEvidenceStore.getState().recordMisconception('shared_state')
 
@@ -45,6 +54,7 @@ describe('evidenceStore', () => {
       version: EVIDENCE_VERSION,
       misconceptions: ['shared_state'],
       predictions: {},
+      missionDates: {},
     })
   })
 })
