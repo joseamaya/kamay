@@ -29,6 +29,7 @@ import { RubricDialog } from '../rubric/RubricDialog'
 import { TemplatesDialog } from '../templates/TemplatesDialog'
 import { PortfolioDialog } from './PortfolioDialog'
 import { StepControls } from './StepControls'
+import { TeacherDialog } from '../teacher/TeacherDialog'
 
 export interface TopBarProps {
   persistence: PersistenceApi
@@ -68,6 +69,7 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
   const [levelsOpen, setLevelsOpen] = useState(false)
   const [templatesOpen, setTemplatesOpen] = useState(false)
   const [rubricOpen, setRubricOpen] = useState(false)
+  const [teacherOpen, setTeacherOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
   const [shareLink, setShareLink] = useState<string | null>(null)
   const [renameOpen, setRenameOpen] = useState(false)
@@ -329,6 +331,14 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
                 {messages.rubric.title}
               </MenuItem>
               <MenuItem
+                onClick={() => {
+                  close()
+                  setTeacherOpen(true)
+                }}
+              >
+                {messages.teacher.title}
+              </MenuItem>
+              <MenuItem
                 pressed={projector}
                 onClick={() => {
                   close()
@@ -368,6 +378,8 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
       />
 
       <RubricDialog open={rubricOpen} onClose={() => setRubricOpen(false)} />
+
+      <TeacherDialog open={teacherOpen} onClose={() => setTeacherOpen(false)} />
 
       <Dialog
         open={shareLink !== null}

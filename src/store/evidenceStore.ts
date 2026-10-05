@@ -1,7 +1,14 @@
 import { create } from 'zustand'
 
-import { emptyEvidence, EVIDENCE_VERSION, withMisconception, withPrediction } from '../pedagogy'
+import {
+  emptyEvidence,
+  EVIDENCE_VERSION,
+  withMisconception,
+  withMissionDate,
+  withPrediction,
+} from '../pedagogy'
 import type { ConceptId, Evidence, MisconceptionId, PredictionOutcome } from '../pedagogy'
+import type { MissionId } from '../missions'
 
 const STORAGE_KEY = 'kamay.evidence'
 
@@ -27,6 +34,10 @@ function readStored(): Evidence {
         record.predictions && typeof record.predictions === 'object'
           ? (record.predictions as Evidence['predictions'])
           : {},
+      missionDates:
+        record.missionDates && typeof record.missionDates === 'object'
+          ? (record.missionDates as Evidence['missionDates'])
+          : {},
     }
   } catch {
     return emptyEvidence()
@@ -44,6 +55,7 @@ function persist(evidence: Evidence): void {
 export interface EvidenceState extends Evidence {
   recordMisconception: (id: MisconceptionId) => void
   recordPrediction: (concept: ConceptId, outcome: PredictionOutcome) => void
+  recordMission: (id: MissionId) => void
   reset: () => void
 }
 
@@ -53,6 +65,7 @@ export function selectEvidence(state: EvidenceState): Evidence {
     version: state.version,
     misconceptions: state.misconceptions,
     predictions: state.predictions,
+    missionDates: state.missionDates,
   }
 }
 
@@ -65,6 +78,11 @@ export const useEvidenceStore = create<EvidenceState>((set, get) => ({
   },
   recordPrediction: (concept, outcome) => {
     const next = withPrediction(selectEvidence(get()), concept, outcome)
+    set(next)
+    persist(next)
+  },
+  recordMission: (id) => {
+    const next = withMissionDate(selectEvidence(get()), id, new Date().toISOString())
     set(next)
     persist(next)
   },
