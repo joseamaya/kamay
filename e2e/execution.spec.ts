@@ -277,6 +277,9 @@ test('runs step by step with pyodide', async ({ page }) => {
   await expect(page.getByText(/Paso 1 de \d+/)).toBeVisible({ timeout: 150_000 })
   await page.getByRole('button', { name: 'Paso', exact: true }).click()
   await expect(page.getByText(/Paso 2 de \d+/)).toBeVisible()
+
+  await page.getByRole('button', { name: 'Atrás' }).click()
+  await expect(page.getByText(/Paso 1 de \d+/)).toBeVisible()
 })
 
 test('runs the polymorphism template with pyodide', async ({ page }) => {

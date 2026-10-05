@@ -7,6 +7,7 @@ export const es = {
     stop: 'Detener',
     stepMode: 'Paso a paso',
     step: 'Paso',
+    back: 'Atrás',
     stepProgress: 'Paso {index} de {total}',
     save: 'Guardar',
     portfolio: 'Portafolio',

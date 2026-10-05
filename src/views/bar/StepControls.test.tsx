@@ -13,6 +13,7 @@ function api(overrides: Partial<RuntimeApi> = {}): RuntimeApi {
     stop: vi.fn(),
     setStepMode: vi.fn(),
     step: vi.fn(),
+    back: vi.fn(),
     resume: vi.fn(),
     ...overrides,
   }
@@ -48,6 +49,26 @@ describe('StepControls', () => {
     expect(screen.getByText('Paso 1 de 1')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Paso' }))
     expect(runtime.step).toHaveBeenCalled()
+  })
+
+  it('goes back a step', async () => {
+    const runtime = api()
+    useRuntimeStore.setState({
+      stepMode: true,
+      stepQueue: {
+        steps: [
+          [{ type: 'say', target: 'a', message: 'hola' }],
+          [{ type: 'say', target: 'a', message: 'adios' }],
+        ],
+        cursor: 1,
+        initializing: false,
+      },
+    })
+
+    render(<StepControls runtime={runtime} />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Atrás' }))
+    expect(runtime.back).toHaveBeenCalled()
   })
 
   it('resumes when step mode is turned off', async () => {
