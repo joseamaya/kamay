@@ -36,6 +36,22 @@ describe('predictionStore', () => {
     expect(usePredictionStore.getState().pending).toBeNull()
   })
 
+  it('records a correction when the student retries', () => {
+    usePredictionStore.getState().ask(scenario)
+    usePredictionStore.getState().answer('changed')
+    expect(useEvidenceStore.getState().predictions.state).toMatchObject({ misconception: 1 })
+
+    usePredictionStore.getState().retry()
+    expect(usePredictionStore.getState().outcome).toBeNull()
+
+    usePredictionStore.getState().answer('unchanged')
+    expect(usePredictionStore.getState().outcome).toBe('correct')
+    expect(useEvidenceStore.getState().predictions.state).toMatchObject({
+      misconception: 1,
+      correct: 1,
+    })
+  })
+
   it('does not ask in free mode', () => {
     useProgressStore.setState({ freeMode: true })
     usePredictionStore.getState().ask(scenario)

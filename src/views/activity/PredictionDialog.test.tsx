@@ -32,4 +32,18 @@ describe('PredictionDialog', () => {
     await user.click(screen.getByRole('button', { name: 'También cambiará a 20' }))
     expect(screen.getByText(/cada instancia guarda su propio estado/i)).toBeInTheDocument()
   })
+
+  it('lets the student retry and get it right', async () => {
+    const user = userEvent.setup()
+    usePredictionStore.getState().ask(scenario)
+
+    render(<PredictionDialog />)
+
+    await user.click(screen.getByRole('button', { name: 'También cambiará a 20' }))
+    await user.click(screen.getByRole('button', { name: 'Volver a intentar' }))
+    expect(screen.getByText(/¿Qué valor tendrá perro2\.energia\?/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Seguirá siendo 50' }))
+    expect(screen.getByText(/Cada instancia tiene su propio estado/)).toBeInTheDocument()
+  })
 })

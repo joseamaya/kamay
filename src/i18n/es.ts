@@ -544,6 +544,7 @@ export const es = {
         'Una clase describe cómo serán sus objetos, pero cada instancia guarda su propio estado. Cambiar {object} no cambia {sibling}.',
       explained:
         'Sí se puede saber: cada instancia tiene su propio estado, así que {sibling} seguirá igual.',
+      retry: 'Volver a intentar',
       later: 'Ahora no',
       accept: 'Entendido',
     },
