@@ -81,7 +81,10 @@ const MISSION_CONCEPT: Partial<Record<MissionId, ConceptId>> = {
   own_attribute: 'attribute',
   own_method: 'method',
   inherit: 'inheritance',
+  inherited_behavior: 'inheritance',
   compose: 'composition',
+  composed_part: 'composition',
+  two_instances: 'state',
 }
 
 export function findConcept(id: ConceptId): ConceptDefinition | undefined {

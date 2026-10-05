@@ -13,6 +13,7 @@ test('guides to a reachable mission instead of a locked one', async ({ page }) =
           'own_class',
           'own_attribute',
           'own_method',
+          'two_instances',
         ],
         freeMode: false,
         unlockedLevel: 4,
