@@ -16,7 +16,7 @@ describe('MissionToast', () => {
 
   it('shows the mission and hides it after a delay', () => {
     vi.useFakeTimers()
-    useEditorStore.setState({ toast: 'Pon algo en el escenario' })
+    useEditorStore.setState({ toast: { kind: 'mission', detail: 'Pon algo en el escenario' } })
     render(<MissionToast />)
 
     expect(screen.getByText('¡Misión completada!')).toBeInTheDocument()
@@ -28,5 +28,13 @@ describe('MissionToast', () => {
 
     expect(useEditorStore.getState().toast).toBeNull()
     vi.useRealTimers()
+  })
+
+  it('celebrates an unlocked level with its title', () => {
+    useEditorStore.setState({ toast: { kind: 'level', level: 4 } })
+    render(<MissionToast />)
+
+    expect(screen.getByText('¡Nivel 4 desbloqueado!')).toBeInTheDocument()
+    expect(screen.getByText('Muchos objetos e identidad')).toBeInTheDocument()
   })
 })

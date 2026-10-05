@@ -10,6 +10,8 @@ export interface LogEntry {
   level: LogLevel
 }
 
+export type Toast = { kind: 'mission'; detail: string } | { kind: 'level'; level: number }
+
 export const CODE_MIN_HEIGHT = 120
 
 export interface EditorState {
@@ -22,7 +24,7 @@ export interface EditorState {
   codeCollapsed: boolean
   codeFile: string | null
   log: LogEntry[]
-  toast: string | null
+  toast: Toast | null
   setProjectId: (projectId: string) => void
   setActiveSceneId: (sceneId: string | null) => void
   selectObject: (objectId: string | null) => void
@@ -33,7 +35,7 @@ export interface EditorState {
   setCodeFile: (file: string | null) => void
   pushLog: (text: string, level?: LogLevel) => void
   clearLog: () => void
-  showToast: (text: string) => void
+  showToast: (toast: Toast) => void
   hideToast: () => void
 }
 
