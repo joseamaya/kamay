@@ -3,7 +3,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { MISSIONS } from '../missions'
 import { createId } from '../model'
 import type { Project } from '../model'
-import { useEditorStore, useProgressStore, useProjectStore } from '../store'
+import {
+  selectEvidence,
+  useEditorStore,
+  useEvidenceStore,
+  useProgressStore,
+  useProjectStore,
+} from '../store'
 import type { Autosave } from './autosave'
 import { createAutosave } from './autosave'
 import { openKamayDb } from './db'
@@ -88,8 +94,9 @@ export function usePersistence(): PersistenceApi {
       deliver: () => {
         const project = useProjectStore.getState().project
         const completed = useProgressStore.getState().completed
+        const evidence = selectEvidence(useEvidenceStore.getState())
         download(
-          exportDelivery(buildDelivery(project, completed, MISSIONS.length)),
+          exportDelivery(buildDelivery(project, completed, MISSIONS.length, new Date(), evidence)),
           deliveryFileName(project),
         )
       },

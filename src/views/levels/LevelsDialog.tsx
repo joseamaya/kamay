@@ -1,6 +1,6 @@
 import { format, getMessages } from '../../i18n'
 import { LEVELS } from '../../levels'
-import { useProgressStore } from '../../store'
+import { useEvidenceStore, useProgressStore } from '../../store'
 import { Button } from '../../ui/Button'
 import { cn } from '../../ui/cn'
 import { Dialog } from '../../ui/Dialog'
@@ -17,6 +17,7 @@ export function LevelsDialog({ open, onClose }: LevelsDialogProps) {
   const setFreeMode = useProgressStore((state) => state.setFreeMode)
   const completed = useProgressStore((state) => state.completed)
   const reset = useProgressStore((state) => state.reset)
+  const resetEvidence = useEvidenceStore((state) => state.reset)
 
   return (
     <Dialog
@@ -88,7 +89,14 @@ export function LevelsDialog({ open, onClose }: LevelsDialogProps) {
         >
           {messages.levels.freeMode}
         </Button>
-        <Button variant="ghost" size="sm" onClick={reset}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            reset()
+            resetEvidence()
+          }}
+        >
           {messages.missions.reset}
         </Button>
       </div>

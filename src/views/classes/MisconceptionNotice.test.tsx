@@ -2,11 +2,11 @@ import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { createClassDraft, createScene, upsertClass } from '../../model'
-import { usePredictionStore } from '../../store'
+import { useEvidenceStore } from '../../store'
 import { MisconceptionNotice } from './MisconceptionNotice'
 
 beforeEach(() => {
-  usePredictionStore.getState().reset()
+  useEvidenceStore.getState().reset()
 })
 
 describe('MisconceptionNotice', () => {
@@ -21,7 +21,7 @@ describe('MisconceptionNotice', () => {
     render(<MisconceptionNotice scene={scene} definition={perro} />)
 
     expect(screen.getByText(/La herencia expresa una relación/)).toBeInTheDocument()
-    expect(usePredictionStore.getState().addressed).toContain('inheritance_for_reuse')
+    expect(useEvidenceStore.getState().misconceptions).toContain('inheritance_for_reuse')
   })
 
   it('renders nothing when there is no misconception', () => {

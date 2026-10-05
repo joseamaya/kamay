@@ -1,9 +1,14 @@
 import { resolveAttributeDefaults, resolveCustomAttributes } from '../model'
 import type { ObjectInstance, Scene } from '../model'
+import type { ConceptId } from './concepts'
 
 export type AttributeValue = number | string | boolean
 
+export type PredictionChoice = 'changed' | 'unchanged' | 'unknown'
+export type PredictionOutcome = 'correct' | 'misconception' | 'explained'
+
 export interface PredictionScenario {
+  concept: ConceptId
   objectName: string
   className: string
   attribute: string
@@ -39,6 +44,7 @@ export function buildPrediction(
   if (siblingValue === newValue) return null
 
   return {
+    concept: 'state',
     objectName: object.name,
     className: object.class,
     attribute,

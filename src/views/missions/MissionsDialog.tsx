@@ -4,7 +4,7 @@ import { getMessages } from '../../i18n'
 import { BADGES, completedBadges, MISSIONS } from '../../missions'
 import type { MissionId } from '../../missions'
 import { revealNext } from '../../pedagogy'
-import { useProgressStore } from '../../store'
+import { useEvidenceStore, useProgressStore } from '../../store'
 import { Button } from '../../ui/Button'
 import { cn } from '../../ui/cn'
 import { Dialog } from '../../ui/Dialog'
@@ -18,6 +18,7 @@ export function MissionsDialog({ open, onClose }: MissionsDialogProps) {
   const messages = getMessages()
   const completed = useProgressStore((state) => state.completed)
   const reset = useProgressStore((state) => state.reset)
+  const resetEvidence = useEvidenceStore((state) => state.reset)
   const unlocked = completedBadges(completed)
   const [revealed, setRevealed] = useState<Record<string, number>>({})
 
@@ -117,7 +118,14 @@ export function MissionsDialog({ open, onClose }: MissionsDialogProps) {
       </ul>
 
       <div className="mt-4">
-        <Button variant="ghost" size="sm" onClick={reset}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            reset()
+            resetEvidence()
+          }}
+        >
           {messages.missions.reset}
         </Button>
       </div>

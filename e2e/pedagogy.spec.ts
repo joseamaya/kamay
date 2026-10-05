@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
 
+import { openMore } from './helpers'
+
 test('detects the shared-state misconception when editing an instance', async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem(
@@ -28,6 +30,13 @@ test('detects the shared-state misconception when editing an instance', async ({
   await expect(dialog).toBeVisible()
   await dialog.getByRole('button', { name: 'También cambiará a 20' }).click()
   await expect(dialog.getByText(/cada instancia guarda su propio estado/i)).toBeVisible()
+  await dialog.getByRole('button', { name: 'Entendido' }).click()
+
+  await openMore(page)
+  await page.getByRole('menuitem', { name: 'Rúbrica' }).click()
+  const rubric = page.getByRole('dialog', { name: 'Rúbrica' })
+  await expect(rubric.getByText(/Para repasar/)).toBeVisible()
+  await expect(rubric.getByText('Estado compartido')).toBeVisible()
 })
 
 test('warns when inheritance is only used to reuse', async ({ page }) => {

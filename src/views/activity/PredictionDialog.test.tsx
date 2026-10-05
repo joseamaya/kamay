@@ -7,6 +7,7 @@ import { usePredictionStore, useProgressStore } from '../../store'
 import { PredictionDialog } from './PredictionDialog'
 
 const scenario: PredictionScenario = {
+  concept: 'state',
   objectName: 'perro1',
   className: 'Perro',
   attribute: 'energia',
