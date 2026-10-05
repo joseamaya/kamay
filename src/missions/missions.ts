@@ -67,8 +67,21 @@ function customClassDefinitions(scene: Scene): ClassDefinition[] {
   return scene.classes.filter((definition) => !CATALOG_CLASS_NAMES.has(definition.name))
 }
 
+/** A custom class that has both an attribute and a method (designed, not just declared). */
+export function hasDesignedClass(project: Project): boolean {
+  return customClasses(project).some(
+    (definition) => classCustomAttributes(definition).length > 0 && definition.methods.length > 0,
+  )
+}
+
+/** Number of instances whose class is a custom (student-designed) class. */
+export function customClassInstanceCount(project: Project): number {
+  const names = new Set(customClasses(project).map((definition) => definition.name))
+  return objects(project).filter((object) => names.has(object.class)).length
+}
+
 /** Two instances of the same custom class holding different state. */
-function hasDistinctInstances(project: Project): boolean {
+export function hasDistinctInstances(project: Project): boolean {
   for (const scene of project.scenes) {
     for (const definition of customClassDefinitions(scene)) {
       const instances = scene.objects.filter((object) => object.class === definition.name)
@@ -86,7 +99,7 @@ function hasDistinctInstances(project: Project): boolean {
 }
 
 /** A subclass instance that keeps a method defined only by its custom base. */
-function inheritsBehavior(project: Project): boolean {
+export function inheritsBehavior(project: Project): boolean {
   for (const scene of project.scenes) {
     for (const definition of scene.classes) {
       const base = definition.inherits
@@ -102,7 +115,7 @@ function inheritsBehavior(project: Project): boolean {
 }
 
 /** A class instance whose composed part is a class with behavior or state of its own. */
-function composesMeaningfulPart(project: Project): boolean {
+export function composesMeaningfulPart(project: Project): boolean {
   for (const scene of project.scenes) {
     for (const definition of scene.classes) {
       if (definition.components.length === 0) continue

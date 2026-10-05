@@ -15,8 +15,9 @@ describe('RubricDialog', () => {
 
     expect(screen.getByRole('dialog', { name: 'Rúbrica' })).toBeInTheDocument()
     expect(screen.getByText('Objetos')).toBeInTheDocument()
+    expect(screen.getByText('Estado')).toBeInTheDocument()
     expect(screen.getByText('Herencia')).toBeInTheDocument()
-    expect(screen.getAllByText('No iniciado')).toHaveLength(7)
+    expect(screen.getAllByText('Presentado')).toHaveLength(8)
   })
 
   it('renders nothing when closed', () => {

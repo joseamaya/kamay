@@ -381,16 +381,20 @@ export const es = {
   rubric: {
     title: 'Rúbrica',
     description: 'Qué conceptos demuestra el proyecto.',
-    progress: '{achieved} de {total} conceptos conseguidos',
+    progress: '{demonstrated} de {total} conceptos demostrados',
     status: {
-      none: 'No iniciado',
-      partial: 'En proceso',
-      achieved: 'Conseguido',
+      introduced: 'Presentado',
+      practiced: 'Practicado',
+      demonstrated: 'Demostrado',
     },
     criteria: {
       objects: { title: 'Objetos', description: 'Pone objetos en el escenario.' },
       orders: { title: 'Órdenes', description: 'Da órdenes a los objetos.' },
       classes: { title: 'Mi clase', description: 'Crea una clase con atributos y métodos.' },
+      state: {
+        title: 'Estado',
+        description: 'Dos objetos de la misma clase con estados distintos.',
+      },
       inheritance: { title: 'Herencia', description: 'Reutiliza una clase como base.' },
       composition: { title: 'Composición', description: 'Una clase contiene a otra como parte.' },
       events: { title: 'Eventos', description: 'Reacciona a clics, teclas o choques.' },
