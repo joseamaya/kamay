@@ -25,7 +25,7 @@ describe('SelectionOverlay', () => {
     render(<SelectionOverlay />)
 
     expect(screen.getByText('circle1')).toBeInTheDocument()
-    expect(screen.getByText('Clase: Circle')).toBeInTheDocument()
+    expect(screen.getByText('Instancia de Circle')).toBeInTheDocument()
     expect(screen.getByText('Aspecto')).toBeInTheDocument()
     expect(screen.getByText('Órdenes')).toBeInTheDocument()
     expect(screen.getByLabelText('Cuándo')).toBeInTheDocument()

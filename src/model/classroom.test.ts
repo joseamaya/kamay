@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   availableBaseClasses,
   availableComponentClasses,
+  classAncestry,
   classUsageCount,
   createClassDraft,
   createScene,
@@ -11,9 +12,12 @@ import {
   instantiateClass,
   removeClass,
   resolveAttributeDefaults,
+  resolveAttributesWithOrigin,
   resolveComponents,
+  resolveComponentsWithOrigin,
   resolveCustomAttributes,
   resolveMethods,
+  resolveMethodsWithOrigin,
   updateObjectAttributes,
   upsertClass,
   validateClassDraft,
@@ -282,5 +286,43 @@ describe('validateClassDraft', () => {
     const errors = validateClassDraft(createScene('Principal'), draft)
     expect(errors.attributes.some(Boolean)).toBe(true)
     expect(errors.methods[0]?.invalidParameters).toBe(true)
+  })
+})
+
+describe('resolve with origin', () => {
+  function hierarchy() {
+    const animal = createClassDraft('Animal')
+    animal.attributes.push({ name: 'energia', type: 'number', initial: 50 })
+    animal.methods.push({ name: 'comer', parameters: [], body: { kind: 'blocks', ops: [] } })
+    const collar = createClassDraft('Collar')
+    const perro = createClassDraft('Perro')
+    perro.inherits = 'Animal'
+    perro.attributes.push({ name: 'nombre', type: 'string', initial: '' })
+    perro.methods.push({ name: 'ladrar', parameters: [], body: { kind: 'blocks', ops: [] } })
+    perro.components.push({ name: 'collar', class: 'Collar' })
+    let scene = createScene('Principal')
+    for (const definition of [animal, collar, perro]) scene = upsertClass(scene, definition)
+    return scene
+  }
+
+  it('reports the declaring class of attributes, methods and components', () => {
+    const scene = hierarchy()
+
+    const attributes = resolveAttributesWithOrigin(scene, 'Perro')
+    expect(attributes.find((entry) => entry.value.name === 'energia')?.owner).toBe('Animal')
+    expect(attributes.find((entry) => entry.value.name === 'nombre')?.owner).toBe('Perro')
+
+    const methods = resolveMethodsWithOrigin(scene, 'Perro')
+    expect(methods.find((entry) => entry.value.name === 'comer')?.owner).toBe('Animal')
+    expect(methods.find((entry) => entry.value.name === 'ladrar')?.owner).toBe('Perro')
+
+    const components = resolveComponentsWithOrigin(scene, 'Perro')
+    expect(components.find((entry) => entry.value.name === 'collar')?.owner).toBe('Perro')
+  })
+
+  it('builds the ancestry chain up to Actor', () => {
+    const scene = hierarchy()
+    expect(classAncestry(scene, 'Perro')).toEqual(['Perro', 'Animal', 'Actor'])
+    expect(classAncestry(scene, 'Animal')).toEqual(['Animal', 'Actor'])
   })
 })
