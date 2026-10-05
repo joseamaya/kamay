@@ -1,3 +1,4 @@
+import { isActorShape } from '../model'
 import type { RuntimeCommand } from '../runtime/types'
 import { PhysicsController } from './physics'
 import { advanceTweens, createTween } from './tween'
@@ -123,6 +124,12 @@ export class RuntimeController {
             createTween(actor.id, 'scale', actor.transform.scale, command.factor, MOVE_DURATION),
           )
         }
+        break
+      case 'appearance':
+        actor.glyph = command.glyph ?? undefined
+        actor.image = command.image ?? undefined
+        actor.color = command.color
+        if (isActorShape(command.shape)) actor.shape = command.shape
         break
     }
   }

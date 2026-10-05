@@ -4,6 +4,14 @@ export type RuntimeCommand =
   | { type: 'rotate'; target: string; degrees: number }
   | { type: 'scale'; target: string; factor: number }
   | { type: 'wait'; seconds: number }
+  | {
+      type: 'appearance'
+      target: string
+      glyph: string | null
+      image: string | null
+      color: string
+      shape: string
+    }
 
 /** A data attribute the running program assigned to an object. */
 export interface RuntimeState {

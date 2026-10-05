@@ -1,7 +1,9 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { createScene } from '../../model'
+import { createClassDraft, createScene } from '../../model'
+import type { ClassDefinition } from '../../model'
 import { useProgressStore } from '../../store'
 import { ClassEditorDialog } from './ClassEditorDialog'
 
@@ -46,5 +48,30 @@ describe('ClassEditorDialog', () => {
     expect(select.value).toBe('Cosa')
     expect(screen.queryByRole('option', { name: 'Actor' })).not.toBeInTheDocument()
     expect(screen.getByRole('option', { name: 'Vehiculo' })).toBeInTheDocument()
+  })
+
+  it('adds a visual variant for a custom attribute', async () => {
+    const user = userEvent.setup()
+    const draft = createClassDraft('Vehiculo')
+    const initial: ClassDefinition = {
+      ...draft,
+      attributes: [...draft.attributes, { name: 'encendido', type: 'boolean', initial: false }],
+    }
+
+    render(
+      <ClassEditorDialog
+        scene={createScene('Principal')}
+        initial={initial}
+        onSave={() => {}}
+        onClose={() => {}}
+      />,
+    )
+
+    expect(screen.getByText('Apariencia')).toBeInTheDocument()
+    expect(screen.getByText('Sin variantes.')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Agregar variante' }))
+
+    expect(screen.getByLabelText('Nombre de la variante')).toBeInTheDocument()
   })
 })

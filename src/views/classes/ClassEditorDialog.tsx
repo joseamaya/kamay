@@ -29,6 +29,7 @@ import { fileToSpriteDataUrl } from '../../ui/image'
 import { Select } from '../../ui/Select'
 import { MethodBodyEditor } from './MethodBodyEditor'
 import { MisconceptionNotice } from './MisconceptionNotice'
+import { VisualVariantsEditor } from './VisualVariantsEditor'
 
 const INPUT_CLASS =
   'border-border bg-background focus-visible:ring-ring h-8 w-full rounded-md border px-2 text-sm focus-visible:ring-2 focus-visible:outline-none'
@@ -445,6 +446,13 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
             </p>
           </section>
         )}
+
+        <VisualVariantsEditor
+          scene={scene}
+          definition={draft}
+          variants={draft.visuals}
+          onChange={(visuals) => setDraft((current) => ({ ...current, visuals }))}
+        />
 
         <section className="flex flex-col gap-2">
           <header className="flex items-center justify-between">

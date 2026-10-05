@@ -40,6 +40,16 @@ test('adds a real-world entity that inherits its domain base', async ({ page }) 
   await expect(codeContent(page)).toContainText('def tocar_bocina(self):')
 })
 
+test('shows the catalog visual variants in the class editor', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'Editar Vehiculo' }).click()
+
+  await expect(page.getByText('Apariencia')).toBeVisible()
+  await expect(page.getByLabel('Nombre de la variante')).toHaveValue('Prendido')
+})
+
 test('adds a glyph object and reflects it in the code view', async ({ page }) => {
   await page.goto('/')
 

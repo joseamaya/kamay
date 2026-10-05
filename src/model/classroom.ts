@@ -51,6 +51,7 @@ export function createClassDraft(name = 'MiClase'): ClassDefinition {
     ],
     components: [],
     methods: [],
+    visuals: [],
   }
 }
 

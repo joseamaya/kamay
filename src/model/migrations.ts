@@ -52,6 +52,17 @@ export const migrations: Record<number, SchemaMigration> = {
         classes: classes.map((definition) => ({ components: [], ...definition })),
       }
     }),
+  // v6 -> v7: classes gained `visuals` for state-driven appearance variants.
+  6: (data) =>
+    mapScenes(data, 7, (scene) => {
+      const classes = Array.isArray(scene.classes)
+        ? (scene.classes as Record<string, unknown>[])
+        : []
+      return {
+        ...scene,
+        classes: classes.map((definition) => ({ visuals: [], ...definition })),
+      }
+    }),
 }
 
 export class MigrationError extends Error {

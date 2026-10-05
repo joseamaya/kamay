@@ -54,6 +54,7 @@ function klass(
     ],
     components: options.components ?? [],
     methods: options.methods ?? [],
+    visuals: [],
   }
 }
 

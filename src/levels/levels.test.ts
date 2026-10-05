@@ -33,6 +33,7 @@ function klass(name: string, inherits = 'Actor'): ClassDefinition {
     attributes: [],
     components: [],
     methods: [],
+    visuals: [],
   }
 }
 

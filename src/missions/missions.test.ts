@@ -57,6 +57,7 @@ describe('MISSIONS', () => {
       attributes: [{ name: 'vida', type: 'number', initial: 100 }],
       components: [],
       methods: [{ name: 'saltar', parameters: [], body: { kind: 'code', code: 'pass' } }],
+      visuals: [],
     }
     const enemigo: ClassDefinition = {
       id: 'c2',
@@ -66,6 +67,7 @@ describe('MISSIONS', () => {
       attributes: [],
       components: [],
       methods: [],
+      visuals: [],
     }
     let scene: Scene = { ...createScene('Principal'), classes: [heroe, enemigo] }
     scene = addCatalogObject(scene, circle)
