@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { normalizeFile, parseFrames, toRuntimeError } from './pythonError'
+import { normalizeFile, parseErrorDetails, parseFrames, toRuntimeError } from './pythonError'
 
 describe('normalizeFile', () => {
   it('strips the Pyodide mount prefix', () => {
@@ -38,6 +38,7 @@ NameError: name 'vida' is not defined`)
     expect(result.file).toBe('Circle.py')
     expect(result.line).toBe(8)
     expect(result.kind).toBe('NameError')
+    expect(result.details).toEqual({ name: 'vida' })
   })
 
   it('prefers the innermost frame that belongs to a generated file', () => {
@@ -60,5 +61,28 @@ NameError: name 'vida' is not defined`)
     expect(result.file).toBeNull()
     expect(result.line).toBeNull()
     expect(result.kind).toBe('Error')
+  })
+})
+
+describe('parseErrorDetails', () => {
+  it('extracts the missing name from a NameError', () => {
+    expect(parseErrorDetails("NameError: name 'vida' is not defined")).toEqual({ name: 'vida' })
+  })
+
+  it('extracts the owner and attribute from an AttributeError', () => {
+    expect(parseErrorDetails("AttributeError: 'Heroe' object has no attribute 'saltar'")).toEqual({
+      owner: 'Heroe',
+      attribute: 'saltar',
+    })
+  })
+
+  it('extracts the module from an import error', () => {
+    expect(parseErrorDetails("ModuleNotFoundError: No module named 'foo'")).toEqual({
+      module: 'foo',
+    })
+  })
+
+  it('returns an empty object when there is nothing to extract', () => {
+    expect(parseErrorDetails('TypeError: boom')).toEqual({})
   })
 })

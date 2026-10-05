@@ -5,12 +5,25 @@ export type RuntimeCommand =
   | { type: 'scale'; target: string; factor: number }
   | { type: 'wait'; seconds: number }
 
+export interface RuntimeErrorDetails {
+  /** Missing name from a NameError. */
+  name?: string
+  /** Class or type that lacks an attribute (AttributeError). */
+  owner?: string
+  /** Missing attribute from an AttributeError. */
+  attribute?: string
+  /** Missing module from an ImportError. */
+  module?: string
+}
+
 export interface RuntimeError {
   kind: string
   message: string
   /** Generated file where the error happened, normalized to its path. */
   file: string | null
   line: number | null
+  /** Structured details parsed from the message, used to build hints. */
+  details?: RuntimeErrorDetails
 }
 
 export type RuntimeStatus = 'idle' | 'loading' | 'ready' | 'running' | 'error'

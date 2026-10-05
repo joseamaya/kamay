@@ -4,7 +4,7 @@ import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerE
 import { generatePython } from '../../generator'
 import type { EditableValue } from '../../generator'
 import { getMessages } from '../../i18n'
-import { translateRuntimeError } from '../../runtime'
+import { translateRuntimeError, translateRuntimeHint } from '../../runtime'
 import {
   CODE_MIN_HEIGHT,
   useActiveScene,
@@ -69,7 +69,9 @@ export function CodeView() {
 
   const diagnostics = useMemo(() => {
     if (!error?.line || !error.file || error.file !== activeFile?.path) return []
-    return [{ line: error.line, message: translateRuntimeError(error) }]
+    const summary = translateRuntimeError(error)
+    const hint = translateRuntimeHint(error)
+    return [{ line: error.line, message: hint ? `${summary} — ${hint}` : summary }]
   }, [error, activeFile?.path])
 
   const canEditValues = capabilities.editValues && activeFile?.path === 'principal.py'
