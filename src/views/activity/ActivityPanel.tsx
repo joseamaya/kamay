@@ -1,5 +1,5 @@
 import { getMessages } from '../../i18n'
-import { translateRuntimeError } from '../../runtime'
+import { translateRuntimeError, translateRuntimeHint } from '../../runtime'
 import { useEditorStore, useRuntimeStore } from '../../store'
 import { cn } from '../../ui/cn'
 
@@ -10,6 +10,7 @@ export function ActivityPanel() {
   const error = useRuntimeStore((state) => state.error)
 
   let text = latest ? latest.text : messages.activity.idle
+  let hint: string | null = null
   let isError = latest?.level === 'error'
 
   if (status === 'loading') text = messages.activity.loading
@@ -18,6 +19,7 @@ export function ActivityPanel() {
 
   if (error) {
     text = translateRuntimeError(error)
+    hint = translateRuntimeHint(error)
     isError = true
   }
 
@@ -26,10 +28,11 @@ export function ActivityPanel() {
       role="status"
       aria-live={isError ? 'assertive' : 'polite'}
       aria-atomic="true"
-      className="border-border bg-card flex items-center gap-2 border-t px-4 py-1.5 text-xs"
+      className="border-border bg-card flex flex-wrap items-center gap-x-2 gap-y-0.5 border-t px-4 py-1.5 text-xs"
     >
       <span className="font-medium">{messages.activity.title}:</span>
       <span className={cn('text-muted-foreground', isError && 'text-destructive')}>{text}</span>
+      {hint ? <span className="text-muted-foreground">{hint}</span> : null}
     </footer>
   )
 }

@@ -50,6 +50,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the generated Python files), the catalogue moves to the right, and the guide
   becomes a compact banner under the toolbar. The code dock drops its file tabs
   and follows the file chosen in the explorer.
+- **Error hints**: runtime errors now come with a didactic hint that names the
+  concept (e.g. "A «Heroe» le falta el método o atributo «saltar»"), shown in
+  the activity bar and the inline diagnostic.
 
 ### Planned
 

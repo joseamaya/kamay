@@ -107,6 +107,7 @@ test('shows an inline error when a method fails', async ({ page }) => {
   await expect(page.getByText(/Se pidió algo que el objeto no tiene/)).toBeVisible({
     timeout: 150_000,
   })
+  await expect(page.getByText(/le falta el método o atributo «no_existe»/)).toBeVisible()
   await expect(page.getByRole('button', { name: 'Heroe.py' })).toHaveAttribute(
     'aria-current',
     'page',

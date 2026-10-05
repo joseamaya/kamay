@@ -48,9 +48,9 @@ The project has completed **Phase 4 — classroom and gamification**. Working to
   editable method bodies and, from level 2, inline editing of literal values
   directly in `principal.py` (object attributes and order arguments).
 - **Execution**: run the program with **Pyodide** (Web Worker) and see the
-  objects talk and move; runtime errors are translated to Spanish and marked
-  inline in the generated code. Pyodide is warmed up in the background so the
-  first run starts quickly.
+  objects talk and move; runtime errors are translated to Spanish with a hint
+  that names the concept, and marked inline in the generated code. Pyodide is
+  warmed up in the background so the first run starts quickly.
 - **Persistence**: autosave to IndexedDB, `.kamay.json` export/import and
   **share by link** (the project travels encoded in the URL).
 - **Missions and badges**: short auto-checked goals ("add an object", "create

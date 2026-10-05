@@ -444,6 +444,19 @@ export const es = {
       generic: 'Ocurrió un error al ejecutar el programa.',
       withLine: '{summary} (línea {line})',
     },
+    hints: {
+      name: 'Revisa que «{name}» esté bien escrito o que lo hayas creado antes de usarlo.',
+      nameGeneric: 'Revisa que el nombre esté bien escrito y exista antes de usarlo.',
+      attribute:
+        'A «{owner}» le falta el método o atributo «{attribute}». ¿Quisiste usar otro nombre?',
+      attributeGeneric: 'El objeto no tiene ese método o atributo. Revisa cómo se llama.',
+      module: 'No existe el archivo o módulo «{module}».',
+      moduleGeneric: 'No se encontró un archivo o módulo que el programa necesita.',
+      type: 'Revisa que los valores sean del tipo correcto (número, texto o booleano).',
+      syntax: 'Revisa esa línea: puede faltar un paréntesis, dos puntos o una comilla.',
+      indentation: 'Revisa la sangría (los espacios al inicio) de esa línea.',
+      zeroDivision: 'No se puede dividir entre cero; revisa el valor del divisor.',
+    },
   },
 } as const
 

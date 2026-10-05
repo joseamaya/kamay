@@ -1,4 +1,4 @@
-import type { RuntimeError } from './types'
+import type { RuntimeError, RuntimeErrorDetails } from './types'
 
 export interface TracebackFrame {
   file: string
@@ -8,6 +8,23 @@ export interface TracebackFrame {
 
 const FRAME_PATTERN = /File "([^"]+)", line (\d+)(?:, in (.+))?/g
 const KIND_PATTERN = /([A-Za-z_]*Error)/
+const NAME_PATTERN = /name '([^']+)' is not defined/
+const ATTRIBUTE_PATTERN = /'([^']+)' object has no attribute '([^']+)'/
+const MODULE_PATTERN = /No module named '([^']+)'/
+
+/** Extracts the identifier a message points at, so hints can name the concept. */
+export function parseErrorDetails(message: string): RuntimeErrorDetails {
+  const name = message.match(NAME_PATTERN)?.[1]
+  if (name) return { name }
+
+  const attribute = message.match(ATTRIBUTE_PATTERN)
+  if (attribute) return { owner: attribute[1], attribute: attribute[2] }
+
+  const module = message.match(MODULE_PATTERN)?.[1]
+  if (module) return { module }
+
+  return {}
+}
 
 /** Strips the Pyodide mount prefix so frames match generated file paths. */
 export function normalizeFile(path: string): string {
@@ -57,5 +74,6 @@ export function toRuntimeError(error: unknown, knownFiles?: ReadonlySet<string>)
     message,
     file: frame?.file ?? null,
     line: frame?.line ?? null,
+    details: parseErrorDetails(message),
   }
 }
