@@ -68,6 +68,30 @@ export function capabilitiesFor(level: number): Capabilities {
   }
 }
 
+const MISSION_LEVEL = new Map<MissionId, number>(
+  LEVELS.flatMap((definition) => definition.missions.map((id) => [id, definition.id] as const)),
+)
+
+/** Level a mission belongs to. Missions outside the path fall back to the last level. */
+export function missionLevel(id: MissionId): number {
+  return MISSION_LEVEL.get(id) ?? MAX_LEVEL
+}
+
+/**
+ * First incomplete mission within the levels reachable at `level`, in path
+ * order. Returns `null` when everything reachable is done, so the guide never
+ * points at a mission the student cannot do yet.
+ */
+export function nextMission(completed: readonly MissionId[], level: number): MissionId | null {
+  for (const definition of LEVELS) {
+    if (definition.id > level) break
+    for (const id of definition.missions) {
+      if (!completed.includes(id)) return id
+    }
+  }
+  return null
+}
+
 /** Highest level unlocked by the missions completed so far. */
 export function levelFromMissions(completed: readonly MissionId[]): number {
   let level = 1
