@@ -6,7 +6,8 @@ import {
   resolveCustomAttributes,
 } from '../../model'
 import type { ObjectInstance, Scene } from '../../model'
-import { useProjectStore } from '../../store'
+import { buildPrediction } from '../../pedagogy'
+import { usePredictionStore, useProjectStore } from '../../store'
 import { ColorInput } from '../../ui/ColorInput'
 import { NumberField } from '../../ui/NumberField'
 import { Select } from '../../ui/Select'
@@ -22,8 +23,14 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
   const messages = getMessages()
   const updateObjectAttributes = useProjectStore((state) => state.updateObjectAttributes)
 
-  const patch = (values: Record<string, number | string | boolean>) =>
+  const patch = (values: Record<string, number | string | boolean>) => {
     updateObjectAttributes(scene.id, object.id, values)
+    const entries = Object.entries(values)
+    if (entries.length !== 1) return
+    const [name, value] = entries[0]!
+    const scenario = buildPrediction(scene, object, name, value)
+    if (scenario) usePredictionStore.getState().ask(scenario)
+  }
 
   const customAttributes = resolveCustomAttributes(scene, object.class)
   const defaults = resolveAttributeDefaults(scene, object.class)

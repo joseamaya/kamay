@@ -13,10 +13,10 @@ export interface Level {
 export const LEVELS: Level[] = [
   { id: 1, missions: ['first_object'] },
   { id: 2, missions: ['give_order', 'say_hello', 'move_it'] },
-  { id: 3, missions: ['own_class', 'own_attribute', 'own_method'] },
+  { id: 3, missions: ['own_class', 'own_attribute', 'own_method', 'two_instances'] },
   { id: 4, missions: ['collision', 'wait_sequence', 'signal'] },
-  { id: 5, missions: ['inherit'] },
-  { id: 6, missions: ['compose'] },
+  { id: 5, missions: ['inherit', 'inherited_behavior'] },
+  { id: 6, missions: ['compose', 'composed_part'] },
 ]
 
 export interface Capabilities {

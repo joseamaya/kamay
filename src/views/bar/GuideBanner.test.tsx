@@ -30,6 +30,7 @@ describe('GuideBanner', () => {
         'own_class',
         'own_attribute',
         'own_method',
+        'two_instances',
       ],
     })
 

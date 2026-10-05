@@ -66,51 +66,22 @@ describe('capabilitiesFor', () => {
 })
 
 describe('levelFromMissions', () => {
+  const missionsUpTo = (level: number): MissionId[] =>
+    LEVELS.filter((definition) => definition.id <= level).flatMap(
+      (definition) => definition.missions,
+    )
+
   it('advances only through fully completed levels', () => {
     expect(levelFromMissions([])).toBe(1)
     expect(levelFromMissions(['first_object'])).toBe(2)
     expect(levelFromMissions(['first_object', 'give_order'])).toBe(2)
-    expect(levelFromMissions(['first_object', 'give_order', 'say_hello', 'move_it'])).toBe(3)
-    expect(
-      levelFromMissions([
-        'first_object',
-        'give_order',
-        'say_hello',
-        'move_it',
-        'own_class',
-        'own_attribute',
-        'own_method',
-      ]),
-    ).toBe(4)
-    expect(
-      levelFromMissions([
-        'first_object',
-        'give_order',
-        'say_hello',
-        'move_it',
-        'own_class',
-        'own_attribute',
-        'own_method',
-        'collision',
-        'wait_sequence',
-        'signal',
-      ]),
-    ).toBe(5)
-    expect(
-      levelFromMissions([
-        'first_object',
-        'give_order',
-        'say_hello',
-        'move_it',
-        'own_class',
-        'own_attribute',
-        'own_method',
-        'collision',
-        'wait_sequence',
-        'signal',
-        'inherit',
-      ]),
-    ).toBe(MAX_LEVEL)
+
+    expect(levelFromMissions(missionsUpTo(1))).toBe(2)
+    expect(levelFromMissions(missionsUpTo(2))).toBe(3)
+    expect(levelFromMissions(missionsUpTo(3))).toBe(4)
+    expect(levelFromMissions(missionsUpTo(4))).toBe(5)
+    expect(levelFromMissions(missionsUpTo(5))).toBe(MAX_LEVEL)
+    expect(levelFromMissions(missionsUpTo(6))).toBe(MAX_LEVEL)
   })
 })
 
@@ -132,6 +103,7 @@ describe('nextMission', () => {
     'own_class',
     'own_attribute',
     'own_method',
+    'two_instances',
   ]
 
   it('starts at the first mission when nothing is done', () => {

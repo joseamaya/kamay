@@ -13,6 +13,7 @@ import {
 } from '../store'
 import { ActivityPanel } from './activity/ActivityPanel'
 import { MissionToast } from './activity/MissionToast'
+import { PredictionDialog } from './activity/PredictionDialog'
 import { GuideBanner } from './bar/GuideBanner'
 import { TopBar } from './bar/TopBar'
 import { CodeView } from './code/CodeView'
@@ -94,6 +95,7 @@ export function App() {
       </div>
       <ActivityPanel />
       <MissionToast />
+      <PredictionDialog />
     </div>
   )
 }

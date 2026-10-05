@@ -280,6 +280,18 @@ export const es = {
         title: 'Combina objetos',
         description: 'Haz que una clase contenga a otra (composición).',
       },
+      two_instances: {
+        title: 'Dos objetos, dos estados',
+        description: 'Crea dos objetos de tu clase y dales estados distintos.',
+      },
+      inherited_behavior: {
+        title: 'Hereda el comportamiento',
+        description: 'Haz que un objeto use un método definido en su clase base.',
+      },
+      composed_part: {
+        title: 'Contiene una parte',
+        description: 'Haz que un objeto contenga otro con comportamiento propio.',
+      },
     },
     badges: {
       objects: { title: 'Objetos', description: 'Pones objetos en el escenario.' },
@@ -414,6 +426,22 @@ export const es = {
         title: 'Polimorfismo',
         description: 'El mismo mensaje, comportamientos distintos.',
       },
+    },
+    prediction: {
+      title: 'Predicción',
+      question:
+        'Cambiaste {object}.{attribute} a {value}. ¿Qué valor tendrá {sibling}.{attribute}?',
+      optionChanged: 'También cambiará a {value}',
+      optionUnchanged: 'Seguirá siendo {value}',
+      optionUnknown: 'No se puede saber',
+      correct:
+        '¡Correcto! Cada instancia tiene su propio estado: cambiar {object} no cambia {sibling}.',
+      sharedState:
+        'Una clase describe cómo serán sus objetos, pero cada instancia guarda su propio estado. Cambiar {object} no cambia {sibling}.',
+      explained:
+        'Sí se puede saber: cada instancia tiene su propio estado, así que {sibling} seguirá igual.',
+      later: 'Ahora no',
+      accept: 'Entendido',
     },
   },
   triggers: {

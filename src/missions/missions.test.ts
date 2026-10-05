@@ -4,8 +4,11 @@ import {
   ACTOR_CATALOG,
   addCatalogObject,
   addEventAction,
+  createClassDraft,
   createEmptyProject,
   createScene,
+  instantiateClass,
+  updateObjectAttributes,
 } from '../model'
 import type { ClassDefinition, Project, Scene } from '../model'
 import { BADGES, completedBadges, evaluateMissions, MISSIONS } from './missions'
@@ -95,6 +98,59 @@ describe('MISSIONS', () => {
 
     expect(done).toContain('collision')
     expect(done).toContain('signal')
+  })
+})
+
+describe('comprehension missions', () => {
+  it('requires two instances of a class with different state', () => {
+    const perro: ClassDefinition = {
+      ...createClassDraft('Perro'),
+      attributes: [
+        ...createClassDraft('Perro').attributes,
+        { name: 'energia', type: 'number', initial: 50 },
+      ],
+    }
+    let scene: Scene = { ...createScene('Principal'), classes: [perro] }
+
+    scene = instantiateClass(scene, perro.id)
+    expect(evaluateMissions(projectWith(scene))).not.toContain('two_instances')
+
+    scene = instantiateClass(scene, perro.id)
+    expect(evaluateMissions(projectWith(scene))).not.toContain('two_instances')
+
+    scene = updateObjectAttributes(scene, scene.objects[0]!.id, { energia: 20 })
+    expect(evaluateMissions(projectWith(scene))).toContain('two_instances')
+  })
+
+  it('requires a subclass instance that keeps an inherited method', () => {
+    const animal: ClassDefinition = {
+      ...createClassDraft('Animal'),
+      methods: [{ name: 'comer', parameters: [], body: { kind: 'blocks', ops: [] } }],
+    }
+    const perro: ClassDefinition = { ...createClassDraft('Perro'), inherits: 'Animal' }
+    let scene: Scene = { ...createScene('Principal'), classes: [animal, perro] }
+
+    expect(evaluateMissions(projectWith(scene))).not.toContain('inherited_behavior')
+
+    scene = instantiateClass(scene, perro.id)
+    expect(evaluateMissions(projectWith(scene))).toContain('inherited_behavior')
+  })
+
+  it('requires a composed part with behavior of its own', () => {
+    const motor: ClassDefinition = {
+      ...createClassDraft('Motor'),
+      methods: [{ name: 'arrancar', parameters: [], body: { kind: 'blocks', ops: [] } }],
+    }
+    const auto: ClassDefinition = {
+      ...createClassDraft('Auto'),
+      components: [{ name: 'motor', class: 'Motor' }],
+    }
+    let scene: Scene = { ...createScene('Principal'), classes: [motor, auto] }
+
+    expect(evaluateMissions(projectWith(scene))).not.toContain('composed_part')
+
+    scene = instantiateClass(scene, auto.id)
+    expect(evaluateMissions(projectWith(scene))).toContain('composed_part')
   })
 })
 
