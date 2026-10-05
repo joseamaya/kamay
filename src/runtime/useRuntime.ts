@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { generatePython } from '../generator'
 import { objectAppearance } from '../model'
 import { useEditorStore, useObservationsStore, useProjectStore, useRuntimeStore } from '../store'
 import { createRuntimeBridge } from './bridge'
 import { emitRuntimeCommand, emitRuntimeReset, onRuntimeTrigger } from './bus'
+import { hasRawCode, Simulation } from './simulation'
 import { currentStep, remainingSteps } from './steps'
 import type { RuntimeMessage } from './types'
 import { scheduleWarmup } from './warmup'
@@ -17,6 +18,8 @@ export interface RuntimeApi {
   back: () => void
   resume: () => void
 }
+
+type RunMode = 'python' | 'simulation'
 
 function emitAppearance(target: string): void {
   const project = useProjectStore.getState().project
@@ -39,25 +42,33 @@ function applyRuntimeMessage(message: RuntimeMessage): void {
   emitRuntimeCommand(message)
 }
 
+function handleRuntimeMessage(message: RuntimeMessage): void {
+  const runtime = useRuntimeStore.getState()
+  if (runtime.stepMode) {
+    runtime.enqueueStep(message)
+    return
+  }
+  applyRuntimeMessage(message)
+}
+
 export function useRuntime(): RuntimeApi {
   const [bridge] = useState(createRuntimeBridge)
+  const simulationRef = useRef<Simulation | null>(null)
+  const modeRef = useRef<RunMode | null>(null)
 
   const setStatus = useRuntimeStore((state) => state.setStatus)
   const setWarmup = useRuntimeStore((state) => state.setWarmup)
   const setError = useRuntimeStore((state) => state.setError)
 
   useEffect(() => {
-    const offCommand = bridge.onCommand((message) => {
-      const runtime = useRuntimeStore.getState()
-      if (runtime.stepMode) {
-        runtime.enqueueStep(message)
-        return
-      }
-      applyRuntimeMessage(message)
-    })
+    const offCommand = bridge.onCommand(handleRuntimeMessage)
     const offError = bridge.onError((error) => setError(error))
     const offStatus = bridge.onStatus((status) => setStatus(status))
-    const offTrigger = onRuntimeTrigger((trigger) => bridge.trigger(trigger.kind, trigger.source))
+    const offTrigger = onRuntimeTrigger((trigger) => {
+      const simulation = simulationRef.current
+      if (simulation) simulation.trigger(trigger.kind, trigger.source)
+      else bridge.trigger(trigger.kind, trigger.source)
+    })
     return () => {
       offCommand()
       offError()
@@ -84,18 +95,40 @@ export function useRuntime(): RuntimeApi {
   const run = useCallback(() => {
     const project = useProjectStore.getState().project
     const activeSceneId = useEditorStore.getState().activeSceneId
-    const files = Object.fromEntries(
-      generatePython(project, activeSceneId).files.map((file) => [file.path, file.content]),
-    )
     setError(null)
     setStatus('loading')
     useObservationsStore.getState().reset()
     useRuntimeStore.getState().resetSteps()
     emitRuntimeReset()
-    void bridge.run(files, 'principal.py')
+
+    if (hasRawCode(project, activeSceneId)) {
+      simulationRef.current?.stop()
+      simulationRef.current = null
+      modeRef.current = 'python'
+      const files = Object.fromEntries(
+        generatePython(project, activeSceneId).files.map((file) => [file.path, file.content]),
+      )
+      void bridge.run(files, 'principal.py')
+      return
+    }
+
+    if (modeRef.current === 'python') bridge.stop()
+    modeRef.current = 'simulation'
+    const simulation = new Simulation({
+      project,
+      sceneId: activeSceneId,
+      emit: handleRuntimeMessage,
+      onError: setError,
+      onStatus: setStatus,
+    })
+    simulationRef.current = simulation
+    simulation.start()
   }, [bridge, setError, setStatus])
 
   const stop = useCallback(() => {
+    simulationRef.current?.stop()
+    simulationRef.current = null
+    modeRef.current = null
     bridge.stop()
     emitRuntimeReset()
     useObservationsStore.getState().reset()
