@@ -8,13 +8,13 @@ test('guides a new browser from level 1 to level 2', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Editar valores' })).toHaveCount(0)
   await expect(page.getByText('Se desbloquea en el Nivel 3.')).toBeVisible()
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
 
   await expect(page.getByRole('button', { name: 'Nivel 2' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Editar valores' })).toBeVisible()
   await expect(page.getByText('¡Nivel 2 desbloqueado!')).toBeVisible()
 
-  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
   await expect(page.getByLabel('Cuándo')).toBeVisible()
 })
 

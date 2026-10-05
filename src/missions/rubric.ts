@@ -45,10 +45,10 @@ export function evaluateRubric(project: Project): RubricEntry[] {
   const actions = events.flatMap((event) => event.actions)
 
   const ownClasses = customClasses(project)
-  const inheritanceCount = classes.filter(
+  const inheritanceCount = ownClasses.filter(
     (definition) => definition.inherits != null && definition.inherits !== BASE_CLASS,
   ).length
-  const polymorphismCount = classes.filter((definition) => {
+  const polymorphismCount = ownClasses.filter((definition) => {
     const base = definition.inherits
     if (!base || base === BASE_CLASS) return false
     const baseDefinition = classes.find((candidate) => candidate.name === base)
@@ -58,7 +58,9 @@ export function evaluateRubric(project: Project): RubricEntry[] {
       ) ?? false
     )
   }).length
-  const compositionCount = classes.filter((definition) => definition.components.length > 0).length
+  const compositionCount = ownClasses.filter(
+    (definition) => definition.components.length > 0,
+  ).length
   const eventsCount = events.filter(
     (event) =>
       event.type === 'on_collision' || event.type === 'on_key' || event.type === 'on_signal',

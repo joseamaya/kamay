@@ -44,7 +44,7 @@ export interface CatalogItem {
   shape: ActorShape
   glyph?: string
   color: string
-  /** Real-world group; items without one fall back to shapes/characters. */
+  /** Real-world group the entity belongs to. */
   group?: CatalogGroup
   /** Domain base class the entity inherits from. */
   base?: string
@@ -53,54 +53,6 @@ export interface CatalogItem {
   /** Entity's own methods. */
   methods?: Method[]
 }
-
-const ABSTRACT_CATALOG: CatalogItem[] = [
-  { id: 'circle', className: 'Circle', kind: 'shape', shape: 'circle', color: '#e2603a' },
-  { id: 'square', className: 'Square', kind: 'shape', shape: 'square', color: '#e0a23c' },
-  { id: 'triangle', className: 'Triangle', kind: 'shape', shape: 'triangle', color: '#3f9a86' },
-  { id: 'rectangle', className: 'Rectangle', kind: 'shape', shape: 'rectangle', color: '#5b8def' },
-  { id: 'diamond', className: 'Diamond', kind: 'shape', shape: 'diamond', color: '#9b6dd6' },
-  { id: 'pentagon', className: 'Pentagon', kind: 'shape', shape: 'pentagon', color: '#d66d9b' },
-  { id: 'hexagon', className: 'Hexagon', kind: 'shape', shape: 'hexagon', color: '#3f9a86' },
-  { id: 'heart', className: 'Heart', kind: 'shape', shape: 'heart', color: '#e2603a' },
-  { id: 'star', className: 'Star', kind: 'shape', shape: 'star', color: '#e0a23c' },
-  { id: 'cat', className: 'Cat', kind: 'glyph', shape: 'circle', glyph: '🐱', color: '#e0a23c' },
-  { id: 'dog', className: 'Dog', kind: 'glyph', shape: 'circle', glyph: '🐶', color: '#c98a4b' },
-  {
-    id: 'robot',
-    className: 'Robot',
-    kind: 'glyph',
-    shape: 'circle',
-    glyph: '🤖',
-    color: '#8f9aa8',
-  },
-  {
-    id: 'rocket',
-    className: 'Rocket',
-    kind: 'glyph',
-    shape: 'circle',
-    glyph: '🚀',
-    color: '#5b8def',
-  },
-  {
-    id: 'apple',
-    className: 'Apple',
-    kind: 'glyph',
-    shape: 'circle',
-    glyph: '🍎',
-    color: '#d64b4b',
-  },
-  { id: 'ball', className: 'Ball', kind: 'glyph', shape: 'circle', glyph: '⚽', color: '#3f9a86' },
-  { id: 'tree', className: 'Tree', kind: 'glyph', shape: 'circle', glyph: '🌳', color: '#3f9a86' },
-  {
-    id: 'house',
-    className: 'House',
-    kind: 'glyph',
-    shape: 'circle',
-    glyph: '🏠',
-    color: '#c98a4b',
-  },
-]
 
 export const BASE_CLASS = 'Actor'
 
@@ -176,7 +128,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     color: '#d64b4b',
     group: 'vehiculos',
     base: 'Vehiculo',
-    attributes: [{ name: 'año', type: 'number', initial: 2024 }],
+    attributes: [{ name: 'anio', type: 'number', initial: 2024 }],
     methods: [domainMethod('tocar_bocina', 'self.decir("¡Beep!")')],
   },
   {
@@ -291,7 +243,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
   },
 ]
 
-export const ACTOR_CATALOG: CatalogItem[] = [...ABSTRACT_CATALOG, ...DOMAIN_CATALOG]
+export const ACTOR_CATALOG: CatalogItem[] = DOMAIN_CATALOG
 
 /** Order-independent key for a pair of objects that can collide. */
 export function collisionKey(a: string, b: string): string {

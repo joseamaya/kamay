@@ -4,12 +4,12 @@ import { codeContent } from './helpers'
 test('edits values directly in the generated code', async ({ page }) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
   await page.getByLabel('Mensaje').fill('hola')
   await page.getByRole('button', { name: 'Agregar orden' }).click()
 
-  await expect(codeContent(page)).toContainText('circle1.decir("hola")')
+  await expect(codeContent(page)).toContainText('carro1.decir("hola")')
 
   await page.getByRole('button', { name: 'Editar valores' }).click()
 

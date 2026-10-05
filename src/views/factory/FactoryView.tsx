@@ -76,14 +76,6 @@ export function FactoryView() {
       title: messages.factory.catalogThings,
       items: ACTOR_CATALOG.filter((item) => item.group === 'cosas'),
     },
-    {
-      title: messages.factory.catalogShapes,
-      items: ACTOR_CATALOG.filter((item) => item.kind === 'shape'),
-    },
-    {
-      title: messages.factory.catalogCharacters,
-      items: ACTOR_CATALOG.filter((item) => item.kind === 'glyph' && !item.group),
-    },
   ].filter((group) => group.items.length > 0)
 
   if (!scene) return null

@@ -4,7 +4,7 @@ import { openMore } from './helpers'
 
 test('shows the concept rubric from the toolbar menu', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
 
   await openMore(page)
   await page.getByRole('menuitem', { name: 'Rúbrica' }).click()

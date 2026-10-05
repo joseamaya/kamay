@@ -30,7 +30,7 @@ test('lists saved projects in the portfolio with export and delete', async ({ pa
 
 test('delivers the project as a bundle', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
 
   await openMore(page)
   const [download] = await Promise.all([

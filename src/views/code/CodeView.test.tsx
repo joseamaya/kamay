@@ -19,24 +19,24 @@ beforeEach(() => {
 describe('CodeView', () => {
   it('shows the active file name and its code', async () => {
     const sceneId = useProjectStore.getState().project.scenes[0]!.id
-    useProjectStore.getState().addObject(sceneId, 'circle')
+    useProjectStore.getState().addObject(sceneId, 'carro')
 
     const { container } = render(<CodeView />)
 
     expect(screen.getByText('principal.py')).toBeInTheDocument()
-    await waitFor(() => expect(editorText(container)).toContain('circle1 = Circle("circle1")'))
+    await waitFor(() => expect(editorText(container)).toContain('carro1 = Carro("carro1")'))
 
     act(() => {
-      useEditorStore.setState({ codeFile: 'Circle.py' })
+      useEditorStore.setState({ codeFile: 'Carro.py' })
     })
 
-    expect(screen.getByText('Circle.py')).toBeInTheDocument()
-    await waitFor(() => expect(editorText(container)).toContain('class Circle(Actor):'))
+    expect(screen.getByText('Carro.py')).toBeInTheDocument()
+    await waitFor(() => expect(editorText(container)).toContain('class Carro(Vehiculo):'))
   })
 
   it('opens the offending file when a runtime error points at generated code', async () => {
     const sceneId = useProjectStore.getState().project.scenes[0]!.id
-    useProjectStore.getState().addObject(sceneId, 'circle')
+    useProjectStore.getState().addObject(sceneId, 'carro')
 
     render(<CodeView />)
     expect(screen.getByText('principal.py')).toBeInTheDocument()
@@ -44,11 +44,11 @@ describe('CodeView', () => {
     act(() => {
       useRuntimeStore.setState({
         status: 'error',
-        error: { kind: 'NameError', message: 'NameError: ...', file: 'Circle.py', line: 3 },
+        error: { kind: 'NameError', message: 'NameError: ...', file: 'Carro.py', line: 3 },
       })
     })
 
-    await waitFor(() => expect(screen.getByText('Circle.py')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('Carro.py')).toBeInTheDocument())
   })
 
   it('copies the active file', async () => {

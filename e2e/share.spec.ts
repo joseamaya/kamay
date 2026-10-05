@@ -4,8 +4,8 @@ import { openMore } from './helpers'
 
 test('shares a project through a link that opens a copy', async ({ page, context }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await expect(page.getByRole('button', { name: 'circle1', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await expect(page.getByRole('button', { name: 'carro1', exact: true })).toBeVisible()
 
   await openMore(page)
   await page.getByRole('menuitem', { name: 'Compartir' }).click()
@@ -15,6 +15,6 @@ test('shares a project through a link that opens a copy', async ({ page, context
   const shared = await context.newPage()
   await shared.goto(link)
 
-  await expect(shared.getByRole('button', { name: 'circle1', exact: true })).toBeVisible()
+  await expect(shared.getByRole('button', { name: 'carro1', exact: true })).toBeVisible()
   await expect(shared.getByText('Proyecto compartido abierto.')).toBeVisible()
 })

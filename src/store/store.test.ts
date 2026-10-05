@@ -55,11 +55,11 @@ describe('useProjectStore', () => {
 
   it('adds an object from the catalog and records history', () => {
     const sceneId = useProjectStore.getState().project.scenes[0]!.id
-    useProjectStore.getState().addObject(sceneId, 'circle')
+    useProjectStore.getState().addObject(sceneId, 'carro')
 
     const scene = useProjectStore.getState().project.scenes[0]!
     expect(scene.objects).toHaveLength(1)
-    expect(scene.classes[0]?.name).toBe('Circle')
+    expect(scene.classes.map((definition) => definition.name)).toEqual(['Vehiculo', 'Carro'])
     expect(useProjectStore.getState().past).toHaveLength(1)
 
     useProjectStore.getState().undo()
@@ -74,7 +74,7 @@ describe('useProjectStore', () => {
 
   it('updates and removes an object', () => {
     const sceneId = useProjectStore.getState().project.scenes[0]!.id
-    useProjectStore.getState().addObject(sceneId, 'circle')
+    useProjectStore.getState().addObject(sceneId, 'carro')
     const objectId = useProjectStore.getState().project.scenes[0]!.objects[0]!.id
 
     useProjectStore
@@ -96,14 +96,14 @@ describe('useProjectStore', () => {
 
   it('duplicates an object with a new name', () => {
     const sceneId = useProjectStore.getState().project.scenes[0]!.id
-    useProjectStore.getState().addObject(sceneId, 'circle')
+    useProjectStore.getState().addObject(sceneId, 'carro')
     const objectId = useProjectStore.getState().project.scenes[0]!.objects[0]!.id
 
     useProjectStore.getState().duplicateObject(sceneId, objectId)
 
     const objects = useProjectStore.getState().project.scenes[0]!.objects
     expect(objects).toHaveLength(2)
-    expect(objects[1]?.name).toBe('circle2')
+    expect(objects[1]?.name).toBe('carro2')
   })
 
   it('saves a class and instantiates it', () => {
@@ -130,7 +130,7 @@ describe('useProjectStore', () => {
   it('adds and removes scene actions', () => {
     const sceneId = useProjectStore.getState().project.scenes[0]!.id
     useProjectStore.getState().addAction(sceneId, 'on_start', null, null, {
-      target: 'circle1',
+      target: 'carro1',
       method: 'decir',
       args: { mensaje: 'hola' },
     })

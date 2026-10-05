@@ -70,7 +70,7 @@ describe('OrderComposer', () => {
 
   it('adds a click action whose source is the object', async () => {
     const user = userEvent.setup()
-    useProjectStore.getState().addObject(currentScene().id, 'circle')
+    useProjectStore.getState().addObject(currentScene().id, 'carro')
     useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
 
     render(<Harness />)
@@ -79,14 +79,14 @@ describe('OrderComposer', () => {
     await user.click(screen.getByRole('button', { name: 'Agregar orden' }))
 
     const clickEvent = currentScene().events.find((event) => event.type === 'on_click')
-    expect(clickEvent?.source).toBe('circle1')
+    expect(clickEvent?.source).toBe('carro1')
     expect(clickEvent?.actions[0]).toMatchObject({ method: 'decir', args: { mensaje: 'hola' } })
   })
 
   it('adds a collision action with the other object', async () => {
     const user = userEvent.setup()
-    useProjectStore.getState().addObject(currentScene().id, 'circle')
-    useProjectStore.getState().addObject(currentScene().id, 'circle')
+    useProjectStore.getState().addObject(currentScene().id, 'carro')
+    useProjectStore.getState().addObject(currentScene().id, 'carro')
     useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
 
     render(<Harness />)
@@ -95,13 +95,13 @@ describe('OrderComposer', () => {
     await user.click(screen.getByRole('button', { name: 'Agregar orden' }))
 
     const event = currentScene().events.find((candidate) => candidate.type === 'on_collision')
-    expect(event?.source).toBe('circle1')
-    expect(event?.other).toBe('circle2')
+    expect(event?.source).toBe('carro1')
+    expect(event?.other).toBe('carro2')
   })
 
   it('hints where advanced triggers unlock', () => {
     useProgressStore.setState({ freeMode: false, unlockedLevel: 2 })
-    useProjectStore.getState().addObject(currentScene().id, 'circle')
+    useProjectStore.getState().addObject(currentScene().id, 'carro')
     useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
 
     render(<Harness />)
@@ -114,7 +114,7 @@ describe('OrderComposer', () => {
 
   it('adds an action for the object', async () => {
     const user = userEvent.setup()
-    useProjectStore.getState().addObject(currentScene().id, 'circle')
+    useProjectStore.getState().addObject(currentScene().id, 'carro')
     useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
 
     render(<Harness />)
@@ -122,7 +122,7 @@ describe('OrderComposer', () => {
     await user.click(screen.getByRole('button', { name: 'Agregar orden' }))
 
     expect(currentScene().events[0]?.actions[0]).toMatchObject({
-      target: 'circle1',
+      target: 'carro1',
       method: 'decir',
       args: { mensaje: 'hola' },
     })

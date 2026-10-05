@@ -42,7 +42,7 @@ describe('GuideBanner', () => {
   })
 
   it('tailors the selected hint to the available capabilities', () => {
-    const circle = ACTOR_CATALOG.find((item) => item.id === 'circle')!
+    const circle = ACTOR_CATALOG.find((item) => item.id === 'carro')!
     const scene = addCatalogObject(createScene('Principal'), circle)
     useProjectStore.setState({
       project: { ...createEmptyProject({ name: 'Demo' }), scenes: [scene] },

@@ -3,13 +3,13 @@ import { expect, test } from './fixtures'
 test('opens a contextual menu anchored to the selected object', async ({ page }) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
 
   const overlay = page.locator('[data-selection-overlay]')
   await expect(overlay).toBeVisible()
-  await expect(overlay).toContainText('circle1')
-  await expect(overlay).toContainText('Instancia de Circle')
+  await expect(overlay).toContainText('carro1')
+  await expect(overlay).toContainText('Instancia de Carro')
   await expect(overlay.getByText('Aspecto')).toBeVisible()
   await expect(overlay.getByLabel('Cuándo')).toBeVisible()
 
@@ -28,14 +28,14 @@ test('opens a contextual menu anchored to the selected object', async ({ page })
 test('duplicates and deletes the selected object from the menu', async ({ page }) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
 
   const overlay = page.locator('[data-selection-overlay]')
   await overlay.getByRole('button', { name: 'Duplicar' }).click()
-  await expect(page.getByRole('button', { name: 'circle2', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'carro2', exact: true })).toBeVisible()
 
   await overlay.getByRole('button', { name: 'Eliminar' }).click()
   await page.getByRole('dialog').getByRole('button', { name: 'Eliminar' }).click()
-  await expect(page.getByRole('button', { name: 'circle1', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'carro1', exact: true })).toHaveCount(0)
 })

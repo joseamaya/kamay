@@ -73,7 +73,7 @@ describe('ObjectAttributes', () => {
 
   it('edits the object position', async () => {
     const user = userEvent.setup()
-    useProjectStore.getState().addObject(currentScene().id, 'circle')
+    useProjectStore.getState().addObject(currentScene().id, 'carro')
     useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
 
     render(<Harness />)
