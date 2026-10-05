@@ -1,5 +1,10 @@
 import { getMessages } from '../../i18n'
-import { ACTOR_SHAPES, availableBlockAttributes, newVisualVariant } from '../../model'
+import {
+  ACTOR_SHAPES,
+  availableBlockAttributes,
+  isEngineAttribute,
+  newVisualVariant,
+} from '../../model'
 import type { Attribute, AttributeValue, ClassDefinition, Scene, VisualVariant } from '../../model'
 import { Button } from '../../ui/Button'
 import { ColorInput } from '../../ui/ColorInput'
@@ -25,7 +30,9 @@ export function VisualVariantsEditor({
   onChange,
 }: VisualVariantsEditorProps) {
   const messages = getMessages()
-  const attributes = availableBlockAttributes(scene, definition)
+  const attributes = availableBlockAttributes(scene, definition).filter(
+    (attribute) => !isEngineAttribute(attribute.name),
+  )
   const shapeOptions = [
     { value: '', label: messages.classEditor.variantNoShape },
     ...ACTOR_SHAPES.map((shape) => ({ value: shape, label: messages.shapes[shape] })),

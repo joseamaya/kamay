@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { generatePython } from '../generator'
-import { objectAppearance } from '../model'
+import { objectAppearance, resolveObjectAttributes } from '../model'
 import { useEditorStore, useObservationsStore, useProjectStore, useRuntimeStore } from '../store'
 import { createRuntimeBridge } from './bridge'
 import { emitRuntimeCommand, emitRuntimeReset, onRuntimeTrigger } from './bus'
+import { stateEffect } from './effects'
 import { hasRawCode, Simulation } from './simulation'
 import { currentStep, remainingSteps } from './steps'
 import type { RuntimeMessage } from './types'
@@ -21,22 +22,32 @@ export interface RuntimeApi {
 
 type RunMode = 'python' | 'simulation'
 
-function emitAppearance(target: string): void {
+function resolveRuntimeObject(target: string) {
   const project = useProjectStore.getState().project
   const scene = project.scenes.find((candidate) =>
     candidate.objects.some((object) => object.name === target),
   )
   const object = scene?.objects.find((candidate) => candidate.name === target)
-  if (!scene || !object) return
+  if (!scene || !object) return null
   const runtimeValues = useObservationsStore.getState().values[target] ?? {}
+  return { scene, object, runtimeValues }
+}
+
+/** A state change updates the object's look and any state-driven engine effect. */
+function emitStateEffects(target: string, name: string): void {
+  const resolved = resolveRuntimeObject(target)
+  if (!resolved) return
+  const { scene, object, runtimeValues } = resolved
   const appearance = objectAppearance(scene, object, runtimeValues)
   emitRuntimeCommand({ type: 'appearance', target, ...appearance })
+  const effect = stateEffect(target, name, resolveObjectAttributes(scene, object, runtimeValues))
+  if (effect) emitRuntimeCommand(effect)
 }
 
 function applyRuntimeMessage(message: RuntimeMessage): void {
   if (message.type === 'state') {
     useObservationsStore.getState().record(message)
-    emitAppearance(message.target)
+    emitStateEffects(message.target, message.name)
     return
   }
   emitRuntimeCommand(message)

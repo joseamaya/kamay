@@ -67,17 +67,27 @@ export function matchVisualVariant(
  * The appearance an object should show right now: its base look (class defaults
  * plus object/runtime attributes) with the first matching variant applied.
  */
+/** Class defaults merged with the object's own and observed runtime values. */
+export function resolveObjectAttributes(
+  scene: Scene,
+  object: ObjectInstance,
+  runtimeValues: Record<string, AttributeValue> = {},
+): Record<string, AttributeValue> {
+  const resolved = withDomainBases(scene)
+  return {
+    ...resolveAttributeDefaults(resolved, object.class),
+    ...object.attributes,
+    ...runtimeValues,
+  }
+}
+
 export function objectAppearance(
   scene: Scene,
   object: ObjectInstance,
   runtimeValues: Record<string, AttributeValue> = {},
 ): ResolvedAppearance {
   const resolved = withDomainBases(scene)
-  const attributes: Record<string, AttributeValue> = {
-    ...resolveAttributeDefaults(resolved, object.class),
-    ...object.attributes,
-    ...runtimeValues,
-  }
+  const attributes = resolveObjectAttributes(scene, object, runtimeValues)
   const definition = resolved.classes.find((candidate) => candidate.name === object.class)
 
   const base: ResolvedAppearance = {

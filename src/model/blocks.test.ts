@@ -67,6 +67,11 @@ describe('availableBlockAttributes', () => {
     expect(availableBlockAttributes(scene, heroe).map((attribute) => attribute.name)).toEqual([
       'energia',
       'vida',
+      'x',
+      'y',
+      'rotation',
+      'scale',
+      'mensaje',
     ])
   })
 })
