@@ -4,7 +4,7 @@ test('scrolls long generated code inside the code dock', async ({ page }) => {
   await page.goto('/')
 
   for (let index = 0; index < 12; index += 1) {
-    await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+    await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   }
 
   const scroller = page.locator('.cm-scroller')

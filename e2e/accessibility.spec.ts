@@ -45,13 +45,13 @@ test('toggles projector mode with larger, high-contrast text', async ({ page }) 
 test('moves the selected object with the keyboard', async ({ page }) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
 
   await page.getByRole('application', { name: /Escenario/ }).focus()
   await page.keyboard.press('ArrowRight')
 
-  await expect(codeContent(page)).toContainText('circle1.x = 4')
+  await expect(codeContent(page)).toContainText('carro1.x = 4')
 })
 
 test('exposes a live status region for activity and errors', async ({ page }) => {

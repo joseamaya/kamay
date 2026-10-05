@@ -8,8 +8,8 @@ test('runs the generated program with pyodide', async ({ page }) => {
 
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
   await page.getByLabel('Mensaje').fill('hola')
   await page.getByRole('button', { name: 'Agregar orden' }).click()
 
@@ -23,8 +23,8 @@ test('runs a click handler with pyodide', async ({ page }) => {
 
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
   await page.getByLabel('Cuándo').selectOption('on_click')
   await page.getByLabel('Mensaje').fill('hola')
   await page.getByRole('button', { name: 'Agregar orden' }).click()
@@ -43,9 +43,9 @@ test('runs a collision handler with pyodide', async ({ page }) => {
 
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
   await page.getByLabel('Cuándo').selectOption('on_collision')
   await page.getByLabel('Mensaje').fill('boom')
   await page.getByRole('button', { name: 'Agregar orden' }).click()
@@ -53,7 +53,7 @@ test('runs a collision handler with pyodide', async ({ page }) => {
   await page.getByRole('button', { name: 'Ejecutar' }).click()
   await expect(page.getByText('Listo.')).toBeVisible({ timeout: 150_000 })
 
-  // Both circles start overlapping, so the collision fires once the run is ready.
+  // Both objects start overlapping, so the collision fires once the run is ready.
   await page.waitForTimeout(500)
   await expect(page.getByText('Listo.')).toBeVisible()
 })
@@ -175,8 +175,8 @@ test('runs a sequence with a wait with pyodide', async ({ page }) => {
 
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
   await page.getByLabel('Orden').selectOption('esperar')
   await page.getByLabel('Segundos').fill('0.1')
   await page.getByRole('button', { name: 'Agregar orden' }).click()
@@ -191,8 +191,8 @@ test('runs a keyboard handler with pyodide', async ({ page }) => {
 
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
   await page.getByLabel('Cuándo').selectOption('on_key')
   await page.getByLabel(/^Tecla/).selectOption('ArrowUp')
   await page.getByLabel('Mensaje').fill('arriba')
@@ -211,14 +211,14 @@ test('runs a signal handler with pyodide', async ({ page }) => {
 
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
   await page.getByLabel('Orden').selectOption('emitir')
   await page.getByLabel('Nombre').fill('boom')
   await page.getByRole('button', { name: 'Agregar orden' }).click()
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await page.getByRole('button', { name: 'circle2', exact: true }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro2', exact: true }).click()
   await page.getByLabel('Cuándo').selectOption('on_signal')
   await page.getByLabel(/^Señal/).fill('boom')
   await page.getByLabel('Orden').selectOption('decir')
@@ -266,8 +266,8 @@ test('runs step by step with pyodide', async ({ page }) => {
 
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
   await page.getByLabel('Mensaje').fill('hola')
   await page.getByRole('button', { name: 'Agregar orden' }).click()
 
@@ -303,7 +303,7 @@ test('runs with physics enabled with pyodide', async ({ page }) => {
   await page.goto('/')
 
   await page.getByRole('button', { name: 'Física' }).click()
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
 
   await page.getByRole('button', { name: 'Ejecutar' }).click()
   await expect(page.getByText('Listo.')).toBeVisible({ timeout: 150_000 })

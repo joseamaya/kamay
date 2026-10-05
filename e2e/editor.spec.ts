@@ -13,18 +13,19 @@ test('renders the code dock with a syntax-highlighted editor', async ({ page }) 
 test('adds an object and reflects it in the code view', async ({ page }) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
 
-  await expect(page.getByRole('button', { name: 'circle1', exact: true })).toBeVisible()
-  await expect(codeContent(page)).toContainText('circle1 = Circle("circle1")')
-  await expect(codeContent(page)).toContainText('from Circle import Circle')
+  await expect(page.getByRole('button', { name: 'carro1', exact: true })).toBeVisible()
+  await expect(codeContent(page)).toContainText('carro1 = Carro("carro1")')
+  await expect(codeContent(page)).toContainText('from Carro import Carro')
 })
 
-test('groups the catalog into shapes and characters', async ({ page }) => {
+test('groups the catalog into real-world groups', async ({ page }) => {
   await page.goto('/')
 
-  await expect(page.getByRole('heading', { name: 'Formas' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Personajes y cosas' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Vehículos' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Animales' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Cosas' })).toBeVisible()
 })
 
 test('adds a real-world entity that inherits its domain base', async ({ page }) => {
@@ -42,11 +43,11 @@ test('adds a real-world entity that inherits its domain base', async ({ page }) 
 test('adds a glyph object and reflects it in the code view', async ({ page }) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Manzana al escenario' }).click()
+  await page.getByRole('button', { name: 'Agregar Perro al escenario' }).click()
 
-  await expect(page.getByRole('button', { name: 'apple1', exact: true })).toBeVisible()
-  await expect(codeContent(page)).toContainText('apple1 = Apple("apple1")')
-  await expect(codeContent(page)).toContainText('apple1.glyph = "🍎"')
+  await expect(page.getByRole('button', { name: 'perro1', exact: true })).toBeVisible()
+  await expect(codeContent(page)).toContainText('perro1 = Perro("perro1")')
+  await expect(codeContent(page)).toContainText('perro1.glyph = "🐶"')
 })
 
 test('creates a class with a method and instantiates it', async ({ page }) => {
@@ -94,50 +95,50 @@ test('keeps per-instance state for objects of the same class', async ({ page }) 
 test('shows every generated file and switches tabs', async ({ page }) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
 
-  await page.getByRole('button', { name: 'Circle.py' }).click()
-  await expect(codeContent(page)).toContainText('class Circle(Actor):')
+  await page.getByRole('button', { name: 'Carro.py' }).click()
+  await expect(codeContent(page)).toContainText('class Carro(Vehiculo):')
 
   await page.getByRole('button', { name: 'principal.py' }).click()
-  await expect(codeContent(page)).toContainText('circle1 = Circle("circle1")')
+  await expect(codeContent(page)).toContainText('carro1 = Carro("carro1")')
 })
 
 test('adds an action and reflects it in the code view', async ({ page }) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
   await page.getByLabel('Mensaje').fill('hola')
   await page.getByRole('button', { name: 'Agregar orden' }).click()
 
-  await expect(codeContent(page)).toContainText('circle1.decir("hola")')
+  await expect(codeContent(page)).toContainText('carro1.decir("hola")')
 })
 
 test('warns before discarding unsaved changes', async ({ page }) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   await openMore(page)
   await page.getByRole('menuitem', { name: 'Nuevo' }).click()
 
   await expect(page.getByRole('dialog', { name: 'Cambios sin guardar' })).toBeVisible()
   await page.getByRole('button', { name: 'Continuar' }).click()
 
-  await expect(page.getByRole('button', { name: 'circle1', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'carro1', exact: true })).toHaveCount(0)
 })
 
 test('saves and reopens a project from local storage', async ({ page }) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Cuadrado al escenario' }).click()
-  await expect(page.getByRole('button', { name: 'square1', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Agregar Bicicleta al escenario' }).click()
+  await expect(page.getByRole('button', { name: 'bicicleta1', exact: true })).toBeVisible()
 
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Proyecto guardado.')).toBeVisible()
   await openMore(page)
   await page.getByRole('menuitem', { name: 'Nuevo' }).click()
-  await expect(page.getByRole('button', { name: 'square1', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'bicicleta1', exact: true })).toHaveCount(0)
 
   await openMore(page)
   await page.getByRole('menuitem', { name: 'Portafolio' }).click()
@@ -145,7 +146,7 @@ test('saves and reopens a project from local storage', async ({ page }) => {
     .getByRole('dialog', { name: 'Portafolio' })
     .getByRole('button', { name: /^Proyecto sin título/ })
     .click()
-  await expect(page.getByRole('button', { name: 'square1', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'bicicleta1', exact: true })).toBeVisible()
 })
 
 test('creates a class that inherits from another class', async ({ page }) => {
@@ -183,19 +184,19 @@ test('creates a class that inherits from another class', async ({ page }) => {
 test('creates and switches between scenes', async ({ page }) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await expect(page.getByRole('button', { name: 'circle1', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await expect(page.getByRole('button', { name: 'carro1', exact: true })).toBeVisible()
 
   await page.getByRole('button', { name: 'Nueva escena' }).click()
   await expect(page.getByRole('button', { name: 'Escena 2', exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'circle1', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'carro1', exact: true })).toHaveCount(0)
 
-  await page.getByRole('button', { name: 'Agregar Cuadrado al escenario' }).click()
-  await expect(page.getByRole('button', { name: 'square1', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Agregar Bicicleta al escenario' }).click()
+  await expect(page.getByRole('button', { name: 'bicicleta1', exact: true })).toBeVisible()
 
   await page.getByRole('button', { name: 'Principal', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'circle1', exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'square1', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'carro1', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'bicicleta1', exact: true })).toHaveCount(0)
 })
 
 test('renames and deletes a scene', async ({ page }) => {
@@ -250,8 +251,8 @@ test('converts code into blocks and keeps advanced code', async ({ page }) => {
 test('adds a keyboard action', async ({ page }) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
-  await page.getByRole('button', { name: 'circle1', exact: true }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
   await page.getByLabel('Cuándo').selectOption('on_key')
   await page.getByLabel(/^Tecla/).selectOption('ArrowUp')
   await page.getByLabel('Mensaje').fill('arriba')

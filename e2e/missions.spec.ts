@@ -8,7 +8,7 @@ test('completes a mission and shows it in the missions dialog', async ({ page })
   await expect(dialog.getByText('0 / 16')).toBeVisible()
   await dialog.getByRole('button', { name: 'Cancelar' }).click()
 
-  await page.getByRole('button', { name: 'Agregar Círculo al escenario' }).click()
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
 
   await expect(page.getByText('¡Misión completada: Pon algo en el escenario!')).toBeVisible()
   await expect(page.getByText('¡Misión completada!', { exact: true })).toBeVisible()
