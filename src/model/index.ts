@@ -12,6 +12,7 @@ export * from './blocksParser'
 export * from './attributes'
 export * from './methods'
 export * from './visuals'
+export * from './integrity'
 export { createId } from './ids'
 
 export function createScene(name: string): Scene {
