@@ -269,25 +269,25 @@ export const es = {
         hints: [
           'Selecciona un objeto del escenario.',
           'En «Órdenes» elige qué quieres que haga.',
-          'Por ejemplo: orden «Decir» con el mensaje «hola».',
+          'Por ejemplo: orden «Tocar bocina» en un Carro.',
         ],
       },
       say_hello: {
         title: 'Haz que salude',
-        description: 'Usa la orden «Decir» con un mensaje.',
+        description: 'Usa una orden que muestre un mensaje.',
         hints: [
           'Quieres que tu objeto diga algo.',
-          'Usa la orden «Decir» y escribe un mensaje.',
-          'Mensaje: «¡Hola!».',
+          'Usa una orden que cambie el mensaje, como «Saludar» en un Robot.',
+          'El bocadillo mostrará «¡Hola!».',
         ],
       },
       move_it: {
         title: 'Muévelo',
-        description: 'Usa la orden «Mover».',
+        description: 'Usa una orden que cambie la posición.',
         hints: [
           'Puedes cambiar dónde está un objeto.',
-          'Usa la orden «Mover» con una X y una Y.',
-          'Por ejemplo: X = 100, Y = 0.',
+          'Usa una orden que cambie la posición, como «Moverse» en un Carro.',
+          'Cada vez que la usas, el objeto avanza.',
         ],
       },
       own_class: {
@@ -326,31 +326,13 @@ export const es = {
           'Por ejemplo: «Perro» hereda de «Animal».',
         ],
       },
-      wait_sequence: {
-        title: 'Haz una pausa',
-        description: 'Usa la orden «Esperar».',
-        hints: [
-          'Puedes hacer una pausa entre órdenes.',
-          'Usa la orden «Esperar» con unos segundos.',
-          'Por ejemplo: Esperar 1 segundo.',
-        ],
-      },
       collision: {
         title: 'Provoca un choque',
         description: 'Crea una acción «Al chocar con».',
         hints: [
           'Haz que algo ocurra cuando dos objetos chocan.',
           'Selecciona un objeto y usa «Al chocar con».',
-          'Elige el otro objeto y una orden, por ejemplo «Decir».',
-        ],
-      },
-      signal: {
-        title: 'Envía una señal',
-        description: 'Usa una señal (emitir o al recibir señal).',
-        hints: [
-          'Un objeto puede avisar a otros.',
-          'Usa «Emitir» con un nombre de señal, o «Al recibir señal».',
-          'Por ejemplo: emitir «boom» y que otro diga «¡Ay!» al recibirlo.',
+          'Elige el otro objeto y una orden, por ejemplo «Tocar bocina».',
         ],
       },
       compose: {
@@ -405,7 +387,6 @@ export const es = {
       classes: { title: 'Mi clase', description: 'Creas tus propias clases.' },
       inheritance: { title: 'Herencia', description: 'Reutilizas una clase como base.' },
       events: { title: 'Eventos', description: 'Reaccionas a choques y teclas.' },
-      sequences: { title: 'Secuencias', description: 'Encadenas acciones con pausas.' },
       composition: { title: 'Composición', description: 'Una clase contiene a otra.' },
     },
   },
@@ -428,7 +409,7 @@ export const es = {
       },
       4: {
         title: 'Muchos objetos e identidad',
-        description: 'Eventos de colisión, tecla y señal.',
+        description: 'Eventos de colisión y tecla.',
       },
       5: { title: 'Familia de clases', description: 'Hereda y reutiliza.' },
       6: {
@@ -460,7 +441,6 @@ export const es = {
     trigger: 'Cuándo',
     other: 'Con',
     key: 'Tecla',
-    signal: 'Señal',
     noOtherObjects: 'Agrega otro objeto para poder chocar.',
     method: 'Orden',
     add: 'Agregar orden',
@@ -513,7 +493,6 @@ export const es = {
       },
       composition: { title: 'Composición', description: 'Una clase contiene a otra como parte.' },
       events: { title: 'Eventos', description: 'Reacciona a clics, teclas o choques.' },
-      sequences: { title: 'Secuencias', description: 'Encadena acciones con pausas.' },
     },
   },
   pedagogy: {
@@ -605,7 +584,6 @@ export const es = {
     onClick: 'Al hacer clic',
     onCollision: 'Al chocar con',
     onKey: 'Al pulsar tecla',
-    onSignal: 'Al recibir señal',
   },
   keys: {
     up: 'Arriba',
@@ -616,12 +594,6 @@ export const es = {
     enter: 'Enter',
   },
   methods: {
-    decir: 'Decir',
-    mover: 'Mover',
-    girar: 'Girar',
-    cambiar_escala: 'Cambiar escala',
-    esperar: 'Esperar',
-    emitir: 'Emitir',
     prender: 'Prender',
     apagar: 'Apagar',
     moverse: 'Moverse',
@@ -641,9 +613,6 @@ export const es = {
     mensaje: 'Mensaje',
     x: 'X',
     y: 'Y',
-    grados: 'Grados',
-    factor: 'Factor',
-    segundos: 'Segundos',
     nombre: 'Nombre',
   },
   code: {

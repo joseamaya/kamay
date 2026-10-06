@@ -70,9 +70,9 @@ The project has completed **Phase 4 — classroom and gamification**. Working to
 - **Portfolio**: rename the project, browse saved projects with their dates,
   export or delete each one, and **deliver** a bundle with the project, the
   generated Python, the completed missions and the concept rubric.
-- **Rubric**: a per-concept rubric (objects, orders, classes, inheritance,
-  events, sequences) evaluated from the built project and available from the
-  toolbar menu.
+- **Rubric**: a per-concept rubric (objects, orders, classes, state,
+  inheritance, polymorphism, composition, events) evaluated from the built
+  project and available from the toolbar menu.
 - **Undo/redo** and error messages in Spanish.
 
 Pending (Phase 5): optional 3D, real-time collaboration, more asset catalogs and

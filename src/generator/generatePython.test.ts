@@ -119,8 +119,7 @@ describe('generatePython', () => {
 
     const vehiculo = files.find((file) => file.path === 'Vehiculo.py')?.content ?? ''
     expect(vehiculo).toContain('self.encendido = True')
-    expect(vehiculo).toContain('self.x = 50')
-    expect(vehiculo).toContain('self.y = 0')
+    expect(vehiculo).toContain('self.x = self.x + 50')
     expect(files.find((file) => file.path === 'Carro.py')?.content).toContain(
       'self.mensaje = "¡Beep!"',
     )

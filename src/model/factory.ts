@@ -83,7 +83,7 @@ const VEHICULO: ClassDefinition = {
   methods: [
     domainBlockMethod('prender', [setOp('encendido', true)]),
     domainBlockMethod('apagar', [setOp('encendido', false)]),
-    domainBlockMethod('moverse', [setOp('x', 50), setOp('y', 0)]),
+    domainBlockMethod('moverse', [changeOp('x', 50)]),
   ],
   visuals: [
     {
@@ -162,7 +162,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     group: 'vehiculos',
     base: 'Vehiculo',
     attributes: [{ name: 'rodado', type: 'number', initial: 26 }],
-    methods: [domainBlockMethod('pedalear', [setOp('x', 30), setOp('y', 0)])],
+    methods: [domainBlockMethod('pedalear', [changeOp('x', 30)])],
   },
   {
     id: 'moto',
@@ -174,7 +174,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     group: 'vehiculos',
     base: 'Vehiculo',
     attributes: [{ name: 'cilindrada', type: 'number', initial: 150 }],
-    methods: [domainBlockMethod('acelerar', [setOp('x', 80), setOp('y', 0)])],
+    methods: [domainBlockMethod('acelerar', [changeOp('x', 80)])],
   },
   {
     id: 'perro',
@@ -207,7 +207,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     color: '#5b8def',
     group: 'animales',
     base: 'Animal',
-    methods: [domainBlockMethod('volar', [setOp('x', 0), setOp('y', 80)])],
+    methods: [domainBlockMethod('volar', [changeOp('y', 80)])],
   },
   {
     id: 'casa',
@@ -249,7 +249,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     color: '#5b8def',
     group: 'cosas',
     base: 'Cosa',
-    methods: [domainBlockMethod('despegar', [setOp('x', 0), setOp('y', 120)])],
+    methods: [domainBlockMethod('despegar', [changeOp('y', 120)])],
   },
   {
     id: 'pelota',
@@ -260,7 +260,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     color: '#3f9a86',
     group: 'cosas',
     base: 'Cosa',
-    methods: [domainBlockMethod('rodar', [setOp('x', 60), setOp('y', 0)])],
+    methods: [domainBlockMethod('rodar', [changeOp('x', 60)])],
   },
 ]
 
