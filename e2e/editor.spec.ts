@@ -186,7 +186,7 @@ test('creates a class that inherits from another class', async ({ page }) => {
   await page.getByRole('button', { name: 'Nueva clase' }).click()
   dialog = page.getByRole('dialog')
   await page.getByLabel('Nombre de la clase').fill('Heroe')
-  await page.getByLabel('Hereda de').selectOption('Personaje')
+  await dialog.getByLabel('Hereda de').selectOption('Personaje')
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
   await page.getByRole('button', { name: 'Heroe.py' }).click()

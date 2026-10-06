@@ -51,6 +51,22 @@ describe('ClassEditorDialog', () => {
     expect(screen.getByRole('option', { name: 'Vehiculo' })).toBeInTheDocument()
   })
 
+  it('preselects a base when created from the palette', () => {
+    useProgressStore.setState({ freeMode: true })
+    render(
+      <ClassEditorDialog
+        scene={createScene('Principal')}
+        initial={null}
+        presetInherits="Vehiculo"
+        onSave={() => {}}
+        onClose={() => {}}
+      />,
+    )
+
+    expect(screen.getByText('Nueva clase')).toBeInTheDocument()
+    expect((screen.getByLabelText('Hereda de') as HTMLSelectElement).value).toBe('Vehiculo')
+  })
+
   it('adds a visual variant for a custom attribute', async () => {
     const user = userEvent.setup()
     const draft = createClassDraft('Vehiculo')

@@ -4,7 +4,10 @@ import { format, getMessages } from '../../i18n'
 import {
   ACTOR_CATALOG,
   classInheritanceUsageCount,
+  classTree,
   classUsageCount,
+  DOMAIN_BASE_NAMES,
+  DOMAIN_BASES,
   isSystemClassName,
 } from '../../model'
 import type { ActorShape, CatalogItem, ClassDefinition } from '../../model'
@@ -67,6 +70,7 @@ export function FactoryView() {
   const [pendingDeleteClass, setPendingDeleteClass] = useState<ClassDefinition | null>(null)
   const [blockedClass, setBlockedClass] = useState<{ name: string; reasons: string[] } | null>(null)
   const [editorClass, setEditorClass] = useState<ClassDefinition | null | undefined>(undefined)
+  const [presetInherits, setPresetInherits] = useState<string | null>(null)
 
   const catalogLabels: Record<string, string> = messages.catalog
   const catalogGroups = [
@@ -104,6 +108,24 @@ export function FactoryView() {
     instantiateClass(scene.id, definition.id)
     pushLog(messages.activity.objectAdded)
   }
+
+  const openNewClass = (base: string | null = null) => {
+    setPresetInherits(base)
+    setEditorClass(null)
+  }
+
+  const openEditClass = (definition: ClassDefinition) => {
+    setPresetInherits(null)
+    setEditorClass(definition)
+  }
+
+  const closeClassEditor = () => {
+    setEditorClass(undefined)
+    setPresetInherits(null)
+  }
+
+  const classNodes = classTree(scene)
+  const sceneClassNames = new Set(scene.classes.map((definition) => definition.name))
 
   const requestDeleteClass = (definition: ClassDefinition) => {
     const reasons: string[] = []
@@ -153,13 +175,51 @@ export function FactoryView() {
           ))}
         </div>
 
+        {capabilities.inheritance ? (
+          <div>
+            <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
+              {messages.factory.baseClassesTitle}
+            </h3>
+            <div className="grid grid-cols-3 gap-2">
+              {DOMAIN_BASE_NAMES.map((name) => {
+                const methodNames = DOMAIN_BASES[name]?.methods.map((method) => method.name) ?? []
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    title={
+                      methodNames.length > 0
+                        ? format(messages.factory.baseMethods, { names: methodNames.join(', ') })
+                        : undefined
+                    }
+                    aria-label={format(messages.factory.deriveFrom, { name })}
+                    onClick={() => openNewClass(name)}
+                    className="border-border hover:bg-muted focus-visible:ring-ring flex flex-col items-center gap-1 rounded-md border border-dashed p-2 transition focus-visible:ring-2 focus-visible:outline-none"
+                  >
+                    <span
+                      aria-hidden
+                      className="border-border flex h-6 w-6 items-center justify-center rounded-md border border-dashed text-sm leading-none"
+                    >
+                      ＋
+                    </span>
+                    <span className="text-xs">{name}</span>
+                    <span className="text-muted-foreground text-[10px] leading-none uppercase">
+                      {messages.factory.baseTag}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ) : null}
+
         <div>
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
               {messages.factory.classesTitle}
             </h3>
             {capabilities.ownClasses ? (
-              <Button variant="secondary" size="sm" onClick={() => setEditorClass(null)}>
+              <Button variant="secondary" size="sm" onClick={() => openNewClass()}>
                 {messages.factory.newClass}
               </Button>
             ) : null}
@@ -171,18 +231,30 @@ export function FactoryView() {
           ) : scene.classes.length === 0 ? (
             <div className="flex flex-col items-start gap-2">
               <p className="text-muted-foreground text-sm">{messages.factory.noClasses}</p>
-              <Button variant="secondary" size="sm" onClick={() => setEditorClass(null)}>
+              <Button variant="secondary" size="sm" onClick={() => openNewClass()}>
                 {messages.factory.createFirstClass}
               </Button>
             </div>
           ) : (
             <ul className="flex flex-col gap-1">
-              {scene.classes.map((definition) => (
+              {classNodes.map(({ definition, depth }) => (
                 <li
                   key={definition.id}
+                  data-depth={depth}
+                  style={depth > 0 ? { paddingLeft: depth * 16 } : undefined}
                   className="border-border flex items-center gap-1 rounded-md border px-2 py-1"
                 >
+                  {depth > 0 ? (
+                    <span aria-hidden className="text-muted-foreground text-xs">
+                      ↳
+                    </span>
+                  ) : null}
                   <span className="flex-1 truncate text-sm">{definition.name}</span>
+                  {definition.inherits && !sceneClassNames.has(definition.inherits) ? (
+                    <span className="text-muted-foreground truncate text-[10px]">
+                      {format(messages.factory.extendsFrom, { name: definition.inherits })}
+                    </span>
+                  ) : null}
                   <button
                     type="button"
                     aria-label={format(messages.factory.newObjectOfClass, {
@@ -196,7 +268,7 @@ export function FactoryView() {
                   <button
                     type="button"
                     aria-label={format(messages.factory.editClass, { name: definition.name })}
-                    onClick={() => setEditorClass(definition)}
+                    onClick={() => openEditClass(definition)}
                     className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md px-1.5 text-sm leading-none"
                   >
                     ✎
@@ -309,11 +381,12 @@ export function FactoryView() {
         <ClassEditorDialog
           scene={scene}
           initial={editorClass}
-          onClose={() => setEditorClass(undefined)}
+          presetInherits={presetInherits}
+          onClose={closeClassEditor}
           onSave={(definition) => {
             saveClass(scene.id, definition)
             pushLog(messages.activity.classSaved)
-            setEditorClass(undefined)
+            closeClassEditor()
           }}
         />
       ) : null}

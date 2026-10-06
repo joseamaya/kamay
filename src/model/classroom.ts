@@ -92,6 +92,49 @@ export function descendantNames(scene: Scene, classId: string): Set<string> {
   return result
 }
 
+export interface ClassTreeNode {
+  definition: ClassDefinition
+  depth: number
+}
+
+/**
+ * Classes ordered as a forest: each subclass follows its base, indented one
+ * level. Classes whose base is not in the scene (e.g. an absent domain base) are
+ * treated as roots, and any class left unvisited (a cycle) is promoted to a root.
+ */
+export function classTree(scene: Scene): ClassTreeNode[] {
+  const byName = new Map(scene.classes.map((definition) => [definition.name, definition]))
+  const children = new Map<string, ClassDefinition[]>()
+  const roots: ClassDefinition[] = []
+
+  for (const definition of scene.classes) {
+    const parent =
+      definition.inherits && byName.has(definition.inherits) ? definition.inherits : null
+    if (!parent) {
+      roots.push(definition)
+      continue
+    }
+    const list = children.get(parent) ?? []
+    list.push(definition)
+    children.set(parent, list)
+  }
+
+  const nodes: ClassTreeNode[] = []
+  const visited = new Set<string>()
+  const walk = (definition: ClassDefinition, depth: number) => {
+    if (visited.has(definition.name)) return
+    visited.add(definition.name)
+    nodes.push({ definition, depth })
+    for (const child of children.get(definition.name) ?? []) walk(child, depth + 1)
+  }
+
+  for (const root of roots) walk(root, 0)
+  for (const definition of scene.classes) {
+    if (!visited.has(definition.name)) walk(definition, 0)
+  }
+  return nodes
+}
+
 /** Base classes the draft may inherit from: Actor plus non-descendant classes. */
 export function availableBaseClasses(scene: Scene, draft: ClassDefinition): string[] {
   const existing = scene.classes.find((candidate) => candidate.id === draft.id)

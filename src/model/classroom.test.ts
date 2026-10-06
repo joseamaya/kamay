@@ -4,6 +4,7 @@ import {
   availableBaseClasses,
   availableComponentClasses,
   classAncestry,
+  classTree,
   classUsageCount,
   createClassDraft,
   createScene,
@@ -342,5 +343,38 @@ describe('resolve with origin', () => {
     const scene = hierarchy()
     expect(classAncestry(scene, 'Perro')).toEqual(['Perro', 'Animal'])
     expect(classAncestry(scene, 'Animal')).toEqual(['Animal'])
+  })
+})
+
+describe('classTree', () => {
+  it('nests subclasses under their base and keeps declaration order', () => {
+    const base = createClassDraft('Animal')
+    const dog = { ...createClassDraft('Perro'), inherits: 'Animal' }
+    const cat = { ...createClassDraft('Gato'), inherits: 'Animal' }
+    let scene = createScene('Principal')
+    for (const definition of [base, dog, cat]) scene = upsertClass(scene, definition)
+
+    expect(classTree(scene).map((node) => [node.definition.name, node.depth])).toEqual([
+      ['Animal', 0],
+      ['Perro', 1],
+      ['Gato', 1],
+    ])
+  })
+
+  it('treats a class whose base is absent as a root', () => {
+    const heroe = { ...createClassDraft('Heroe'), inherits: 'Vehiculo' }
+    const scene = upsertClass(createScene('Principal'), heroe)
+
+    expect(classTree(scene)).toEqual([{ definition: heroe, depth: 0 }])
+  })
+
+  it('promotes the first class of a cycle to a root', () => {
+    const a = { ...createClassDraft('A'), inherits: 'B' }
+    const b = { ...createClassDraft('B'), inherits: 'A' }
+    let scene = createScene('Principal')
+    for (const definition of [a, b]) scene = upsertClass(scene, definition)
+
+    const tree = classTree(scene)
+    expect(tree.map((node) => node.definition.name)).toEqual(['A', 'B'])
   })
 })
