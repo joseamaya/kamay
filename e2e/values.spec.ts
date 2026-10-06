@@ -3,16 +3,23 @@ import { expect, test } from './fixtures'
 test('edits values directly in the generated code', async ({ page }) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
-  await page.getByRole('button', { name: 'carro1', exact: true }).click()
+  await page.getByRole('button', { name: 'Nueva clase' }).click()
+  const dialog = page.getByRole('dialog')
+  await page.getByLabel('Nombre de la clase').fill('Heroe')
+  await dialog.getByRole('button', { name: 'Agregar atributo' }).click()
+  await page.getByLabel('Nombre del atributo').fill('vida')
+  await dialog.getByRole('button', { name: 'Guardar' }).click()
+
+  await page.getByRole('button', { name: 'Crear objeto de Heroe' }).click()
+  await page.getByRole('button', { name: 'heroe1', exact: true }).click()
   await page.getByRole('button', { name: 'Editar valores' }).click()
 
-  const x = page.locator('.cm-kamay-value[aria-label="x"]')
+  const vida = page.locator('.cm-kamay-value[aria-label="vida"]')
   await expect(async () => {
-    await x.fill('25')
-    await x.press('Enter')
-    await expect(page.getByRole('spinbutton', { name: 'X' })).toHaveValue('25', {
-      timeout: 1000,
-    })
+    await vida.fill('40')
+    await vida.press('Enter')
+    await expect(
+      page.locator('[data-selection-overlay]').getByRole('spinbutton', { name: 'vida' }),
+    ).toHaveValue('40', { timeout: 1000 })
   }).toPass({ timeout: 10000 })
 })
