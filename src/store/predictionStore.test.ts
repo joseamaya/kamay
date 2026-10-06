@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
+import { createClassDraft, createScene, instantiateClass, upsertClass } from '../model'
 import type { PredictionScenario } from '../pedagogy'
 import { useEvidenceStore } from './evidenceStore'
-import { usePredictionStore } from './predictionStore'
+import { askPredictionForAttribute, usePredictionStore } from './predictionStore'
 import { useProgressStore } from './progressStore'
 
 const scenario: PredictionScenario = {
@@ -56,5 +57,21 @@ describe('predictionStore', () => {
     useProgressStore.setState({ freeMode: true })
     usePredictionStore.getState().ask(scenario)
     expect(usePredictionStore.getState().pending).toBeNull()
+  })
+
+  it('asks when an attribute changes through the shared helper', () => {
+    const draft = createClassDraft('Perro')
+    draft.attributes.push({ name: 'energia', type: 'number', initial: 50 })
+    let scene = upsertClass(createScene('Principal'), draft)
+    scene = instantiateClass(scene, draft.id)
+    scene = instantiateClass(scene, draft.id)
+
+    askPredictionForAttribute(scene, scene.objects[0]!, 'energia', 20)
+
+    expect(usePredictionStore.getState().pending).toMatchObject({
+      objectName: 'perro1',
+      attribute: 'energia',
+      newValue: 20,
+    })
   })
 })

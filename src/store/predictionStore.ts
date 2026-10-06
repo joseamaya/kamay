@@ -1,10 +1,26 @@
 import { create } from 'zustand'
 
+import type { ObjectInstance, Scene } from '../model'
+import { buildPrediction } from '../pedagogy'
 import type { PredictionChoice, PredictionOutcome, PredictionScenario } from '../pedagogy'
 import { useEvidenceStore } from './evidenceStore'
 import { useProgressStore } from './progressStore'
 
 export type { PredictionChoice, PredictionOutcome } from '../pedagogy'
+
+/**
+ * Builds and asks a state prediction when a single attribute changes, from any
+ * editor (inspector or inline code values). No-op when there is nothing to ask.
+ */
+export function askPredictionForAttribute(
+  scene: Scene,
+  object: ObjectInstance,
+  attribute: string,
+  value: number | string | boolean,
+): void {
+  const scenario = buildPrediction(scene, object, attribute, value)
+  if (scenario) usePredictionStore.getState().ask(scenario)
+}
 
 export interface PredictionState {
   pending: PredictionScenario | null
