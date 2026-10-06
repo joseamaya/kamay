@@ -11,7 +11,7 @@ import {
 } from '../../engine'
 import type { Actor } from '../../engine'
 import { getMessages } from '../../i18n'
-import { collisionKey, readNumber } from '../../model'
+import { collisionKey } from '../../model'
 import { emitRuntimeTrigger, onRuntimeCommand, onRuntimeReset } from '../../runtime'
 import {
   useActiveScene,
@@ -101,7 +101,7 @@ export function ScenarioCanvas() {
   const scene = useActiveScene()
   const selectedObjectId = useEditorStore((state) => state.selectedObjectId)
   const selectObject = useEditorStore((state) => state.selectObject)
-  const updateObjectAttributes = useProjectStore((state) => state.updateObjectAttributes)
+  const updateObjectSimulation = useProjectStore((state) => state.updateObjectSimulation)
   const runtimeStatus = useRuntimeStore((state) => state.status)
   const stepMode = useRuntimeStore((state) => state.stepMode)
   const reducedMotion = usePreferencesStore((state) => state.reducedMotion)
@@ -410,7 +410,7 @@ export function ScenarioCanvas() {
 
     const moved = drag.offset.x !== 0 || drag.offset.y !== 0
     if (scene && moved) {
-      updateObjectAttributes(scene.id, drag.objectId, {
+      updateObjectSimulation(scene.id, drag.objectId, {
         x: Math.round(drag.origin.x + drag.offset.x),
         y: Math.round(drag.origin.y + drag.offset.y),
       })
@@ -445,7 +445,7 @@ export function ScenarioCanvas() {
     handleDragRef.current = {
       mode,
       objectId: object.id,
-      startScale: readNumber(object.attributes, 'scale', 1),
+      startScale: object.simulation.scale,
       startDistance,
     }
     event.currentTarget.setPointerCapture(event.pointerId)
@@ -477,9 +477,9 @@ export function ScenarioCanvas() {
     const scene = sceneRef.current
     if (!drag || !preview || !scene) return
     if (preview.rotation !== undefined) {
-      updateObjectAttributes(scene.id, drag.objectId, { rotation: preview.rotation })
+      updateObjectSimulation(scene.id, drag.objectId, { rotation: preview.rotation })
     } else if (preview.scale !== undefined) {
-      updateObjectAttributes(scene.id, drag.objectId, { scale: preview.scale })
+      updateObjectSimulation(scene.id, drag.objectId, { scale: preview.scale })
     }
   }
 
@@ -519,9 +519,9 @@ export function ScenarioCanvas() {
 
     if (dx !== 0 || dy !== 0) {
       event.preventDefault()
-      updateObjectAttributes(scene.id, object.id, {
-        x: readNumber(object.attributes, 'x', 0) + dx,
-        y: readNumber(object.attributes, 'y', 0) + dy,
+      updateObjectSimulation(scene.id, object.id, {
+        x: object.simulation.x + dx,
+        y: object.simulation.y + dy,
       })
     }
   }

@@ -43,6 +43,7 @@ export const SelectionOverlay = forwardRef<HTMLDivElement>(function SelectionOve
     <div
       ref={ref}
       data-selection-overlay
+      data-simulation={JSON.stringify(object.simulation)}
       role="group"
       aria-label={messages.selection.menu}
       className="pointer-events-none absolute top-0 left-0 z-20"

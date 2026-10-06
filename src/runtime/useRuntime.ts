@@ -46,7 +46,12 @@ function emitStateEffects(target: string, name: string): void {
   const { scene, object, runtimeValues } = resolved
   const appearance = objectAppearance(scene, object, runtimeValues)
   emitRuntimeCommand({ type: 'appearance', target, ...appearance })
-  const effect = stateEffect(target, name, resolveObjectAttributes(scene, object, runtimeValues))
+  const effect = stateEffect(
+    target,
+    name,
+    resolveObjectAttributes(scene, object, runtimeValues),
+    object.simulation,
+  )
   if (effect) emitRuntimeCommand(effect)
 }
 

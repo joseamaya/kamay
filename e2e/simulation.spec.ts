@@ -30,11 +30,11 @@ test('drives movement and speech from state', async ({ page }) => {
   await page.getByRole('button', { name: 'Ejecutar' }).click()
   await expect(page.getByText('Listo.')).toBeVisible()
 
-  // `moverse` adds to `x` and `tocar_bocina` sets `mensaje`; the engine turns
-  // those state changes into movement and a speech bubble.
+  // `moverse` adds to `distancia` and `tocar_bocina` sets `sonido`; the engine
+  // interprets those domain attributes as movement and a speech bubble.
   const panel = page.locator('[data-state-panel]')
-  await expect(panel).toContainText('carro1.x')
-  await expect(panel).toContainText('carro1.mensaje')
+  await expect(panel).toContainText('carro1.distancia')
+  await expect(panel).toContainText('carro1.sonido')
 })
 
 test('scrubs the step timeline', async ({ page }) => {

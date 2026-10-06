@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures'
 
-import { codeContent, openMore } from './helpers'
+import { openMore } from './helpers'
 
 test.use({ colorScheme: 'light' })
 
@@ -48,10 +48,11 @@ test('moves the selected object with the keyboard', async ({ page }) => {
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   await page.getByRole('button', { name: 'carro1', exact: true }).click()
 
+  const overlay = page.locator('[data-selection-overlay]')
   await page.getByRole('application', { name: /Escenario/ }).focus()
   await page.keyboard.press('ArrowRight')
 
-  await expect(codeContent(page)).toContainText('carro1.x = 4')
+  await expect(overlay).toHaveAttribute('data-simulation', /"x":4/)
 })
 
 test('exposes a live status region for activity and errors', async ({ page }) => {

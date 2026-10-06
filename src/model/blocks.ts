@@ -1,4 +1,3 @@
-import { ENGINE_ATTRIBUTES } from './attributes'
 import { classCustomAttributes, resolveCustomAttributes, resolveMethods } from './classroom'
 import { createId } from './ids'
 import type { MethodSignature } from './methods'
@@ -67,7 +66,7 @@ export function availableBlockAttributes(scene: Scene, definition: ClassDefiniti
   const own = classCustomAttributes(definition)
 
   const result = new Map<string, Attribute>()
-  for (const attribute of [...own, ...inherited, ...ENGINE_ATTRIBUTES]) {
+  for (const attribute of [...own, ...inherited]) {
     if (!result.has(attribute.name)) result.set(attribute.name, attribute)
   }
   return [...result.values()]
