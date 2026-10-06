@@ -39,19 +39,20 @@ The project has completed **Phase 4 — classroom and gamification**. Working to
 - **Physics**: optional per scene (toggle + gravity); objects fall and collide
   for real with planck.js.
 - **Properties**: position, rotation, scale and color.
-- **Actions**: orders (`decir`, `mover`, `girar`, `cambiar_escala`, `esperar`,
-  `emitir`) plus user-defined methods, triggered on start, click, collision,
-  key press or signal.
+- **Actions**: the object's own (or inherited) methods, triggered on start,
+  click, collision or key press.
 - **Blocks**: build method bodies with stackable blocks (call a method, assign
-  an attribute, repeat) and convert them to/from code; code the editor cannot
-  represent is kept as advanced code.
+  an attribute, add/subtract a number, repeat) and convert them to/from code;
+  code the editor cannot represent is kept as advanced code.
 - **Code**: Python generated live, shown in a CodeMirror view (read-only) with
   editable method bodies and, from level 2, inline editing of literal values
   directly in `principal.py` (object attributes and order arguments).
-- **Execution**: run the program with **Pyodide** (Web Worker) and see the
-  objects talk and move; runtime errors are translated to Spanish with a hint
-  that names the concept, and marked inline in the generated code. Pyodide is
-  warmed up in the background so the first run starts quickly.
+- **Execution**: projects whose methods are all blocks run in a **TypeScript
+  simulation**; the canvas reacts to state (`x`/`y`/`rotation`/`scale` move the
+  object, `mensaje` shows a bubble, visual variants change the look). Projects
+  with an advanced-code method run the generated Python with **Pyodide**, loaded
+  on demand. Runtime errors are translated to Spanish with a hint that names the
+  concept, and marked inline in the generated code.
 - **Persistence**: autosave to IndexedDB, `.kamay.json` export/import and
   **share by link** (the project travels encoded in the URL).
 - **Missions and badges**: short auto-checked goals ("add an object", "create
@@ -89,18 +90,18 @@ worlds, and translations.
 
 ## Stack
 
-| Layer          | Technology                                    |
-| -------------- | --------------------------------------------- |
-| UI             | TypeScript + React                            |
-| Build          | Vite                                          |
-| State          | Zustand (typed central store)                 |
-| Data schema    | Versioned JSON validated with Zod             |
-| Styling        | Tailwind CSS v4                               |
-| Python runtime | Pyodide (in a Web Worker, pinned CDN)         |
-| Engine         | Custom Canvas 2D                              |
-| Persistence    | IndexedDB (idb) + `.kamay.json` export/import |
-| Tests          | Vitest + React Testing Library + Playwright   |
-| Lint / format  | oxlint + Prettier                             |
+| Layer         | Technology                                                 |
+| ------------- | ---------------------------------------------------------- |
+| UI            | TypeScript + React                                         |
+| Build         | Vite                                                       |
+| State         | Zustand (typed central store)                              |
+| Data schema   | Versioned JSON validated with Zod                          |
+| Styling       | Tailwind CSS v4                                            |
+| Execution     | TypeScript simulation (blocks) + Pyodide for advanced code |
+| Engine        | Custom Canvas 2D                                           |
+| Persistence   | IndexedDB (idb) + `.kamay.json` export/import              |
+| Tests         | Vitest + React Testing Library + Playwright                |
+| Lint / format | oxlint + Prettier                                          |
 
 ## Requirements
 
@@ -134,7 +135,7 @@ src/
   model/         # versioned Zod schema, types, migrations, catalog and actions
   store/         # central state (Zustand) with undo/redo
   generator/     # JSON model -> deterministic Python code
-  runtime/       # Pyodide worker, bridge, command bus and error translation
+  runtime/       # block simulator, Pyodide worker, bridge, command bus and errors
   engine/        # Canvas 2D engine and runtime commands
   views/         # stage, factory, actions, inspector, classes, code and bar
   persistence/   # IndexedDB and export/import
