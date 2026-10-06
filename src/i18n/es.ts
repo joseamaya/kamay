@@ -704,6 +704,7 @@ export const es = {
     save: 'No se pudo guardar el proyecto.',
     import: 'No se pudo importar el archivo.',
     share: 'El enlace compartido no es válido.',
+    integrity: 'El proyecto tiene referencias que no existen; revísalo.',
     runtime: {
       name: 'Se usó un nombre que no existe.',
       attribute: 'Se pidió algo que el objeto no tiene.',

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { getMessages } from '../i18n'
 import { MISSIONS } from '../missions'
-import { createId } from '../model'
+import { createId, validateProjectIntegrity } from '../model'
 import type { Project } from '../model'
 import { summarizeAnalytics } from '../pedagogy'
 import {
@@ -42,6 +43,13 @@ function download(blob: Blob, filename: string): void {
   anchor.download = filename
   anchor.click()
   URL.revokeObjectURL(url)
+}
+
+/** Warns (without blocking) when a loaded project has dangling references. */
+function warnIntegrity(project: Project): void {
+  if (validateProjectIntegrity(project).length > 0) {
+    useEditorStore.getState().pushLog(getMessages().errors.integrity, 'error')
+  }
 }
 
 export function usePersistence(): PersistenceApi {
@@ -107,6 +115,7 @@ export function usePersistence(): PersistenceApi {
       },
       importFile: async (file) => {
         const project = await readProjectFile(file)
+        warnIntegrity(project)
         useProjectStore.getState().loadProject(project)
         useEditorStore.getState().setProjectId(createId('project'))
         await autosaveRef.current?.saveNow()
@@ -117,6 +126,7 @@ export function usePersistence(): PersistenceApi {
           `${window.location.origin}${window.location.pathname}`,
         ),
       openShared: async (project) => {
+        warnIntegrity(project)
         useProjectStore.getState().loadProject(project)
         useEditorStore.getState().setProjectId(createId('project'))
         await autosaveRef.current?.saveNow()
