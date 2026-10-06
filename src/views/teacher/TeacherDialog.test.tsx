@@ -1,3 +1,5 @@
+import 'fake-indexeddb/auto'
+
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 
@@ -6,8 +8,8 @@ import { buildDelivery } from '../../persistence'
 import { useTeacherStore } from '../../store'
 import { TeacherDialog } from './TeacherDialog'
 
-beforeEach(() => {
-  useTeacherStore.getState().clear()
+beforeEach(async () => {
+  await useTeacherStore.getState().clear()
 })
 
 describe('TeacherDialog', () => {
@@ -18,8 +20,8 @@ describe('TeacherDialog', () => {
     expect(screen.getByText('Todavía no hay entregas importadas.')).toBeInTheDocument()
   })
 
-  it('renders the aggregate report for the imported deliveries', () => {
-    useTeacherStore
+  it('renders the aggregate report for the imported deliveries', async () => {
+    await useTeacherStore
       .getState()
       .add([buildDelivery(createEmptyProject({ name: 'Demo' }), ['first_object'], 16)])
 
