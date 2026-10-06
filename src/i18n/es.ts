@@ -190,7 +190,8 @@ export const es = {
   scenario: {
     title: 'Escenario',
     background: 'Fondo',
-    canvasLabel: 'Escenario. Usa las flechas para mover el objeto seleccionado.',
+    canvasLabel:
+      'Escenario. Usa las flechas o el mouse para mover, rotar y redimensionar el objeto seleccionado.',
     empty: 'Tu escenario está listo.',
     emptyHint: 'Toca un objeto de la Fábrica para que aparezca aquí.',
     rotateHandle: 'Rotar objeto',
@@ -438,10 +439,6 @@ export const es = {
   inspector: {
     title: 'Propiedades',
     empty: 'Selecciona un objeto para editar sus propiedades.',
-    positionX: 'X',
-    positionY: 'Y',
-    rotation: 'Rotación',
-    scale: 'Escala',
     color: 'Color',
     resetToClass: 'Restablecer al valor de la clase',
     behavior: 'Comportamiento',
@@ -473,8 +470,6 @@ export const es = {
   selection: {
     menu: 'Menú del objeto',
     class: 'Instancia de {name}',
-    transform: 'Transformación',
-    transformHint: 'Arrastra, rota o redimensiona directamente en el escenario.',
     appearance: 'Aspecto',
     state: 'Estado',
     orders: 'Órdenes',

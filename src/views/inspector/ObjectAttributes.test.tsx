@@ -71,7 +71,7 @@ describe('ObjectAttributes', () => {
     expect(screen.getByText('Heredado de Animal')).toBeInTheDocument()
   })
 
-  it('groups the fields into transform, appearance and state', () => {
+  it('shows appearance and state without transform fields', () => {
     const definition = createClassDraft('Heroe')
     definition.attributes.push({ name: 'vida', type: 'number', initial: 100 })
     useProjectStore.getState().saveClass(currentScene().id, definition)
@@ -80,21 +80,9 @@ describe('ObjectAttributes', () => {
 
     render(<Harness />)
 
-    expect(screen.getByText('Transformación')).toBeInTheDocument()
     expect(screen.getByText('Aspecto')).toBeInTheDocument()
     expect(screen.getByText('Estado')).toBeInTheDocument()
-  })
-
-  it('edits the object position', async () => {
-    const user = userEvent.setup()
-    useProjectStore.getState().addObject(currentScene().id, 'carro')
-    useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
-
-    render(<Harness />)
-    const input = screen.getByLabelText('X')
-    await user.clear(input)
-    await user.type(input, '25')
-
-    expect(currentScene().objects[0]!.attributes.x).toBe(25)
+    expect(screen.queryByText('Transformación')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Rotación')).not.toBeInTheDocument()
   })
 })

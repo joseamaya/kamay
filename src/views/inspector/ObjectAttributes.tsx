@@ -1,6 +1,5 @@
 import { format, getMessages } from '../../i18n'
 import {
-  readNumber,
   readString,
   resolveAttributeDefaults,
   resolveCustomAttributesWithOrigin,
@@ -10,7 +9,6 @@ import { askPredictionForAttribute, useProjectStore } from '../../store'
 import { ColorInput } from '../../ui/ColorInput'
 import { NumberField } from '../../ui/NumberField'
 import { Select } from '../../ui/Select'
-import { Slider } from '../../ui/Slider'
 import { TextField } from '../../ui/TextField'
 
 export interface ObjectAttributesProps {
@@ -43,38 +41,6 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <section className="flex flex-col gap-2">
-        <SectionTitle>{messages.selection.transform}</SectionTitle>
-        <p className="text-muted-foreground text-xs">{messages.selection.transformHint}</p>
-        <div className="grid grid-cols-2 gap-3">
-          <NumberField
-            label={messages.inspector.positionX}
-            value={readNumber(object.attributes, 'x', 0)}
-            onChange={(value) => patch({ x: value })}
-          />
-          <NumberField
-            label={messages.inspector.positionY}
-            value={readNumber(object.attributes, 'y', 0)}
-            onChange={(value) => patch({ y: value })}
-          />
-        </div>
-        <Slider
-          label={messages.inspector.rotation}
-          value={readNumber(object.attributes, 'rotation', 0)}
-          min={-180}
-          max={180}
-          onChange={(value) => patch({ rotation: value })}
-        />
-        <Slider
-          label={messages.inspector.scale}
-          value={readNumber(object.attributes, 'scale', 1)}
-          min={0.2}
-          max={3}
-          step={0.1}
-          onChange={(value) => patch({ scale: value })}
-        />
-      </section>
-
       <section className="flex flex-col gap-2">
         <SectionTitle>{messages.selection.appearance}</SectionTitle>
         <ColorInput
