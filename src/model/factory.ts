@@ -2,6 +2,7 @@ import type { AttributeValue } from './attributes'
 import { createId } from './ids'
 import type {
   Action,
+  Appearance,
   Attribute,
   ClassDefinition,
   EventType,
@@ -72,9 +73,9 @@ const VEHICULO: ClassDefinition = {
   id: 'base-vehiculo',
   name: 'Vehiculo',
   inherits: null,
+  appearance: { color: '#e2603a', shape: null, glyph: null },
   image: null,
   attributes: [
-    { name: 'color', type: 'string', initial: '#e2603a' },
     { name: 'marca', type: 'string', initial: '' },
     { name: 'modelo', type: 'string', initial: '' },
     { name: 'encendido', type: 'boolean', initial: false },
@@ -102,9 +103,9 @@ const ANIMAL: ClassDefinition = {
   id: 'base-animal',
   name: 'Animal',
   inherits: null,
+  appearance: { color: '#e0a23c', shape: null, glyph: null },
   image: null,
   attributes: [
-    { name: 'color', type: 'string', initial: '#e0a23c' },
     { name: 'nombre', type: 'string', initial: '' },
     { name: 'energia', type: 'number', initial: 50 },
   ],
@@ -120,11 +121,9 @@ const COSA: ClassDefinition = {
   id: 'base-cosa',
   name: 'Cosa',
   inherits: null,
+  appearance: { color: '#8f9aa8', shape: null, glyph: null },
   image: null,
-  attributes: [
-    { name: 'color', type: 'string', initial: '#8f9aa8' },
-    { name: 'nombre', type: 'string', initial: '' },
-  ],
+  attributes: [{ name: 'nombre', type: 'string', initial: '' }],
   components: [],
   methods: [],
   visuals: [],
@@ -318,18 +317,18 @@ export function isActorShape(value: unknown): value is ActorShape {
 }
 
 export function catalogClass(item: CatalogItem): ClassDefinition {
-  const visual: Attribute[] = [{ name: 'shape', type: 'string', initial: item.shape }]
-  if (item.glyph) visual.push({ name: 'glyph', type: 'string', initial: item.glyph })
-  // Domain entities inherit their color from the base; abstract items own it.
-  const attributes: Attribute[] = item.base
-    ? visual
-    : [{ name: 'color', type: 'string', initial: item.color }, ...visual]
   return {
     id: createId('class'),
     name: item.className,
     inherits: item.base ?? null,
+    // Domain entities inherit their color from the base; abstract items own it.
+    appearance: {
+      color: item.base ? null : item.color,
+      shape: item.shape,
+      glyph: item.glyph ?? null,
+    },
     image: null,
-    attributes: [...attributes, ...(item.attributes ?? [])],
+    attributes: item.attributes ?? [],
     components: [],
     methods: item.methods ?? [],
     visuals: [],
@@ -348,21 +347,24 @@ export function createObject(
   scene: Scene,
   className: string,
   attributes: Record<string, number | string | boolean> = {},
+  appearance: Appearance = { color: null, shape: null, glyph: null },
 ): ObjectInstance {
   return {
     id: createId('object'),
     name: nextObjectName(scene, className),
     class: className,
+    appearance,
     attributes: { ...OBJECT_DEFAULTS, ...attributes },
   }
 }
 
 export function createObjectFromCatalog(scene: Scene, item: CatalogItem): ObjectInstance {
-  return createObject(scene, item.className, {
-    color: item.color,
-    shape: item.shape,
-    ...(item.glyph ? { glyph: item.glyph } : {}),
-  })
+  return createObject(
+    scene,
+    item.className,
+    {},
+    { color: item.color, shape: item.shape, glyph: item.glyph ?? null },
+  )
 }
 
 /** Adds the catalog object and its class chain (domain base included) to the scene. */
@@ -409,6 +411,21 @@ export function updateObjectAttributes(
     objects: scene.objects.map((object) =>
       object.id === objectId
         ? { ...object, attributes: { ...object.attributes, ...patch } }
+        : object,
+    ),
+  }
+}
+
+export function updateObjectAppearance(
+  scene: Scene,
+  objectId: string,
+  patch: Partial<Appearance>,
+): Scene {
+  return {
+    ...scene,
+    objects: scene.objects.map((object) =>
+      object.id === objectId
+        ? { ...object, appearance: { ...object.appearance, ...patch } }
         : object,
     ),
   }

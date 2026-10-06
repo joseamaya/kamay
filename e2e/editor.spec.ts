@@ -64,14 +64,14 @@ test('shows the catalog visual variants in the class editor', async ({ page }) =
   await expect(page.getByLabel('Nombre de la variante')).toHaveValue('Prendido')
 })
 
-test('adds a glyph object and reflects it in the code view', async ({ page }) => {
+test('adds a glyph object without leaking its appearance into the code', async ({ page }) => {
   await page.goto('/')
 
   await page.getByRole('button', { name: 'Agregar Perro al escenario' }).click()
 
   await expect(page.getByRole('button', { name: 'perro1', exact: true })).toBeVisible()
   await expect(codeContent(page)).toContainText('perro1 = Perro("perro1")')
-  await expect(codeContent(page)).toContainText('perro1.glyph = "🐶"')
+  await expect(codeContent(page)).not.toContainText('glyph')
 })
 
 test('creates a class with a method and instantiates it', async ({ page }) => {

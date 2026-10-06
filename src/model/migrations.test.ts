@@ -161,6 +161,55 @@ describe('migrateProject', () => {
     expect(result.scenes[0]?.events[0]?.actions[0]?.kind).toBe('call')
   })
 
+  it('upgrades a v9 project: appearance leaves the attributes', () => {
+    const input = {
+      version: 9,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          classes: [
+            {
+              id: 'c',
+              name: 'Heroe',
+              attributes: [
+                { name: 'color', type: 'string', initial: '#fff' },
+                { name: 'shape', type: 'string', initial: 'circle' },
+                { name: 'vida', type: 'number', initial: 100 },
+              ],
+            },
+          ],
+          objects: [
+            {
+              id: 'o',
+              name: 'h1',
+              class: 'Heroe',
+              attributes: { x: 0, color: '#000', glyph: '🐶' },
+            },
+          ],
+        },
+      ],
+    }
+
+    const result = migrateProject(input) as {
+      version: number
+      scenes: {
+        classes: { appearance: Record<string, unknown>; attributes: { name: string }[] }[]
+        objects: { appearance: Record<string, unknown>; attributes: Record<string, unknown> }[]
+      }[]
+    }
+
+    expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
+    const definition = result.scenes[0]!.classes[0]!
+    expect(definition.appearance).toEqual({ color: '#fff', shape: 'circle', glyph: null })
+    expect(definition.attributes.map((attribute) => attribute.name)).toEqual(['vida'])
+
+    const object = result.scenes[0]!.objects[0]!
+    expect(object.appearance).toEqual({ color: '#000', shape: null, glyph: '🐶' })
+    expect(object.attributes).toEqual({ x: 0 })
+  })
+
   it('upgrades a v4 project by adding physics settings', () => {
     const input = {
       version: 4,

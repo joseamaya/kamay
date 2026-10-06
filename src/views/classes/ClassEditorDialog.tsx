@@ -85,18 +85,8 @@ export function ClassEditorDialog({
   }
   const componentClasses = availableComponentClasses(scene, draft)
 
-  const visual = (name: 'color' | 'shape', fallback: string): string => {
-    const attribute = draft.attributes.find((candidate) => candidate.name === name)
-    return typeof attribute?.initial === 'string' ? attribute.initial : fallback
-  }
-
   const setVisual = (name: 'color' | 'shape', value: string) => {
-    setDraft((current) => ({
-      ...current,
-      attributes: current.attributes.map((attribute) =>
-        attribute.name === name ? { ...attribute, initial: value } : attribute,
-      ),
-    }))
+    setDraft((current) => ({ ...current, appearance: { ...current.appearance, [name]: value } }))
   }
 
   const handleImage: ChangeEventHandler<HTMLInputElement> = async (event) => {
@@ -112,9 +102,7 @@ export function ClassEditorDialog({
     }
   }
 
-  const customAttributes = draft.attributes
-    .map((attribute, index) => ({ attribute, index }))
-    .filter(({ attribute }) => attribute.name !== 'color' && attribute.name !== 'shape')
+  const customAttributes = draft.attributes.map((attribute, index) => ({ attribute, index }))
 
   const updateAttribute = (index: number, patch: Partial<Attribute>) => {
     setDraft((current) => ({
@@ -243,12 +231,12 @@ export function ClassEditorDialog({
           <div className="flex flex-col justify-center gap-2">
             <ColorInput
               label={messages.classEditor.color}
-              value={visual('color', '#e2603a')}
+              value={draft.appearance.color ?? '#e2603a'}
               onChange={(value) => setVisual('color', value)}
             />
             <Select
               label={messages.classEditor.shape}
-              value={visual('shape', 'circle')}
+              value={draft.appearance.shape ?? 'circle'}
               options={shapeOptions}
               onChange={(value) => setVisual('shape', value)}
             />

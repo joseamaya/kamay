@@ -13,7 +13,6 @@ import type { Attribute, ClassDefinition, Component, Method, ObjectInstance, Sce
 export const DEFAULT_CLASS_COLOR = '#e2603a'
 export const DEFAULT_CLASS_SHAPE = 'circle'
 
-const VISUAL_ATTRIBUTES = new Set(['color', 'shape'])
 const RESERVED_ATTRIBUTE_NAMES = new Set(['x', 'y', 'rotation', 'scale', 'color', 'shape'])
 
 /** A resolved member together with the class that declares it. */
@@ -44,20 +43,18 @@ export function createClassDraft(name = 'MiClase'): ClassDefinition {
     id: createId('class'),
     name,
     inherits: null,
+    appearance: { color: DEFAULT_CLASS_COLOR, shape: DEFAULT_CLASS_SHAPE, glyph: null },
     image: null,
-    attributes: [
-      { name: 'color', type: 'string', initial: DEFAULT_CLASS_COLOR },
-      { name: 'shape', type: 'string', initial: DEFAULT_CLASS_SHAPE },
-    ],
+    attributes: [],
     components: [],
     methods: [],
     visuals: [],
   }
 }
 
-/** Attributes declared by the class beyond the visual `color`/`shape`. */
+/** The class's own domain attributes (appearance is a separate simulation field). */
 export function classCustomAttributes(definition: ClassDefinition): Attribute[] {
-  return definition.attributes.filter((attribute) => !VISUAL_ATTRIBUTES.has(attribute.name))
+  return definition.attributes
 }
 
 export function classUsageCount(scene: Scene, className: string): number {
@@ -334,17 +331,15 @@ export function resolveAttributes(scene: Scene, className: string): Attribute[] 
   return resolveAttributesWithOrigin(scene, className).map((entry) => entry.value)
 }
 
-/** Inherited and own custom attributes (excluding `color`/`shape`), with origin. */
+/** Inherited and own domain attributes, with origin. */
 export function resolveCustomAttributesWithOrigin(
   scene: Scene,
   className: string,
 ): ResolvedAttribute[] {
-  return resolveAttributesWithOrigin(scene, className).filter(
-    (entry) => !VISUAL_ATTRIBUTES.has(entry.value.name),
-  )
+  return resolveAttributesWithOrigin(scene, className)
 }
 
-/** Inherited and own attributes excluding the visual `color`/`shape`. */
+/** Inherited and own domain attributes. */
 export function resolveCustomAttributes(scene: Scene, className: string): Attribute[] {
   return resolveCustomAttributesWithOrigin(scene, className).map((entry) => entry.value)
 }
@@ -455,7 +450,7 @@ export function validateClassDraft(scene: Scene, definition: ClassDefinition): C
       (attribute) =>
         !isIdentifier(attribute.name) ||
         duplicateAttributes ||
-        (!VISUAL_ATTRIBUTES.has(attribute.name) && RESERVED_ATTRIBUTE_NAMES.has(attribute.name)),
+        RESERVED_ATTRIBUTE_NAMES.has(attribute.name),
     ),
     components: definition.components.map((component) => ({
       nameInvalid:

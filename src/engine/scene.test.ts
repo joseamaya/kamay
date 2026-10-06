@@ -1,54 +1,39 @@
 import { describe, expect, it } from 'vitest'
 
 import { ACTOR_CATALOG, addCatalogObject, createScene } from '../model'
-import { DEFAULT_COLOR, DEFAULT_SHAPE, toActor, toSceneState } from './scene'
+import { DEFAULT_COLOR, DEFAULT_SHAPE, applyAppearance, toActor, toSceneState } from './scene'
+
+const EMPTY = { color: null, shape: null, glyph: null }
 
 describe('toActor', () => {
-  it('applies defaults for missing attributes', () => {
-    const actor = toActor({ id: 'a', name: 'a', class: 'Circle', attributes: {} }, 0)
-
-    expect(actor.shape).toBe(DEFAULT_SHAPE)
-    expect(actor.glyph).toBeUndefined()
-    expect(actor.color).toBe(DEFAULT_COLOR)
-    expect(actor.transform).toEqual({ position: { x: 0, y: 0 }, rotation: 0, scale: 1 })
-  })
-
-  it('reads the glyph attribute when present', () => {
-    const actor = toActor(
-      { id: 'a', name: 'a', class: 'Cat', attributes: { shape: 'circle', glyph: '🐱' } },
-      0,
-    )
-
-    expect(actor.glyph).toBe('🐱')
-  })
-
-  it('reads visual attributes from the object', () => {
+  it('reads the transform from the domain state and defaults the look', () => {
     const actor = toActor(
       {
         id: 'a',
         name: 'a',
         class: 'Circle',
-        attributes: { x: 5, y: -3, rotation: 90, scale: 2, color: '#ffffff', shape: 'triangle' },
+        appearance: EMPTY,
+        attributes: { x: 5, y: -3, rotation: 90, scale: 2 },
       },
       3,
     )
 
-    expect(actor.shape).toBe('triangle')
-    expect(actor.color).toBe('#ffffff')
-    expect(actor.transform.position).toEqual({ x: 5, y: -3 })
-    expect(actor.transform.rotation).toBe(90)
-    expect(actor.transform.scale).toBe(2)
+    expect(actor.shape).toBe(DEFAULT_SHAPE)
+    expect(actor.glyph).toBeUndefined()
+    expect(actor.color).toBe(DEFAULT_COLOR)
+    expect(actor.transform).toEqual({ position: { x: 5, y: -3 }, rotation: 90, scale: 2 })
     expect(actor.zIndex).toBe(3)
   })
 
-  it('carries the class image', () => {
-    const actor = toActor(
-      { id: 'a', name: 'a', class: 'Heroe', attributes: { shape: 'circle' } },
-      0,
-      'data:image/png;base64,abc',
+  it('overrides the look with a resolved appearance', () => {
+    const actor = applyAppearance(
+      toActor({ id: 'a', name: 'a', class: 'Cat', appearance: EMPTY, attributes: {} }, 0),
+      { color: '#ffffff', shape: 'triangle', glyph: '🐱', image: null },
     )
 
-    expect(actor.image).toBe('data:image/png;base64,abc')
+    expect(actor.glyph).toBe('🐱')
+    expect(actor.shape).toBe('triangle')
+    expect(actor.color).toBe('#ffffff')
   })
 })
 

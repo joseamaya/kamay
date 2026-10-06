@@ -1,24 +1,17 @@
-import { isActorShape, objectAppearance, readNumber, readString } from '../model'
+import { isActorShape, objectAppearance, readNumber } from '../model'
 import type { ObjectInstance, ResolvedAppearance, Scene } from '../model'
 import type { Actor, SceneState } from './types'
 
 export const DEFAULT_SHAPE = 'circle'
 export const DEFAULT_COLOR = '#e2603a'
 
-export function toActor(
-  object: ObjectInstance,
-  zIndex: number,
-  image: string | null = null,
-): Actor {
-  const shape = object.attributes.shape
-  const glyph = readString(object.attributes, 'glyph', '')
+/** Transform comes from the domain state; appearance is applied separately. */
+export function toActor(object: ObjectInstance, zIndex: number): Actor {
   return {
     id: object.id,
     name: object.name,
-    shape: isActorShape(shape) ? shape : DEFAULT_SHAPE,
-    glyph: glyph || undefined,
-    image: image ?? undefined,
-    color: readString(object.attributes, 'color', DEFAULT_COLOR),
+    shape: DEFAULT_SHAPE,
+    color: DEFAULT_COLOR,
     transform: {
       position: {
         x: readNumber(object.attributes, 'x', 0),
@@ -43,13 +36,11 @@ export function applyAppearance(actor: Actor, appearance: ResolvedAppearance): A
 }
 
 export function toSceneState(scene: Scene): SceneState {
-  const images = new Map(scene.classes.map((definition) => [definition.name, definition.image]))
   return {
     background: scene.background,
-    actors: scene.objects.map((object, index) => {
-      const actor = toActor(object, index, images.get(object.class) ?? null)
-      return applyAppearance(actor, objectAppearance(scene, object))
-    }),
+    actors: scene.objects.map((object, index) =>
+      applyAppearance(toActor(object, index), objectAppearance(scene, object)),
+    ),
     physics: { enabled: scene.physics.enabled, gravityY: scene.physics.gravityY },
   }
 }
