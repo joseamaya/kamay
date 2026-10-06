@@ -94,4 +94,59 @@ describe('FactoryView', () => {
 
     expect(useProjectStore.getState().project.scenes[0]?.objects).toHaveLength(0)
   })
+
+  it('offers base class tiles once inheritance is unlocked', () => {
+    render(<FactoryView />)
+
+    expect(
+      screen.getByRole('button', { name: 'Crear clase que hereda de Vehiculo' }),
+    ).toBeInTheDocument()
+  })
+
+  it('hides base class tiles until level 5', () => {
+    useProgressStore.setState({ completed: [], freeMode: false, unlockedLevel: 1 })
+    render(<FactoryView />)
+
+    expect(
+      screen.queryByRole('button', { name: 'Crear clase que hereda de Vehiculo' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('creates a class that inherits a base from the palette', async () => {
+    const user = userEvent.setup()
+    render(<FactoryView />)
+
+    await user.click(screen.getByRole('button', { name: 'Crear clase que hereda de Vehiculo' }))
+
+    const select = screen.getByLabelText('Hereda de') as HTMLSelectElement
+    expect(select.value).toBe('Vehiculo')
+
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    expect(useProjectStore.getState().project.scenes[0]?.classes[0]?.inherits).toBe('Vehiculo')
+  })
+
+  it('nests a subclass under its base', () => {
+    const sceneId = useProjectStore.getState().project.scenes[0]!.id
+    useProjectStore.getState().saveClass(sceneId, createClassDraft('Alpha'))
+    useProjectStore
+      .getState()
+      .saveClass(sceneId, { ...createClassDraft('Beta'), inherits: 'Alpha' })
+
+    render(<FactoryView />)
+
+    expect(screen.getByText('Alpha').closest('li')).toHaveAttribute('data-depth', '0')
+    expect(screen.getByText('Beta').closest('li')).toHaveAttribute('data-depth', '1')
+  })
+
+  it('shows a chip when the base is not in the scene', () => {
+    const sceneId = useProjectStore.getState().project.scenes[0]!.id
+    useProjectStore
+      .getState()
+      .saveClass(sceneId, { ...createClassDraft('Heroe'), inherits: 'Vehiculo' })
+
+    render(<FactoryView />)
+
+    expect(screen.getByText('hereda de Vehiculo')).toBeInTheDocument()
+  })
 })

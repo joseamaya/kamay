@@ -62,7 +62,7 @@ test('warns when inheritance is only used to reuse', async ({ page }) => {
   await page.getByRole('button', { name: 'Nueva clase' }).click()
   editor = page.getByRole('dialog', { name: 'Nueva clase' })
   await page.getByLabel('Nombre de la clase').fill('Perro')
-  await page.getByLabel('Hereda de').selectOption('Animal')
+  await editor.getByLabel('Hereda de').selectOption('Animal')
 
   await expect(editor.getByText(/La herencia expresa una relación/)).toBeVisible()
 })

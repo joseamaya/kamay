@@ -43,14 +43,25 @@ function defaultValue(type: AttributeType): number | string | boolean {
 export interface ClassEditorDialogProps {
   scene: Scene
   initial: ClassDefinition | null
+  /** Base class to preselect when creating a new class. */
+  presetInherits?: string | null
   onSave: (definition: ClassDefinition) => void
   onClose: () => void
 }
 
-export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEditorDialogProps) {
+export function ClassEditorDialog({
+  scene,
+  initial,
+  presetInherits,
+  onSave,
+  onClose,
+}: ClassEditorDialogProps) {
   const messages = getMessages()
   const capabilities = useCapabilities()
-  const [draft, setDraft] = useState<ClassDefinition>(() => initial ?? createClassDraft())
+  const [draft, setDraft] = useState<ClassDefinition>(() => {
+    const base = initial ?? createClassDraft()
+    return presetInherits ? { ...base, inherits: presetInherits } : base
+  })
   const [imageError, setImageError] = useState(false)
 
   const errors = useMemo(() => validateClassDraft(scene, draft), [scene, draft])

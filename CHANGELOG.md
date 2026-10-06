@@ -48,6 +48,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   references (missing classes, objects, event sources, action targets) or
   inheritance/composition cycles load with a non-blocking warning instead of
   silently.
+- **Inheritance in the palette**: the domain base classes (Vehiculo, Animal,
+  Cosa) appear as "Clases base" tiles that create a subclass in one step, and the
+  class list shows subclasses indented under their base, with a "hereda de" tag
+  when the base is not in the scene.
 - **Composition (level 6)**: a class can contain other objects as components;
   the class editor lets you pick the part class, the generated Python imports it
   and creates it in `__init__` (e.g. `self.bateria = Bateria("bateria")`), the
