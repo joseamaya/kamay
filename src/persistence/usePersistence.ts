@@ -3,8 +3,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { MISSIONS } from '../missions'
 import { createId } from '../model'
 import type { Project } from '../model'
+import { summarizeAnalytics } from '../pedagogy'
 import {
   selectEvidence,
+  useAnalyticsStore,
   useEditorStore,
   useEvidenceStore,
   useProgressStore,
@@ -95,8 +97,11 @@ export function usePersistence(): PersistenceApi {
         const project = useProjectStore.getState().project
         const completed = useProgressStore.getState().completed
         const evidence = selectEvidence(useEvidenceStore.getState())
+        const analytics = summarizeAnalytics(useAnalyticsStore.getState().events)
         download(
-          exportDelivery(buildDelivery(project, completed, MISSIONS.length, new Date(), evidence)),
+          exportDelivery(
+            buildDelivery(project, completed, MISSIONS.length, new Date(), evidence, analytics),
+          ),
           deliveryFileName(project),
         )
       },

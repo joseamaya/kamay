@@ -2,7 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { generatePython } from '../generator'
 import { objectAppearance, resolveObjectAttributes } from '../model'
-import { useEditorStore, useObservationsStore, useProjectStore, useRuntimeStore } from '../store'
+import {
+  useAnalyticsStore,
+  useEditorStore,
+  useObservationsStore,
+  useProjectStore,
+  useRuntimeStore,
+} from '../store'
 import { createRuntimeBridge } from './bridge'
 import { emitRuntimeCommand, emitRuntimeReset, onRuntimeTrigger } from './bus'
 import { stateEffect } from './effects'
@@ -72,7 +78,10 @@ export function useRuntime(): RuntimeApi {
 
   useEffect(() => {
     const offCommand = bridge.onCommand(handleRuntimeMessage)
-    const offError = bridge.onError((error) => setError(error))
+    const offError = bridge.onError((error) => {
+      setError(error)
+      useAnalyticsStore.getState().record({ type: 'error', detail: error.kind })
+    })
     const offStatus = bridge.onStatus((status) => setStatus(status))
     const offTrigger = onRuntimeTrigger((trigger) => {
       const simulation = simulationRef.current

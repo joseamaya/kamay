@@ -14,6 +14,7 @@ function delivery(overrides: Partial<Delivery> = {}): Delivery {
     missions: { completed: [], total: 16 },
     rubric: [{ id: 'objects', status: 'introduced', count: 0 }],
     evidence: { version: 1, misconceptions: [], predictions: {}, missionDates: {} },
+    analytics: { errorsByType: [], concepts: [], predictions: 0 },
     ...overrides,
   }
 }
@@ -50,6 +51,33 @@ describe('aggregateDeliveries', () => {
     expect(report.misconceptions.find((item) => item.id === 'shared_state')?.count).toBe(2)
     expect(report.predictions).toEqual({ correct: 2, total: 4 })
     expect(report.missionsCompleted).toBe(3)
+  })
+
+  it('aggregates runtime errors by kind', () => {
+    const report = aggregateDeliveries([
+      delivery({
+        analytics: {
+          errorsByType: [{ kind: 'NameError', count: 2 }],
+          concepts: [],
+          predictions: 0,
+        },
+      }),
+      delivery({
+        analytics: {
+          errorsByType: [
+            { kind: 'NameError', count: 1 },
+            { kind: 'AttributeError', count: 4 },
+          ],
+          concepts: [],
+          predictions: 0,
+        },
+      }),
+    ])
+
+    expect(report.errors).toEqual([
+      { kind: 'AttributeError', count: 4 },
+      { kind: 'NameError', count: 3 },
+    ])
   })
 
   it('returns an empty report for no deliveries', () => {

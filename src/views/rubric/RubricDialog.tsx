@@ -1,9 +1,9 @@
 import { format, getMessages } from '../../i18n'
 import { evaluateRubric } from '../../missions'
 import type { RubricCriterionId, RubricStatus } from '../../missions'
-import { findConcept } from '../../pedagogy'
+import { findConcept, summarizeAnalytics } from '../../pedagogy'
 import type { ConceptId } from '../../pedagogy'
-import { useEvidenceStore, useLevel, useProjectStore } from '../../store'
+import { useAnalyticsStore, useEvidenceStore, useLevel, useProjectStore } from '../../store'
 import { cn } from '../../ui/cn'
 import { Dialog } from '../../ui/Dialog'
 
@@ -46,10 +46,12 @@ export function RubricDialog({ open, onClose }: RubricDialogProps) {
   const level = useLevel()
   const misconceptions = useEvidenceStore((state) => state.misconceptions)
   const predictions = useEvidenceStore((state) => state.predictions)
+  const analyticsEvents = useAnalyticsStore((state) => state.events)
 
   if (!open) return null
 
   const entries = evaluateRubric(project)
+  const analytics = summarizeAnalytics(analyticsEvents)
   const demonstrated = entries.filter((entry) => entry.status === 'demonstrated').length
   const predictionTotals = Object.values(predictions).reduce(
     (totals, tally) => ({
@@ -95,6 +97,36 @@ export function RubricDialog({ open, onClose }: RubricDialogProps) {
           ) : null}
         </div>
       ) : null}
+      {analytics.errorsByType.length > 0 || analytics.concepts.length > 0 ? (
+        <div className="mb-3 flex flex-col gap-1 text-xs">
+          {analytics.errorsByType.length > 0 ? (
+            <p>
+              <span className="text-foreground font-medium">
+                {messages.rubric.evidence.errors}:{' '}
+              </span>
+              <span className="text-muted-foreground">
+                {analytics.errorsByType.map((item) => `${item.kind} (${item.count})`).join(', ')}
+              </span>
+            </p>
+          ) : null}
+          {analytics.concepts.length > 0 ? (
+            <p>
+              <span className="text-foreground font-medium">{messages.rubric.evidence.time}: </span>
+              <span className="text-muted-foreground">
+                {analytics.concepts
+                  .map(
+                    (item) =>
+                      `${messages.pedagogy.concepts[item.concept].title} (${format(
+                        messages.rubric.evidence.minutes,
+                        { minutes: Math.max(1, Math.round(item.durationMs / 60000)) },
+                      )})`,
+                  )
+                  .join(', ')}
+              </span>
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       <ul className="flex flex-col gap-2">
         {ORDER.map((id) => {
           const entry = entries.find((candidate) => candidate.id === id)!
@@ -112,6 +144,11 @@ export function RubricDialog({ open, onClose }: RubricDialogProps) {
               <div>
                 <p className="text-foreground text-sm font-medium">{info.title}</p>
                 <p className="text-muted-foreground text-xs">{info.description}</p>
+                {entry.count > 0 ? (
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    {format(messages.rubric.evidence.count, { count: entry.count })}
+                  </p>
+                ) : null}
                 {locked ? (
                   <p className="text-muted-foreground mt-1 text-xs">
                     {format(messages.levels.lockedHint, { level: concept.level })}

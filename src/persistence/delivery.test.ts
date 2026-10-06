@@ -39,6 +39,36 @@ describe('buildDelivery', () => {
     expect(delivery.evidence.predictions.state?.correct).toBe(1)
   })
 
+  it('includes the analytics summary when provided', () => {
+    const delivery = buildDelivery(
+      createEmptyProject({ name: 'X' }),
+      [],
+      16,
+      new Date(),
+      undefined,
+      {
+        errorsByType: [{ kind: 'NameError', count: 2 }],
+        concepts: [
+          {
+            concept: 'class',
+            first: '2026-01-01T10:00:00Z',
+            last: '2026-01-01T10:20:00Z',
+            durationMs: 1200000,
+            events: 2,
+          },
+        ],
+        predictions: 3,
+      },
+    )
+
+    expect(delivery.analytics.errorsByType).toEqual([{ kind: 'NameError', count: 2 }])
+
+    const parsed = parseDelivery(JSON.parse(JSON.stringify(delivery)))
+    expect(parsed?.analytics.errorsByType).toEqual([{ kind: 'NameError', count: 2 }])
+    expect(parsed?.analytics.predictions).toBe(3)
+    expect(parsed?.analytics.concepts[0]?.concept).toBe('class')
+  })
+
   it('exports a json blob', async () => {
     const text = await exportDelivery(
       buildDelivery(createEmptyProject({ name: 'X' }), [], 11),

@@ -1,4 +1,5 @@
 export * from './concepts'
+export * from './analytics'
 export * from './evidence'
 export * from './hints'
 export * from './misconceptions'

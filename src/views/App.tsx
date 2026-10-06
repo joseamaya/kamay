@@ -5,6 +5,7 @@ import { evaluateMissions } from '../missions'
 import { decodeSharePayload, readSharePayload, usePersistence } from '../persistence'
 import { useRuntime } from '../runtime'
 import {
+  useAnalyticsStore,
   useEditorStore,
   useEvidenceStore,
   useLevelsEffects,
@@ -50,6 +51,11 @@ export function App() {
     }
     missionsInitialized.current = true
   }, [project, pushLog, showToast])
+
+  useEffect(() => {
+    if (!persistence.ready) return
+    void useAnalyticsStore.getState().hydrate()
+  }, [persistence.ready])
 
   useEffect(() => {
     if (!persistence.ready) return

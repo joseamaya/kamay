@@ -1,4 +1,5 @@
 import type { Project } from '../model'
+import type { AnalyticsEvent } from '../pedagogy'
 import type { Delivery } from './delivery'
 
 export interface ProjectRecord {
@@ -19,4 +20,10 @@ export interface ProjectRepository {
 export interface DeliveryRecord {
   id: string
   delivery: Delivery
+}
+
+/** The local, durable activity log (a single record). */
+export interface AnalyticsRecord {
+  id: string
+  events: AnalyticsEvent[]
 }

@@ -1,9 +1,9 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb'
 
-import type { DeliveryRecord, ProjectRecord } from './types'
+import type { AnalyticsRecord, DeliveryRecord, ProjectRecord } from './types'
 
 export const DB_NAME = 'kamay'
-export const DB_VERSION = 2
+export const DB_VERSION = 3
 
 export interface KamayDB extends DBSchema {
   projects: {
@@ -13,6 +13,10 @@ export interface KamayDB extends DBSchema {
   deliveries: {
     key: string
     value: DeliveryRecord
+  }
+  analytics: {
+    key: string
+    value: AnalyticsRecord
   }
 }
 
@@ -24,6 +28,9 @@ export function openKamayDb(): Promise<IDBPDatabase<KamayDB>> {
       }
       if (!db.objectStoreNames.contains('deliveries')) {
         db.createObjectStore('deliveries', { keyPath: 'id' })
+      }
+      if (!db.objectStoreNames.contains('analytics')) {
+        db.createObjectStore('analytics', { keyPath: 'id' })
       }
     },
   })
