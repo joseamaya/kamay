@@ -16,6 +16,7 @@ export interface RuntimeApi {
   setStepMode: (on: boolean) => void
   step: () => void
   back: () => void
+  seek: (cursor: number) => void
   resume: () => void
 }
 
@@ -144,19 +145,25 @@ export function useRuntime(): RuntimeApi {
     useRuntimeStore.getState().advanceStep()
   }, [])
 
-  const back = useCallback(() => {
+  const replayTo = useCallback((target: number) => {
     const queue = useRuntimeStore.getState().stepQueue
-    const target = Math.max(0, queue.cursor - 1)
-    if (target === queue.cursor) return
+    const clamped = Math.max(0, Math.min(target, queue.steps.length))
+    if (clamped === queue.cursor) return
     emitRuntimeReset()
     useObservationsStore.getState().reset()
-    for (let index = 0; index < target; index += 1) {
+    for (let index = 0; index < clamped; index += 1) {
       const step = queue.steps[index]
       if (!step) continue
       for (const message of step) applyRuntimeMessage(message)
     }
-    useRuntimeStore.getState().setCursor(target)
+    useRuntimeStore.getState().setCursor(clamped)
   }, [])
+
+  const back = useCallback(() => {
+    replayTo(useRuntimeStore.getState().stepQueue.cursor - 1)
+  }, [replayTo])
+
+  const seek = useCallback((cursor: number) => replayTo(cursor), [replayTo])
 
   const resume = useCallback(() => {
     const queue = useRuntimeStore.getState().stepQueue
@@ -167,5 +174,5 @@ export function useRuntime(): RuntimeApi {
     useRuntimeStore.getState().setStepMode(false)
   }, [])
 
-  return { run, stop, setStepMode, step, back, resume }
+  return { run, stop, setStepMode, step, back, seek, resume }
 }

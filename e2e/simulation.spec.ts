@@ -36,3 +36,30 @@ test('drives movement and speech from state', async ({ page }) => {
   await expect(panel).toContainText('carro1.x')
   await expect(panel).toContainText('carro1.mensaje')
 })
+
+test('scrubs the step timeline', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
+  await page.getByRole('combobox', { name: 'Orden' }).selectOption('moverse')
+  await page.getByRole('button', { name: 'Agregar orden' }).click()
+  await page.getByRole('combobox', { name: 'Orden' }).selectOption('tocar_bocina')
+  await page.getByRole('button', { name: 'Agregar orden' }).click()
+
+  await page.getByRole('button', { name: 'Paso a paso' }).click()
+  await page.getByRole('button', { name: 'Ejecutar' }).click()
+
+  await expect(page.getByText('Paso 1 de 3')).toBeVisible()
+
+  // Jump forward on the timeline instead of stepping one by one.
+  const timeline = page.getByRole('slider', { name: 'Línea de tiempo' })
+  await timeline.focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(page.getByText('Paso 2 de 3')).toBeVisible()
+
+  // And jump straight to the end.
+  await timeline.focus()
+  await page.keyboard.press('End')
+  await expect(page.getByText('Paso 3 de 3')).toBeVisible()
+})
