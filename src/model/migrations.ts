@@ -141,6 +141,23 @@ export const migrations: Record<number, SchemaMigration> = {
         events: convertEvents(scene),
       }
     }),
+  // v8 -> v9: actions gained `kind`; `for_each` iterates the objects of a class.
+  8: (data) =>
+    mapScenes(data, 9, (scene) => {
+      const events = Array.isArray(scene.events) ? (scene.events as Record<string, unknown>[]) : []
+      return {
+        ...scene,
+        events: events.map((event) => {
+          const actions = Array.isArray(event.actions)
+            ? (event.actions as Record<string, unknown>[])
+            : []
+          return {
+            ...event,
+            actions: actions.map((action) => ({ kind: 'call', ...action })),
+          }
+        }),
+      }
+    }),
 }
 
 export class MigrationError extends Error {

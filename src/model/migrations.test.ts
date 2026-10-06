@@ -139,6 +139,28 @@ describe('migrateProject', () => {
     expect(result.scenes[0]?.events[0]?.signal).toBeUndefined()
   })
 
+  it('upgrades a v8 project by tagging actions as call', () => {
+    const input = {
+      version: 8,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          events: [{ type: 'on_start', actions: [{ target: 'a', method: 'saludar', args: {} }] }],
+        },
+      ],
+    }
+
+    const result = migrateProject(input) as {
+      version: number
+      scenes: { events: { actions: { kind: unknown }[] }[] }[]
+    }
+
+    expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
+    expect(result.scenes[0]?.events[0]?.actions[0]?.kind).toBe('call')
+  })
+
   it('upgrades a v4 project by adding physics settings', () => {
     const input = {
       version: 4,

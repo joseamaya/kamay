@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /** Current version of the persisted project model. Bump when the shape changes. */
-export const CURRENT_SCHEMA_VERSION = 8
+export const CURRENT_SCHEMA_VERSION = 9
 
 /** Identifier pattern shared by class and variable names in the generated Python. */
 export const identifierPattern = /^[A-Za-z_][A-Za-z0-9_]*$/
@@ -90,8 +90,17 @@ export const objectSchema = z.object({
   attributes: z.record(z.string(), z.union([z.number(), z.string(), z.boolean()])).default({}),
 })
 
+/**
+ * `call` invokes `method` on `target`; `for_each` invokes `method` on every
+ * object of `class` (including its subclasses), bound to `variable`.
+ */
+export const actionKindSchema = z.enum(['call', 'for_each'])
+
 export const actionSchema = z.object({
+  kind: actionKindSchema.optional(),
   target: z.string(),
+  class: z.string().regex(identifierPattern, 'invalid_identifier').nullable().optional(),
+  variable: z.string().regex(identifierPattern, 'invalid_identifier').optional(),
   method: z.string().regex(identifierPattern, 'invalid_identifier'),
   args: z.record(z.string(), z.union([z.number(), z.string(), z.boolean()])).default({}),
 })

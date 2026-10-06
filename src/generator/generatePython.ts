@@ -1,4 +1,10 @@
-import { collisionKey, DOMAIN_BASES, resolveMethods } from '../model'
+import {
+  collisionKey,
+  DOMAIN_BASES,
+  objectsOfClass,
+  resolveMethods,
+  withDomainBases,
+} from '../model'
 import type {
   Action,
   ClassDefinition,
@@ -166,15 +172,20 @@ interface OrderedArg {
   value: unknown
 }
 
+/** Methods reachable by an action: the target object's class or the loop class. */
+function actionMethods(scene: Scene, action: Action): Method[] {
+  const resolved = withDomainBases(scene)
+  if (action.kind === 'for_each') return resolveMethods(resolved, action.class ?? '')
+  const object = findObject(resolved, action.target)
+  return object ? resolveMethods(resolved, object.class) : []
+}
+
 /**
  * Orders action arguments by the method's declared parameter order. Unknown
  * arguments are appended in their recorded order so nothing is dropped.
  */
 function orderedArgs(scene: Scene, action: Action): OrderedArg[] {
-  const object = findObject(scene, action.target)
-  const method = object
-    ? resolveMethods(scene, object.class).find((candidate) => candidate.name === action.method)
-    : undefined
+  const method = actionMethods(scene, action).find((candidate) => candidate.name === action.method)
   const parameters = method?.parameters
   if (!parameters) return Object.entries(action.args).map(([name, value]) => ({ name, value }))
 
@@ -195,7 +206,10 @@ function generateAction(
   actionIndex: number,
   collected: CollectedValue[],
 ): string {
-  const variable = resolveVariableName(scene, action.target)
+  const variable =
+    action.kind === 'for_each'
+      ? (action.variable ?? 'elemento')
+      : resolveVariableName(scene, action.target)
   const args = orderedArgs(scene, action).map(({ name, value }) =>
     mark(
       pyLiteral(value),
@@ -210,6 +224,15 @@ function generateAction(
       collected,
     ),
   )
+
+  if (action.kind === 'for_each') {
+    const members = objectsOfClass(scene, action.class ?? '').map((object) => object.name)
+    return [
+      `for ${variable} in [${members.join(', ')}]:`,
+      `    ${variable}.${action.method}(${args.join(', ')})`,
+    ].join('\n')
+  }
+
   return `${variable}.${action.method}(${args.join(', ')})`
 }
 

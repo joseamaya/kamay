@@ -29,6 +29,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (`attribute == value` → color, shape, glyph or image) that change how its
   objects are drawn while the state matches; the catalog ships the `Vehiculo`
   "Prendido" variant.
+- **"For each" order**: send the same message to every object of a class and its
+  subclasses, generating `for animal in [perro1, gato1]: animal.hablar()`. It is
+  offered from level 5, adds a `same_message` mission, and the polymorphism
+  template now uses it. The schema is migrated to v9.
 - **"Change" block**: add or subtract a number from an attribute, generating
   `self.x = self.x + n`.
 - **Composition (level 6)**: a class can contain other objects as components;

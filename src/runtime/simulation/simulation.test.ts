@@ -64,6 +64,14 @@ function stateValue(messages: RuntimeMessage[], name: string): unknown {
   return states.at(-1)?.value
 }
 
+function targetState(messages: RuntimeMessage[], target: string, name: string): unknown {
+  const states = messages.filter(
+    (message): message is Extract<RuntimeMessage, { type: 'state' }> =>
+      message.type === 'state' && message.target === target && message.name === name,
+  )
+  return states.at(-1)?.value
+}
+
 describe('hasRawCode', () => {
   it('detects raw-code methods', () => {
     const raw: ClassDefinition = {
@@ -119,6 +127,56 @@ describe('Simulation', () => {
 
     expect(stateValue(messages, 'encendido')).toBe(true)
     expect(errors).toEqual([])
+  })
+
+  it('runs a for-each action over a class and its subclasses', () => {
+    const animal: ClassDefinition = {
+      ...createClassDraft('Animal'),
+      methods: [{ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } }],
+    }
+    const perro: ClassDefinition = {
+      ...createClassDraft('Perro'),
+      inherits: 'Animal',
+      methods: [
+        {
+          name: 'hablar',
+          parameters: [],
+          body: { kind: 'blocks', ops: [createSetBlock('mensaje', 'guau')] },
+        },
+      ],
+    }
+    const gato: ClassDefinition = {
+      ...createClassDraft('Gato'),
+      inherits: 'Animal',
+      methods: [
+        {
+          name: 'hablar',
+          parameters: [],
+          body: { kind: 'blocks', ops: [createSetBlock('mensaje', 'miau')] },
+        },
+      ],
+    }
+    let scene = upsertClass(createScene('Principal'), animal)
+    scene = upsertClass(scene, perro)
+    scene = upsertClass(scene, gato)
+    scene = {
+      ...scene,
+      objects: [createObject(scene, 'Perro'), createObject(scene, 'Gato')],
+    }
+    scene = addEventAction(scene, 'on_start', null, null, {
+      kind: 'for_each',
+      target: '',
+      class: 'Animal',
+      variable: 'animal',
+      method: 'hablar',
+      args: {},
+    })
+
+    const { messages, errors } = run(scene)
+
+    expect(errors).toEqual([])
+    expect(targetState(messages, 'perro1', 'mensaje')).toBe('guau')
+    expect(targetState(messages, 'gato1', 'mensaje')).toBe('miau')
   })
 
   it('runs a click handler for the matching object', () => {
