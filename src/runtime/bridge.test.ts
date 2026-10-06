@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createRuntimeBridge } from './bridge'
 import type { WorkerResponse } from './protocol'
+import type { RuntimeMessage } from './types'
 
 class FakeWorker {
   static instances: FakeWorker[] = []
@@ -26,7 +27,7 @@ class FakeWorker {
   }
 }
 
-describe('createRuntimeBridge warmup', () => {
+describe('createRuntimeBridge', () => {
   beforeEach(() => {
     FakeWorker.instances = []
     vi.stubGlobal('Worker', FakeWorker)
@@ -36,59 +37,62 @@ describe('createRuntimeBridge warmup', () => {
     vi.unstubAllGlobals()
   })
 
-  it('posts a preload request and resolves on warmup ready', async () => {
+  it('posts a run request and forwards commands', async () => {
     const bridge = createRuntimeBridge()
-    const promise = bridge.preload()
+    const seen: RuntimeMessage[] = []
+    bridge.onCommand((message) => seen.push(message))
+
+    await bridge.run({ 'principal.py': '' }, 'principal.py')
     const worker = FakeWorker.instances[0]!
 
-    expect(worker.posted).toContainEqual({ type: 'preload' })
-    worker.emit({ type: 'warmup', status: 'loading' })
-    worker.emit({ type: 'warmup', status: 'ready' })
+    expect(worker.posted).toContainEqual({
+      type: 'run',
+      files: { 'principal.py': '' },
+      entry: 'principal.py',
+    })
 
-    await expect(promise).resolves.toBeUndefined()
+    worker.emit({ type: 'command', command: { type: 'say', target: 'a', message: 'hi' } })
+    expect(seen).toEqual([{ type: 'say', target: 'a', message: 'hi' }])
   })
 
-  it('reports warmup status to listeners', () => {
-    const bridge = createRuntimeBridge()
-    const seen: string[] = []
-    const off = bridge.onWarmup((status) => seen.push(status))
-
-    void bridge.preload()
-    FakeWorker.instances[0]!.emit({ type: 'warmup', status: 'loading' })
-    FakeWorker.instances[0]!.emit({ type: 'warmup', status: 'ready' })
-    off()
-
-    expect(seen).toEqual(['loading', 'ready'])
-  })
-
-  it('resolves immediately when already warm without posting again', async () => {
-    const bridge = createRuntimeBridge()
-    void bridge.preload()
-    const worker = FakeWorker.instances[0]!
-    worker.emit({ type: 'warmup', status: 'ready' })
-
-    await expect(bridge.preload()).resolves.toBeUndefined()
-    expect(
-      worker.posted.filter((message) => (message as { type: string }).type === 'preload'),
-    ).toHaveLength(1)
-  })
-
-  it('rejects a pending warmup when stopped', async () => {
-    const bridge = createRuntimeBridge()
-    const promise = bridge.preload()
-    bridge.stop()
-    await expect(promise).rejects.toThrow('runtime_stopped')
-  })
-
-  it('keeps the run status untouched during warmup', () => {
+  it('forwards status and errors', async () => {
     const bridge = createRuntimeBridge()
     const statuses: string[] = []
+    const errors: string[] = []
     bridge.onStatus((status) => statuses.push(status))
+    bridge.onError((error) => errors.push(error.kind))
 
-    void bridge.preload()
-    FakeWorker.instances[0]!.emit({ type: 'warmup', status: 'loading' })
-    FakeWorker.instances[0]!.emit({ type: 'warmup', status: 'ready' })
+    await bridge.run({}, 'principal.py')
+    const worker = FakeWorker.instances[0]!
+    worker.emit({ type: 'status', status: 'ready' })
+    worker.emit({
+      type: 'error',
+      error: { kind: 'NameError', message: 'x', file: null, line: null },
+    })
 
-    expect(statuses).toEqual([])
+    expect(statuses).toEqual(['ready'])
+    expect(errors).toEqual(['NameError'])
+  })
+
+  it('posts triggers to the worker', async () => {
+    const bridge = createRuntimeBridge()
+    await bridge.run({}, 'principal.py')
+
+    bridge.trigger('click', 'a')
+
+    expect(FakeWorker.instances[0]!.posted).toContainEqual({
+      type: 'trigger',
+      kind: 'click',
+      source: 'a',
+    })
+  })
+
+  it('terminates the worker on stop', async () => {
+    const bridge = createRuntimeBridge()
+    await bridge.run({}, 'principal.py')
+
+    bridge.stop()
+
+    expect(FakeWorker.instances[0]!.terminated).toBe(true)
   })
 })

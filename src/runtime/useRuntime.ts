@@ -9,7 +9,6 @@ import { stateEffect } from './effects'
 import { hasRawCode, Simulation } from './simulation'
 import { currentStep, remainingSteps } from './steps'
 import type { RuntimeMessage } from './types'
-import { scheduleWarmup } from './warmup'
 
 export interface RuntimeApi {
   run: () => void
@@ -68,7 +67,6 @@ export function useRuntime(): RuntimeApi {
   const modeRef = useRef<RunMode | null>(null)
 
   const setStatus = useRuntimeStore((state) => state.setStatus)
-  const setWarmup = useRuntimeStore((state) => state.setWarmup)
   const setError = useRuntimeStore((state) => state.setError)
 
   useEffect(() => {
@@ -88,20 +86,6 @@ export function useRuntime(): RuntimeApi {
       bridge.stop()
     }
   }, [bridge, setStatus, setError])
-
-  useEffect(() => {
-    const offWarmup = bridge.onWarmup(setWarmup)
-    const cancel = scheduleWarmup({
-      disabled: import.meta.env.VITE_KAMAY_DISABLE_PRELOAD === '1',
-      preload: () => {
-        void bridge.preload().catch(() => undefined)
-      },
-    })
-    return () => {
-      offWarmup()
-      cancel()
-    }
-  }, [bridge, setWarmup])
 
   const run = useCallback(() => {
     const project = useProjectStore.getState().project

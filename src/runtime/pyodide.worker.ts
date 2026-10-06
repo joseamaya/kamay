@@ -34,13 +34,6 @@ async function ensurePyodide(): Promise<PyodideLike> {
   return pyodidePromise
 }
 
-function preload(): void {
-  post({ type: 'warmup', status: 'loading' })
-  ensurePyodide()
-    .then(() => post({ type: 'warmup', status: 'ready' }))
-    .catch(() => post({ type: 'warmup', status: 'idle' }))
-}
-
 function handleTrigger(kind: TriggerKind, source: string): void {
   try {
     registry.dispatch(kind, source)
@@ -99,9 +92,7 @@ for _name in [name for name, module in list(sys.modules.items()) if getattr(modu
 
 self.onmessage = (event: MessageEvent<WorkerRequest>) => {
   const request = event.data
-  if (request.type === 'preload') {
-    preload()
-  } else if (request.type === 'run') {
+  if (request.type === 'run') {
     void run(request.files, request.entry)
   } else if (request.type === 'trigger') {
     handleTrigger(request.kind, request.source)

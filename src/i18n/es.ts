@@ -19,7 +19,6 @@ export const es = {
     missions: 'Misiones {done}/{total}',
     templates: 'Plantillas',
     projector: 'Proyector',
-    preparing: 'Preparando Python…',
     undo: 'Deshacer',
     redo: 'Rehacer',
     newProject: 'Nuevo',
@@ -678,7 +677,7 @@ export const es = {
     classRemoved: 'Clase eliminada.',
     running: 'Ejecutando el programa…',
     ready: 'Listo.',
-    loading: 'Preparando Python…',
+    loading: 'Preparando…',
   },
   dialog: {
     cancel: 'Cancelar',
