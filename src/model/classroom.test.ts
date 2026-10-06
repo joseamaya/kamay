@@ -85,6 +85,19 @@ describe('instantiateClass', () => {
     expect(object.attributes).toMatchObject({ x: 0, y: 0, rotation: 0, scale: 1 })
     expect(classUsageCount(scene, 'Heroe')).toBe(1)
   })
+
+  it('seeds inherited attributes too', () => {
+    const base = createClassDraft('Base')
+    base.attributes.push({ name: 'vida', type: 'number', initial: 100 })
+    const sub = createClassDraft('Sub')
+    sub.inherits = 'Base'
+
+    let scene = upsertClass(createScene('Principal'), base)
+    scene = upsertClass(scene, sub)
+    scene = instantiateClass(scene, sub.id)
+
+    expect(scene.objects[0]?.attributes.vida).toBe(100)
+  })
 })
 
 describe('per-instance state', () => {
