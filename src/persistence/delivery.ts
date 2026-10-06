@@ -5,8 +5,8 @@ import { parseProject } from '../model'
 import type { Project } from '../model'
 import { evaluateRubric } from '../missions'
 import type { MissionId, RubricEntry } from '../missions'
-import { emptyEvidence, EVIDENCE_VERSION } from '../pedagogy'
-import type { Evidence, MisconceptionId } from '../pedagogy'
+import { emptyAnalytics, emptyEvidence, EVIDENCE_VERSION } from '../pedagogy'
+import type { AnalyticsSummary, Evidence, MisconceptionId } from '../pedagogy'
 import { projectSlug } from './file'
 
 export interface Delivery {
@@ -18,6 +18,7 @@ export interface Delivery {
   missions: { completed: MissionId[]; total: number }
   rubric: RubricEntry[]
   evidence: Evidence
+  analytics: AnalyticsSummary
 }
 
 export function buildDelivery(
@@ -26,6 +27,7 @@ export function buildDelivery(
   total: number,
   now: Date = new Date(),
   evidence: Evidence = emptyEvidence(),
+  analytics: AnalyticsSummary = emptyAnalytics(),
 ): Delivery {
   const files = generatePython(project).files
   return {
@@ -37,6 +39,7 @@ export function buildDelivery(
     missions: { completed: [...completed], total },
     rubric: evaluateRubric(project),
     evidence,
+    analytics,
   }
 }
 
@@ -68,6 +71,20 @@ const evidenceSchema = z.object({
   missionDates: z.record(z.string(), z.string()).optional(),
 })
 
+const analyticsSchema = z.object({
+  errorsByType: z.array(z.object({ kind: z.string(), count: z.number() })),
+  concepts: z.array(
+    z.object({
+      concept: z.string(),
+      first: z.string(),
+      last: z.string(),
+      durationMs: z.number(),
+      events: z.number(),
+    }),
+  ),
+  predictions: z.number(),
+})
+
 const deliverySchema = z.object({
   app: z.literal('kamay'),
   kind: z.literal('entrega'),
@@ -77,6 +94,7 @@ const deliverySchema = z.object({
   missions: z.object({ completed: z.array(z.string()), total: z.number() }),
   rubric: z.array(rubricEntrySchema),
   evidence: evidenceSchema.optional(),
+  analytics: analyticsSchema.optional(),
 })
 
 /** Validates and normalizes an imported delivery file. Returns null when invalid. */
@@ -107,6 +125,13 @@ export function parseDelivery(input: unknown): Delivery | null {
           missionDates: (evidence.missionDates ?? {}) as Evidence['missionDates'],
         }
       : emptyEvidence(),
+    analytics: result.data.analytics
+      ? {
+          errorsByType: result.data.analytics.errorsByType,
+          concepts: result.data.analytics.concepts as AnalyticsSummary['concepts'],
+          predictions: result.data.analytics.predictions,
+        }
+      : emptyAnalytics(),
   }
 }
 

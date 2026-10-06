@@ -139,6 +139,22 @@ export function TeacherDialog({ open, onClose }: TeacherDialogProps) {
             </>
           ) : null}
 
+          {report.errors.length > 0 ? (
+            <>
+              <h3 className="text-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
+                {messages.teacher.errors}
+              </h3>
+              <ul className="mb-3 flex flex-col gap-1 text-xs">
+                {report.errors.map((item) => (
+                  <li key={item.kind} className="flex items-center justify-between gap-2">
+                    <span className="font-mono">{item.kind}</span>
+                    <span className="text-muted-foreground">{item.count}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+
           <ul className="flex flex-col gap-1">
             {deliveries.map((record) => {
               const { delivery } = record

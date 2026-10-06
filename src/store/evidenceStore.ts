@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
 import {
+  conceptForMission,
   emptyEvidence,
   EVIDENCE_VERSION,
   withMisconception,
@@ -9,6 +10,7 @@ import {
 } from '../pedagogy'
 import type { ConceptId, Evidence, MisconceptionId, PredictionOutcome } from '../pedagogy'
 import type { MissionId } from '../missions'
+import { useAnalyticsStore } from './analyticsStore'
 
 const STORAGE_KEY = 'kamay.evidence'
 
@@ -75,16 +77,21 @@ export const useEvidenceStore = create<EvidenceState>((set, get) => ({
     const next = withMisconception(selectEvidence(get()), id)
     set(next)
     persist(next)
+    useAnalyticsStore.getState().record({ type: 'misconception', detail: id })
   },
   recordPrediction: (concept, outcome) => {
     const next = withPrediction(selectEvidence(get()), concept, outcome)
     set(next)
     persist(next)
+    useAnalyticsStore.getState().record({ type: 'prediction', concept, detail: outcome })
   },
   recordMission: (id) => {
     const next = withMissionDate(selectEvidence(get()), id, new Date().toISOString())
     set(next)
     persist(next)
+    useAnalyticsStore
+      .getState()
+      .record({ type: 'mission', concept: conceptForMission(id) ?? undefined, detail: id })
   },
   reset: () => {
     const next = emptyEvidence()

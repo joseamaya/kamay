@@ -494,6 +494,10 @@ export const es = {
     evidence: {
       misconceptions: 'Para repasar',
       predictions: 'Predicciones acertadas: {correct} de {total}',
+      count: 'Evidencia: {count}',
+      errors: 'Errores por tipo',
+      time: 'Tiempo por concepto',
+      minutes: '{minutes} min',
     },
     criteria: {
       objects: { title: 'Objetos', description: 'Pone objetos en el escenario.' },
@@ -591,6 +595,7 @@ export const es = {
     count: 'Entregas importadas: {count}',
     concepts: 'Conceptos demostrados por la clase',
     misconceptions: 'Misconceptions detectadas',
+    errors: 'Errores de ejecución',
     predictions: 'Predicciones acertadas: {correct} de {total}',
     missions: 'Misiones completadas: {count}',
     deliverySummary:

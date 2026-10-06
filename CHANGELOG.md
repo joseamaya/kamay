@@ -37,6 +37,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `self.x = self.x + n`.
 - **Step timeline**: step-by-step mode gains a scrubber to jump to any step, on
   top of the existing step back/forward.
+- **Teacher mode persistence**: imported deliveries are stored in IndexedDB and
+  survive reloads, and each delivery shows a summary (missions, demonstrated
+  concepts, predictions).
+- **Structured analytics**: a local, timestamped activity log (missions,
+  predictions, misconceptions, runtime errors); the rubric shows the evidence
+  count per criterion, time per concept and errors by type, and the delivery and
+  the teacher report include the summary.
 - **Composition (level 6)**: a class can contain other objects as components;
   the class editor lets you pick the part class, the generated Python imports it
   and creates it in `__init__` (e.g. `self.bateria = Bateria("bateria")`), the
