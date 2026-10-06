@@ -48,9 +48,6 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
     mensaje: messages.params.mensaje,
     x: messages.params.x,
     y: messages.params.y,
-    grados: messages.params.grados,
-    factor: messages.params.factor,
-    segundos: messages.params.segundos,
     nombre: messages.params.nombre,
   }
   const keyLabels: Record<string, string> = {

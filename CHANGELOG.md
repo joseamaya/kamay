@@ -6,14 +6,36 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **State-driven model**: object behavior is now only state. The engine reacts to
+  `x`/`y`/`rotation`/`scale` (move, rotate, scale) and `mensaje` (speech bubble);
+  the old primitives (`decir`, `mover`, `girar`, `cambiar_escala`, `esperar`,
+  `emitir`) and the base `Actor` class are gone. Domain bases (`Vehiculo`,
+  `Animal`, `Cosa`) are now the roots of the model, and a new class can be
+  created with no base. The schema is migrated to v8.
+- **Execution**: projects whose methods are all blocks run in a **TypeScript
+  simulation**; projects with an advanced-code method run the generated Python
+  with **Pyodide**, now loaded on demand (the background warmup was removed).
+- **Catalog**: entity and domain-base methods are authored as blocks (state
+  assignments), and movement methods (`moverse`, `pedalear`, `acelerar`, `rodar`,
+  `volar`, `despegar`) are relative.
+- **Missions and rubric**: removed the wait/signal missions and the `sequences`
+  badge and criterion; the rubric now has eight criteria (added `state`).
+
 ### Added
 
+- **Visual variants (schema v7)**: a class can declare appearance variants
+  (`attribute == value` → color, shape, glyph or image) that change how its
+  objects are drawn while the state matches; the catalog ships the `Vehiculo`
+  "Prendido" variant.
+- **"Change" block**: add or subtract a number from an attribute, generating
+  `self.x = self.x + n`.
 - **Composition (level 6)**: a class can contain other objects as components;
   the class editor lets you pick the part class, the generated Python imports it
   and creates it in `__init__` (e.g. `self.bateria = Bateria("bateria")`), the
   level 6 path and a "combine objects" mission/badge are added, the rubric gains
-  a composition criterion, and a composition template ships. The schema is
-  migrated to v6.
+  a composition criterion, and a composition template ships.
 
 ### Planned
 
