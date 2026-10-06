@@ -22,6 +22,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `volar`, `despegar`) are relative.
 - **Missions and rubric**: removed the wait/signal missions and the `sequences`
   badge and criterion; the rubric now has eight criteria (added `state`).
+- **Orders and triggers**: the "Cuándo" selector now appears only when events
+  unlock (level 4). Before that, orders run on start with a short note, and the
+  trigger labels are more concrete ("al iniciar el programa", "cuando toco este
+  objeto", "cuando choca con", "cuando pulso una tecla").
 
 ### Added
 

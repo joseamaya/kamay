@@ -68,7 +68,7 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
   const removeAction = useProjectStore((state) => state.removeAction)
   const pushLog = useEditorStore((state) => state.pushLog)
 
-  const [trigger, setTrigger] = useState<Trigger>('on_start')
+  const [triggerChoice, setTriggerChoice] = useState<Trigger>('on_start')
   const [kind, setKind] = useState<OrderKind>('call')
   const [otherName, setOtherName] = useState('')
   const [keyName, setKeyName] = useState(KEYS[0]!)
@@ -78,6 +78,9 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
   const [forEachVariable, setForEachVariable] = useState('elemento')
   const [forEachMethodName, setForEachMethodName] = useState('')
   const [forEachValues, setForEachValues] = useState<Record<string, string>>({})
+
+  // Before events unlock, orders always run on start.
+  const trigger: Trigger = capabilities.events ? triggerChoice : 'on_start'
 
   const resolvedScene = withDomainBases(scene)
 
@@ -101,12 +104,8 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
   const triggerOptions = [
     { value: 'on_start', label: messages.triggers.onStart },
     { value: 'on_click', label: messages.triggers.onClick },
-    ...(capabilities.events
-      ? [
-          { value: 'on_collision', label: messages.triggers.onCollision },
-          { value: 'on_key', label: messages.triggers.onKey },
-        ]
-      : []),
+    { value: 'on_collision', label: messages.triggers.onCollision },
+    { value: 'on_key', label: messages.triggers.onKey },
   ]
 
   const availableMethods: MethodSignature[] = resolveMethods(scene, object.class).map((method) => ({
@@ -229,40 +228,46 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
       )}
 
       <div className="border-border flex flex-col gap-2 border-t pt-3">
-        <Select
-          label={messages.actions.trigger}
-          value={trigger}
-          options={triggerOptions}
-          onChange={(value) => setTrigger(value as Trigger)}
-        />
-        {!capabilities.events ? (
-          <p className="text-muted-foreground text-xs">
-            {format(messages.actions.unlockEvents, { level: 4 })}
-          </p>
-        ) : null}
-        {trigger === 'on_key' ? (
-          <Select
-            label={messages.actions.key}
-            value={keyName}
-            options={KEYS.map((key) => ({ value: key, label: keyLabel(key) }))}
-            onChange={setKeyName}
-          />
-        ) : null}
-        {trigger === 'on_collision' ? (
-          otherObjects.length > 0 ? (
+        {capabilities.events ? (
+          <>
             <Select
-              label={messages.actions.other}
-              value={selectedOther ?? ''}
-              options={otherObjects.map((candidate) => ({
-                value: candidate.name,
-                label: candidate.name,
-              }))}
-              onChange={setOtherName}
+              label={messages.actions.trigger}
+              value={triggerChoice}
+              options={triggerOptions}
+              onChange={(value) => setTriggerChoice(value as Trigger)}
             />
-          ) : (
-            <p className="text-muted-foreground text-xs">{messages.actions.noOtherObjects}</p>
-          )
-        ) : null}
+            {trigger === 'on_key' ? (
+              <Select
+                label={messages.actions.key}
+                value={keyName}
+                options={KEYS.map((key) => ({ value: key, label: keyLabel(key) }))}
+                onChange={setKeyName}
+              />
+            ) : null}
+            {trigger === 'on_collision' ? (
+              otherObjects.length > 0 ? (
+                <Select
+                  label={messages.actions.other}
+                  value={selectedOther ?? ''}
+                  options={otherObjects.map((candidate) => ({
+                    value: candidate.name,
+                    label: candidate.name,
+                  }))}
+                  onChange={setOtherName}
+                />
+              ) : (
+                <p className="text-muted-foreground text-xs">{messages.actions.noOtherObjects}</p>
+              )
+            ) : null}
+          </>
+        ) : (
+          <>
+            <p className="text-muted-foreground text-xs">{messages.actions.runOnStart}</p>
+            <p className="text-muted-foreground text-xs">
+              {format(messages.actions.unlockEvents, { level: 4 })}
+            </p>
+          </>
+        )}
         {capabilities.inheritance ? (
           <Select
             label={messages.actions.kind}

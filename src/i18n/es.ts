@@ -451,6 +451,7 @@ export const es = {
     title: 'Acciones',
     empty: 'Selecciona un objeto para darle órdenes.',
     noActions: 'Este objeto todavía no tiene órdenes.',
+    runOnStart: 'Estas órdenes se ejecutan al iniciar.',
     trigger: 'Cuándo',
     other: 'Con',
     key: 'Tecla',
@@ -465,7 +466,8 @@ export const es = {
     forEachVariable: 'Variable',
     forEachTag: 'Para cada {class}',
     addForEach: 'Agregar «para cada»',
-    unlockEvents: 'En el Nivel {level} podrás usar choques y teclas.',
+    unlockEvents:
+      'En el Nivel {level} podrás elegir cuándo: al tocar, al chocar o al pulsar una tecla.',
   },
   selection: {
     menu: 'Menú del objeto',
@@ -608,10 +610,10 @@ export const es = {
     clear: 'Vaciar',
   },
   triggers: {
-    onStart: 'Al iniciar',
-    onClick: 'Al hacer clic',
-    onCollision: 'Al chocar con',
-    onKey: 'Al pulsar tecla',
+    onStart: 'Al iniciar el programa',
+    onClick: 'Cuando toco este objeto',
+    onCollision: 'Cuando choca con',
+    onKey: 'Cuando pulso una tecla',
   },
   keys: {
     up: 'Arriba',

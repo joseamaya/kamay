@@ -106,15 +106,30 @@ describe('OrderComposer', () => {
     expect(event?.other).toBe('carro2')
   })
 
-  it('hints where advanced triggers unlock', () => {
+  it('hides the trigger selector until events unlock', () => {
     useProgressStore.setState({ freeMode: false, unlockedLevel: 2 })
     useProjectStore.getState().addObject(currentScene().id, 'carro')
     useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
 
     render(<Harness />)
 
-    expect(screen.getByText('En el Nivel 4 podrás usar choques y teclas.')).toBeInTheDocument()
-    expect(screen.queryByRole('option', { name: 'Al chocar con' })).not.toBeInTheDocument()
+    expect(screen.getByText('Estas órdenes se ejecutan al iniciar.')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Cuándo')).not.toBeInTheDocument()
+  })
+
+  it('adds orders to the start event before events unlock', async () => {
+    const user = userEvent.setup()
+    useProgressStore.setState({ freeMode: false, unlockedLevel: 2 })
+    useProjectStore.getState().addObject(currentScene().id, 'carro')
+    useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
+
+    render(<Harness />)
+    await user.click(screen.getByRole('button', { name: 'Agregar orden' }))
+
+    const event = currentScene().events[0]
+    expect(event?.type).toBe('on_start')
+    expect(event?.source).toBeNull()
+    expect(event?.actions[0]).toMatchObject({ method: 'tocar_bocina' })
   })
 
   it('adds an action for the object', async () => {
