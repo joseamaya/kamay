@@ -18,6 +18,14 @@ export interface ObjectAttributesProps {
   object: ObjectInstance
 }
 
+function SectionTitle({ children }: { children: string }) {
+  return (
+    <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+      {children}
+    </h3>
+  )
+}
+
 export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
   const messages = getMessages()
   const updateObjectAttributes = useProjectStore((state) => state.updateObjectAttributes)
@@ -34,20 +42,22 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
   const defaults = resolveAttributeDefaults(scene, object.class)
 
   return (
-    <>
-      <div className="grid grid-cols-2 gap-3">
-        <NumberField
-          label={messages.inspector.positionX}
-          value={readNumber(object.attributes, 'x', 0)}
-          onChange={(value) => patch({ x: value })}
-        />
-        <NumberField
-          label={messages.inspector.positionY}
-          value={readNumber(object.attributes, 'y', 0)}
-          onChange={(value) => patch({ y: value })}
-        />
-      </div>
-      <div className="mt-3 flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
+      <section className="flex flex-col gap-2">
+        <SectionTitle>{messages.selection.transform}</SectionTitle>
+        <p className="text-muted-foreground text-xs">{messages.selection.transformHint}</p>
+        <div className="grid grid-cols-2 gap-3">
+          <NumberField
+            label={messages.inspector.positionX}
+            value={readNumber(object.attributes, 'x', 0)}
+            onChange={(value) => patch({ x: value })}
+          />
+          <NumberField
+            label={messages.inspector.positionY}
+            value={readNumber(object.attributes, 'y', 0)}
+            onChange={(value) => patch({ y: value })}
+          />
+        </div>
         <Slider
           label={messages.inspector.rotation}
           value={readNumber(object.attributes, 'rotation', 0)}
@@ -63,18 +73,20 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
           step={0.1}
           onChange={(value) => patch({ scale: value })}
         />
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <SectionTitle>{messages.selection.appearance}</SectionTitle>
         <ColorInput
           label={messages.inspector.color}
           value={readString(object.attributes, 'color', '#e2603a')}
           onChange={(value) => patch({ color: value })}
         />
-      </div>
+      </section>
 
       {customAttributes.length > 0 ? (
-        <div className="mt-4 flex flex-col gap-2">
-          <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-            {messages.inspector.customAttributes}
-          </h3>
+        <section className="flex flex-col gap-2">
+          <SectionTitle>{messages.selection.state}</SectionTitle>
           {customAttributes.map(({ value: attribute, owner }) => {
             const fallback = defaults[attribute.name] ?? 0
             const value = object.attributes[attribute.name] ?? fallback
@@ -124,8 +136,8 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
               </div>
             )
           })}
-        </div>
+        </section>
       ) : null}
-    </>
+    </div>
   )
 }

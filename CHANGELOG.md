@@ -52,6 +52,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Cosa) appear as "Clases base" tiles that create a subclass in one step (with a
   level notice before level 5), and the class list shows subclasses indented under
   their base, with a "hereda de" tag when the base is not in the scene.
+- **Direct manipulation on the stage**: the selected object shows a rotate and a
+  resize handle, so position, rotation and scale can be changed with the mouse;
+  the object menu is regrouped into Transformación, Aspecto and Estado, and the
+  numeric fields stay as a precise, keyboard-friendly fallback.
 - **Composition (level 6)**: a class can contain other objects as components;
   the class editor lets you pick the part class, the generated Python imports it
   and creates it in `__init__` (e.g. `self.bateria = Bateria("bateria")`), the

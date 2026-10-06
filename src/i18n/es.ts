@@ -193,6 +193,8 @@ export const es = {
     canvasLabel: 'Escenario. Usa las flechas para mover el objeto seleccionado.',
     empty: 'Tu escenario está listo.',
     emptyHint: 'Toca un objeto de la Fábrica para que aparezca aquí.',
+    rotateHandle: 'Rotar objeto',
+    scaleHandle: 'Redimensionar objeto',
   },
   welcome: {
     title: '¡Bienvenido a Kamay!',
@@ -441,7 +443,6 @@ export const es = {
     rotation: 'Rotación',
     scale: 'Escala',
     color: 'Color',
-    customAttributes: 'Atributos propios',
     resetToClass: 'Restablecer al valor de la clase',
     behavior: 'Comportamiento',
     inheritance: 'Herencia',
@@ -472,7 +473,10 @@ export const es = {
   selection: {
     menu: 'Menú del objeto',
     class: 'Instancia de {name}',
+    transform: 'Transformación',
+    transformHint: 'Arrastra, rota o redimensiona directamente en el escenario.',
     appearance: 'Aspecto',
+    state: 'Estado',
     orders: 'Órdenes',
     duplicate: 'Duplicar',
   },
