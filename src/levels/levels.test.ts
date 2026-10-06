@@ -29,6 +29,7 @@ function klass(name: string, inherits: string | null = null): ClassDefinition {
     id: `c-${name}`,
     name,
     inherits,
+    appearance: { color: null, shape: null, glyph: null },
     image: null,
     attributes: [],
     components: [],

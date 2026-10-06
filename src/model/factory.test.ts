@@ -79,25 +79,19 @@ describe('addCatalogObject', () => {
     expect(second.objects.map((object) => object.name)).toEqual(['carro1', 'carro2'])
   })
 
-  it('seeds the object visual attributes', () => {
+  it('seeds the object transform and appearance', () => {
     const scene = addCatalogObject(createScene('Principal'), carro)
-    expect(scene.objects[0]?.attributes).toMatchObject({
-      x: 0,
-      y: 0,
-      rotation: 0,
-      scale: 1,
-      shape: 'circle',
-      color: carro.color,
-    })
+    expect(scene.objects[0]?.attributes).toMatchObject({ x: 0, y: 0, rotation: 0, scale: 1 })
+    expect(scene.objects[0]?.appearance).toMatchObject({ shape: 'circle', color: carro.color })
   })
 
-  it('seeds the glyph attribute for a real-world entity', () => {
+  it('seeds the glyph for a real-world entity', () => {
     const scene = addCatalogObject(createScene('Principal'), perro)
     expect(scene.classes.map((definition) => definition.name)).toEqual(['Animal', 'Perro'])
-    expect(
-      scene.classes.find((definition) => definition.name === 'Perro')?.attributes,
-    ).toContainEqual({ name: 'glyph', type: 'string', initial: '🐶' })
-    expect(scene.objects[0]?.attributes.glyph).toBe('🐶')
+    expect(scene.classes.find((definition) => definition.name === 'Perro')?.appearance.glyph).toBe(
+      '🐶',
+    )
+    expect(scene.objects[0]?.appearance.glyph).toBe('🐶')
   })
 
   it('adds the domain base chain for a real-world entity', () => {

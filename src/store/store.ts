@@ -19,10 +19,11 @@ import {
   setActionArg as setActionArgInScene,
   setSceneBackground,
   setScenePhysics,
+  updateObjectAppearance as updateObjectAppearanceOnScene,
   updateObjectAttributes as updateObjectAttributesOnScene,
   upsertClass,
 } from '../model'
-import type { Action, ClassDefinition, EventType, Project, Scene } from '../model'
+import type { Action, Appearance, ClassDefinition, EventType, Project, Scene } from '../model'
 
 const HISTORY_LIMIT = 50
 
@@ -40,6 +41,7 @@ export interface ProjectState {
     objectId: string,
     patch: Record<string, number | string | boolean>,
   ) => void
+  updateObjectAppearance: (sceneId: string, objectId: string, patch: Partial<Appearance>) => void
   setBackground: (sceneId: string, background: string) => void
   setPhysics: (sceneId: string, patch: Partial<Scene['physics']>) => void
   saveClass: (sceneId: string, definition: ClassDefinition) => void
@@ -128,6 +130,14 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     get().updateProject((project) =>
       updateScene(project, sceneId, (scene) =>
         updateObjectAttributesOnScene(scene, objectId, patch),
+      ),
+    )
+  },
+
+  updateObjectAppearance: (sceneId, objectId, patch) => {
+    get().updateProject((project) =>
+      updateScene(project, sceneId, (scene) =>
+        updateObjectAppearanceOnScene(scene, objectId, patch),
       ),
     )
   },

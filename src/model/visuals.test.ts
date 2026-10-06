@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 
 import { createClassDraft, createScene, upsertClass } from './index'
 import { matchVisualVariant, objectAppearance, resolveVisualVariants } from './visuals'
-import type { ClassDefinition, ObjectInstance, VisualVariant } from './schema'
+import type { Appearance, ClassDefinition, ObjectInstance, VisualVariant } from './schema'
+
+const EMPTY: Appearance = { color: null, shape: null, glyph: null }
 
 const prendido: VisualVariant = {
   id: 'v-prendido',
@@ -17,11 +19,8 @@ const prendido: VisualVariant = {
 function vehiculo(visuals: VisualVariant[]): ClassDefinition {
   return {
     ...createClassDraft('Vehiculo'),
-    attributes: [
-      { name: 'color', type: 'string', initial: '#8f9aa8' },
-      { name: 'shape', type: 'string', initial: 'circle' },
-      { name: 'encendido', type: 'boolean', initial: false },
-    ],
+    appearance: { color: '#8f9aa8', shape: 'circle', glyph: null },
+    attributes: [{ name: 'encendido', type: 'boolean', initial: false }],
     visuals,
   }
 }
@@ -32,8 +31,11 @@ function sceneWith(...classes: ClassDefinition[]) {
   return scene
 }
 
-function object(attributes: Record<string, number | string | boolean> = {}): ObjectInstance {
-  return { id: 'o1', name: 'carro1', class: 'Vehiculo', attributes }
+function object(
+  attributes: Record<string, number | string | boolean> = {},
+  appearance: Appearance = EMPTY,
+): ObjectInstance {
+  return { id: 'o1', name: 'carro1', class: 'Vehiculo', appearance, attributes }
 }
 
 describe('resolveVisualVariants', () => {
@@ -60,7 +62,10 @@ describe('matchVisualVariant', () => {
 describe('objectAppearance', () => {
   it('returns the base look when no variant matches', () => {
     const scene = sceneWith(vehiculo([prendido]))
-    const appearance = objectAppearance(scene, object({ color: '#d64b4b', shape: 'circle' }))
+    const appearance = objectAppearance(
+      scene,
+      object({}, { color: '#d64b4b', shape: 'circle', glyph: null }),
+    )
 
     expect(appearance.color).toBe('#d64b4b')
     expect(appearance.glyph).toBeNull()
@@ -69,9 +74,11 @@ describe('objectAppearance', () => {
 
   it('overrides color and glyph when the state matches', () => {
     const scene = sceneWith(vehiculo([prendido]))
-    const appearance = objectAppearance(scene, object({ color: '#d64b4b', shape: 'circle' }), {
-      encendido: true,
-    })
+    const appearance = objectAppearance(
+      scene,
+      object({}, { color: '#d64b4b', shape: 'circle', glyph: null }),
+      { encendido: true },
+    )
 
     expect(appearance.color).toBe('#f4c542')
     expect(appearance.glyph).toBe('🔥')
@@ -80,5 +87,19 @@ describe('objectAppearance', () => {
   it('uses the class default when the object has no explicit value', () => {
     const scene = sceneWith(vehiculo([]))
     expect(objectAppearance(scene, object()).color).toBe('#8f9aa8')
+  })
+
+  it('inherits the base appearance through the ancestry', () => {
+    const carro: ClassDefinition = {
+      ...createClassDraft('Carro'),
+      inherits: 'Vehiculo',
+      appearance: { color: null, shape: 'square', glyph: '🚗' },
+    }
+    const scene = sceneWith(vehiculo([]), carro)
+    const appearance = objectAppearance(scene, { ...object(), class: 'Carro' })
+
+    expect(appearance.color).toBe('#8f9aa8')
+    expect(appearance.shape).toBe('square')
+    expect(appearance.glyph).toBe('🚗')
   })
 })

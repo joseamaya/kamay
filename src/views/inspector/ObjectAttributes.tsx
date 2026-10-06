@@ -1,6 +1,6 @@
 import { format, getMessages } from '../../i18n'
 import {
-  readString,
+  objectAppearance,
   resolveAttributeDefaults,
   resolveCustomAttributesWithOrigin,
 } from '../../model'
@@ -27,6 +27,7 @@ function SectionTitle({ children }: { children: string }) {
 export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
   const messages = getMessages()
   const updateObjectAttributes = useProjectStore((state) => state.updateObjectAttributes)
+  const updateObjectAppearance = useProjectStore((state) => state.updateObjectAppearance)
 
   const patch = (values: Record<string, number | string | boolean>) => {
     updateObjectAttributes(scene.id, object.id, values)
@@ -36,6 +37,7 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
     askPredictionForAttribute(scene, object, name, value)
   }
 
+  const appearance = objectAppearance(scene, object)
   const customAttributes = resolveCustomAttributesWithOrigin(scene, object.class)
   const defaults = resolveAttributeDefaults(scene, object.class)
 
@@ -45,8 +47,8 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
         <SectionTitle>{messages.selection.appearance}</SectionTitle>
         <ColorInput
           label={messages.inspector.color}
-          value={readString(object.attributes, 'color', '#e2603a')}
-          onChange={(value) => patch({ color: value })}
+          value={appearance.color}
+          onChange={(value) => updateObjectAppearance(scene.id, object.id, { color: value })}
         />
       </section>
 

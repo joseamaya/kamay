@@ -97,6 +97,46 @@ function convertEvents(scene: Record<string, unknown>): Record<string, unknown>[
     })
 }
 
+const APPEARANCE_NAMES = new Set(['color', 'shape', 'glyph'])
+
+function emptyAppearance(): Record<string, unknown> {
+  return { color: null, shape: null, glyph: null }
+}
+
+/** Splits a class's attribute list into `appearance` and the remaining attributes. */
+function splitClassAppearance(attributes: unknown): {
+  appearance: Record<string, unknown>
+  attributes: Record<string, unknown>[]
+} {
+  const list = Array.isArray(attributes) ? (attributes as Record<string, unknown>[]) : []
+  const appearance = emptyAppearance()
+  const rest: Record<string, unknown>[] = []
+  for (const attribute of list) {
+    const name = typeof attribute.name === 'string' ? attribute.name : ''
+    if (APPEARANCE_NAMES.has(name)) appearance[name] = attribute.initial ?? null
+    else rest.push(attribute)
+  }
+  return { appearance, attributes: rest }
+}
+
+/** Splits an object's attribute record into `appearance` and the remaining ones. */
+function splitObjectAppearance(attributes: unknown): {
+  appearance: Record<string, unknown>
+  attributes: Record<string, unknown>
+} {
+  const record =
+    typeof attributes === 'object' && attributes !== null
+      ? (attributes as Record<string, unknown>)
+      : {}
+  const appearance = emptyAppearance()
+  const rest: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(record)) {
+    if (APPEARANCE_NAMES.has(key)) appearance[key] = value
+    else rest[key] = value
+  }
+  return { appearance, attributes: rest }
+}
+
 export const migrations: Record<number, SchemaMigration> = {
   // v1 -> v2: events gained a `source` field for click/collision triggers.
   1: (data) => mapEvents(data, 2, (event) => ({ source: null, ...event })),
@@ -155,6 +195,28 @@ export const migrations: Record<number, SchemaMigration> = {
             ...event,
             actions: actions.map((action) => ({ kind: 'call', ...action })),
           }
+        }),
+      }
+    }),
+  // v9 -> v10: appearance (color/shape/glyph) leaves the domain attributes and
+  // becomes a simulation field on the class and on the object.
+  9: (data) =>
+    mapScenes(data, 10, (scene) => {
+      const classes = Array.isArray(scene.classes)
+        ? (scene.classes as Record<string, unknown>[])
+        : []
+      const objects = Array.isArray(scene.objects)
+        ? (scene.objects as Record<string, unknown>[])
+        : []
+      return {
+        ...scene,
+        classes: classes.map((definition) => {
+          const { appearance, attributes } = splitClassAppearance(definition.attributes)
+          return { ...definition, appearance, attributes }
+        }),
+        objects: objects.map((object) => {
+          const { appearance, attributes } = splitObjectAppearance(object.attributes)
+          return { ...object, appearance, attributes }
         }),
       }
     }),

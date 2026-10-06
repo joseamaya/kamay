@@ -30,10 +30,11 @@ function sceneWithClass(definition: ClassDefinition) {
 }
 
 describe('createClassDraft', () => {
-  it('creates a valid root draft with color and shape', () => {
+  it('creates a valid root draft with a default appearance and no domain attributes', () => {
     const draft = createClassDraft('Heroe')
     expect(draft.inherits).toBeNull()
-    expect(draft.attributes.map((attribute) => attribute.name)).toEqual(['color', 'shape'])
+    expect(draft.attributes).toEqual([])
+    expect(draft.appearance).toEqual({ color: '#e2603a', shape: 'circle', glyph: null })
   })
 })
 
@@ -172,11 +173,7 @@ describe('inheritance', () => {
   it('resolves inherited attributes, own definitions first', () => {
     const scene = upsertClass(sceneWithFamily(), {
       ...personaje,
-      attributes: [
-        { name: 'color', type: 'string', initial: '#fff' },
-        { name: 'shape', type: 'string', initial: 'circle' },
-        { name: 'vida', type: 'number', initial: 100 },
-      ],
+      attributes: [{ name: 'vida', type: 'number', initial: 100 }],
     })
     expect(resolveCustomAttributes(scene, 'Heroe').map((attribute) => attribute.name)).toEqual([
       'vida',

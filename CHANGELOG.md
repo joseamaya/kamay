@@ -26,6 +26,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   unlock (level 4). Before that, orders run on start with a short note, and the
   trigger labels are more concrete ("al iniciar el programa", "cuando toco este
   objeto", "cuando choca con", "cuando pulso una tecla").
+- **Appearance leaves the domain (schema v10)**: `color`/`shape`/`glyph` are no
+  longer class/object attributes and are no longer emitted in the generated
+  Python. They belong to the simulation: the class declares its base appearance,
+  state variants override it, and an object can override it too. This removes the
+  `glyph` leak into "custom attributes" and keeps the Python as clean domain code
+  (see `docs/04`, "Dos capas").
 
 ### Added
 

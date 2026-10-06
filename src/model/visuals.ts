@@ -1,7 +1,6 @@
-import { readString } from './attributes'
 import type { AttributeValue } from './attributes'
-import { resolveAttributeDefaults } from './classroom'
-import { isActorShape, withDomainBases } from './factory'
+import { fullClassAncestry, resolveAttributeDefaults } from './classroom'
+import { DOMAIN_BASES, isActorShape, withDomainBases } from './factory'
 import { createId } from './ids'
 import type { ObjectInstance, Scene, VisualVariant } from './schema'
 
@@ -63,10 +62,6 @@ export function matchVisualVariant(
   )
 }
 
-/**
- * The appearance an object should show right now: its base look (class defaults
- * plus object/runtime attributes) with the first matching variant applied.
- */
 /** Class defaults merged with the object's own and observed runtime values. */
 export function resolveObjectAttributes(
   scene: Scene,
@@ -81,6 +76,37 @@ export function resolveObjectAttributes(
   }
 }
 
+/** Base appearance of a class, nearest non-null value winning along the ancestry. */
+function resolveClassAppearance(
+  scene: Scene,
+  className: string,
+): { color: string | null; shape: string | null; glyph: string | null; image: string | null } {
+  const result: {
+    color: string | null
+    shape: string | null
+    glyph: string | null
+    image: string | null
+  } = { color: null, shape: null, glyph: null, image: null }
+
+  for (const name of fullClassAncestry(scene, className)) {
+    const definition =
+      scene.classes.find((candidate) => candidate.name === name) ?? DOMAIN_BASES[name]
+    if (!definition) continue
+    const appearance = definition.appearance
+    if (result.color === null && appearance.color !== null) result.color = appearance.color
+    if (result.shape === null && appearance.shape !== null) result.shape = appearance.shape
+    if (result.glyph === null && appearance.glyph !== null) result.glyph = appearance.glyph
+    if (result.image === null && definition.image !== null) result.image = definition.image
+  }
+
+  return result
+}
+
+/**
+ * The appearance an object shows right now: the class's base look (with the
+ * object's optional override) plus the first matching state variant. Appearance
+ * belongs to the simulation, not to the domain.
+ */
 export function objectAppearance(
   scene: Scene,
   object: ObjectInstance,
@@ -88,13 +114,15 @@ export function objectAppearance(
 ): ResolvedAppearance {
   const resolved = withDomainBases(scene)
   const attributes = resolveObjectAttributes(scene, object, runtimeValues)
-  const definition = resolved.classes.find((candidate) => candidate.name === object.class)
+  const chain = resolveClassAppearance(resolved, object.class)
+  const override = object.appearance
+  const shape = override.shape ?? chain.shape
 
   const base: ResolvedAppearance = {
-    glyph: readString(attributes, 'glyph', '') || null,
-    image: definition?.image ?? null,
-    color: readString(attributes, 'color', DEFAULT_COLOR),
-    shape: isActorShape(attributes.shape) ? attributes.shape : DEFAULT_SHAPE,
+    glyph: override.glyph ?? chain.glyph,
+    image: chain.image,
+    color: override.color ?? chain.color ?? DEFAULT_COLOR,
+    shape: isActorShape(shape) ? shape : DEFAULT_SHAPE,
   }
 
   const variant = matchVisualVariant(resolveVisualVariants(resolved, object.class), attributes)

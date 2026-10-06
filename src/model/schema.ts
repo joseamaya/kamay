@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /** Current version of the persisted project model. Bump when the shape changes. */
-export const CURRENT_SCHEMA_VERSION = 9
+export const CURRENT_SCHEMA_VERSION = 10
 
 /** Identifier pattern shared by class and variable names in the generated Python. */
 export const identifierPattern = /^[A-Za-z_][A-Za-z0-9_]*$/
@@ -59,6 +59,19 @@ export const visualConditionSchema = z.object({
 })
 
 /**
+ * Visual representation of a class (the species' base look) or of an object
+ * (an individual override). It belongs to the simulation, not to the domain, so
+ * it is never emitted in the generated Python.
+ */
+export const appearanceSchema = z.object({
+  color: z.string().nullable().default(null),
+  shape: z.string().nullable().default(null),
+  glyph: z.string().nullable().default(null),
+})
+
+const EMPTY_APPEARANCE = { color: null, shape: null, glyph: null }
+
+/**
  * A named look a class shows while its conditions hold. The first matching
  * variant (own variants before inherited ones) overrides the base appearance.
  */
@@ -76,6 +89,7 @@ export const classSchema = z.object({
   id: z.string(),
   name: z.string().regex(identifierPattern, 'invalid_identifier'),
   inherits: z.string().regex(identifierPattern, 'invalid_identifier').nullable().default(null),
+  appearance: appearanceSchema.default(EMPTY_APPEARANCE),
   image: z.string().nullable().default(null),
   attributes: z.array(attributeSchema).default([]),
   components: z.array(componentSchema).default([]),
@@ -87,6 +101,7 @@ export const objectSchema = z.object({
   id: z.string(),
   name: z.string().regex(identifierPattern, 'invalid_identifier'),
   class: z.string().regex(identifierPattern, 'invalid_identifier'),
+  appearance: appearanceSchema.default(EMPTY_APPEARANCE),
   attributes: z.record(z.string(), z.union([z.number(), z.string(), z.boolean()])).default({}),
 })
 
@@ -159,6 +174,7 @@ export type AttributeType = z.infer<typeof attributeTypeSchema>
 export type Parameter = z.infer<typeof parameterSchema>
 export type Attribute = z.infer<typeof attributeSchema>
 export type Component = z.infer<typeof componentSchema>
+export type Appearance = z.infer<typeof appearanceSchema>
 export type VisualCondition = z.infer<typeof visualConditionSchema>
 export type VisualVariant = z.infer<typeof visualVariantSchema>
 export type MethodBody = z.infer<typeof methodBodySchema>
