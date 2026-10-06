@@ -148,6 +148,32 @@ describe('comprehension missions', () => {
     expect(evaluateMissions(projectWith(scene))).toContain('polymorphism')
   })
 
+  it('requires a for-each action over a base with overridden subclasses', () => {
+    const animal = createClassDraft('SerVivo')
+    animal.methods.push({ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } })
+    const perro = createClassDraft('Canino')
+    perro.inherits = 'SerVivo'
+    perro.methods.push({ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } })
+    const gato = createClassDraft('Felino')
+    gato.inherits = 'SerVivo'
+    gato.methods.push({ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } })
+
+    let scene: Scene = { ...createScene('Principal'), classes: [animal, perro, gato] }
+    scene = instantiateClass(scene, perro.id)
+    scene = instantiateClass(scene, gato.id)
+    expect(evaluateMissions(projectWith(scene))).not.toContain('same_message')
+
+    scene = addEventAction(scene, 'on_start', null, null, {
+      kind: 'for_each',
+      target: '',
+      class: 'SerVivo',
+      variable: 'ser',
+      method: 'hablar',
+      args: {},
+    })
+    expect(evaluateMissions(projectWith(scene))).toContain('same_message')
+  })
+
   it('requires a composed part with behavior of its own', () => {
     const motor: ClassDefinition = {
       ...createClassDraft('Motor'),

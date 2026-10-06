@@ -125,6 +125,58 @@ describe('generatePython', () => {
     )
   })
 
+  it('generates a for-each loop over a class and its subclasses', () => {
+    const project = projectSchema.parse({
+      version: 9,
+      meta: { name: 'X' },
+      scenes: [
+        {
+          id: 's',
+          name: 'Principal',
+          classes: [
+            {
+              id: 'c-perro',
+              name: 'Perro',
+              inherits: 'Animal',
+              methods: [{ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } }],
+            },
+            {
+              id: 'c-gato',
+              name: 'Gato',
+              inherits: 'Animal',
+              methods: [{ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } }],
+            },
+          ],
+          objects: [
+            { id: 'o1', name: 'perro1', class: 'Perro', attributes: { x: 0, y: 0 } },
+            { id: 'o2', name: 'gato1', class: 'Gato', attributes: { x: 0, y: 0 } },
+          ],
+          events: [
+            {
+              type: 'on_start',
+              actions: [
+                {
+                  kind: 'for_each',
+                  target: '',
+                  class: 'Animal',
+                  variable: 'animal',
+                  method: 'hablar',
+                  args: {},
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+
+    const main =
+      generatePython(project).files.find((file) => file.path === 'principal.py')?.content ?? ''
+
+    expect(main).toContain('for animal in [perro1, gato1]:')
+    expect(main).toContain('animal.hablar()')
+  })
+
   it('generates the expected Heroe.py (golden)', () => {
     const { files } = generatePython(buildFixture())
     const heroe = files.find((file) => file.path === 'Heroe.py')

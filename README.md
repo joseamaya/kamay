@@ -40,7 +40,8 @@ The project has completed **Phase 4 — classroom and gamification**. Working to
   for real with planck.js.
 - **Properties**: position, rotation, scale and color.
 - **Actions**: the object's own (or inherited) methods, triggered on start,
-  click, collision or key press.
+  click, collision or key press; from level 5, a **"for each"** order sends the
+  same message to every object of a class and its subclasses.
 - **Blocks**: build method bodies with stackable blocks (call a method, assign
   an attribute, add/subtract a number, repeat) and convert them to/from code;
   code the editor cannot represent is kept as advanced code.

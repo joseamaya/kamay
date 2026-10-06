@@ -171,14 +171,11 @@ function polymorphism(): Project {
       instance(base, 'Felino', { color: '#8f9aa8', shape: 'circle' }),
     ],
   }
-  const [perroObject, gatoObject] = scene.objects
   scene = addEventAction(scene, 'on_start', null, null, {
-    target: perroObject!.name,
-    method: 'hablar',
-    args: {},
-  })
-  scene = addEventAction(scene, 'on_start', null, null, {
-    target: gatoObject!.name,
+    kind: 'for_each',
+    target: '',
+    class: 'SerVivo',
+    variable: 'ser',
     method: 'hablar',
     args: {},
   })

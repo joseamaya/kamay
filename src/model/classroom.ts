@@ -1,5 +1,11 @@
 import type { AttributeValue } from './attributes'
-import { createObject, DOMAIN_BASE_NAMES, isDomainBaseName, nextObjectName } from './factory'
+import {
+  createObject,
+  DOMAIN_BASES,
+  DOMAIN_BASE_NAMES,
+  isDomainBaseName,
+  nextObjectName,
+} from './factory'
 import { createId } from './ids'
 import { identifierPattern } from './schema'
 import type { Attribute, ClassDefinition, Component, Method, ObjectInstance, Scene } from './schema'
@@ -189,6 +195,46 @@ export function classAncestry(scene: Scene, className: string): string[] {
   }
 
   return chain
+}
+
+/** Class names from the class up to the root, including domain bases. */
+export function fullClassAncestry(scene: Scene, className: string): string[] {
+  const chain: string[] = []
+  const visited = new Set<string>()
+  let current: string | null = className
+
+  while (current && !visited.has(current)) {
+    visited.add(current)
+    chain.push(current)
+    const definition: ClassDefinition | undefined =
+      scene.classes.find((candidate) => candidate.name === current) ?? DOMAIN_BASES[current]
+    current = definition?.inherits ?? null
+  }
+
+  return chain
+}
+
+/** Whether `className` is `baseName` or transitively inherits from it. */
+export function classExtends(scene: Scene, className: string, baseName: string): boolean {
+  return fullClassAncestry(scene, className).includes(baseName)
+}
+
+/** Objects whose class is `className` or inherits from it. */
+export function objectsOfClass(scene: Scene, className: string): ObjectInstance[] {
+  if (!className) return []
+  return scene.objects.filter((object) => classExtends(scene, object.class, className))
+}
+
+/**
+ * Classes that can be iterated: every instantiated class plus its ancestors, so
+ * picking a base class covers the objects of its subclasses.
+ */
+export function iterableClasses(scene: Scene): string[] {
+  const names = new Set<string>()
+  for (const object of scene.objects) {
+    for (const name of fullClassAncestry(scene, object.class)) names.add(name)
+  }
+  return [...names]
 }
 
 /** Number of classes that contain the given class as a component. */

@@ -63,3 +63,24 @@ test('scrubs the step timeline', async ({ page }) => {
   await page.keyboard.press('End')
   await expect(page.getByText('Paso 3 de 3')).toBeVisible()
 })
+
+test('runs a for-each action over a class and its subclasses', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Agregar Perro al escenario' }).click()
+  await page.getByRole('button', { name: 'Agregar Gato al escenario' }).click()
+  await page.getByRole('button', { name: 'perro1', exact: true }).click()
+
+  await page.getByRole('combobox', { name: 'Tipo de acción' }).selectOption('for_each')
+  await page.getByRole('combobox', { name: 'Clase' }).selectOption('Animal')
+  await page.getByRole('combobox', { name: 'Orden' }).selectOption('comer')
+  await page.getByRole('button', { name: 'Agregar «para cada»' }).click()
+
+  await page.getByRole('button', { name: 'Ejecutar' }).click()
+  await expect(page.getByText('Listo.')).toBeVisible()
+
+  // `comer` is inherited by both Perro and Gato, so the loop covers both.
+  const panel = page.locator('[data-state-panel]')
+  await expect(panel).toContainText('perro1.energia')
+  await expect(panel).toContainText('gato1.energia')
+})

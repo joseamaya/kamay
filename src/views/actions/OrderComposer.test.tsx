@@ -55,6 +55,27 @@ describe('OrderComposer', () => {
     })
   })
 
+  it('adds a for-each action over a class', async () => {
+    const user = userEvent.setup()
+    useProjectStore.getState().addObject(currentScene().id, 'perro')
+    useProjectStore.getState().addObject(currentScene().id, 'gato')
+    useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
+
+    render(<Harness />)
+    await user.selectOptions(screen.getByLabelText('Tipo de acción'), 'for_each')
+    await user.selectOptions(screen.getByLabelText('Clase'), 'Animal')
+    await user.selectOptions(screen.getByLabelText('Orden'), 'comer')
+    await user.click(screen.getByRole('button', { name: 'Agregar «para cada»' }))
+
+    expect(currentScene().events[0]?.actions[0]).toMatchObject({
+      kind: 'for_each',
+      class: 'Animal',
+      variable: 'elemento',
+      method: 'comer',
+      args: {},
+    })
+  })
+
   it('adds a click action whose source is the object', async () => {
     const user = userEvent.setup()
     useProjectStore.getState().addObject(currentScene().id, 'carro')

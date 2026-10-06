@@ -15,7 +15,7 @@ export const LEVELS: Level[] = [
   { id: 2, missions: ['give_order', 'say_hello', 'move_it'] },
   { id: 3, missions: ['own_class', 'own_attribute', 'own_method', 'two_instances'] },
   { id: 4, missions: ['collision'] },
-  { id: 5, missions: ['inherit', 'inherited_behavior', 'polymorphism'] },
+  { id: 5, missions: ['inherit', 'inherited_behavior', 'polymorphism', 'same_message'] },
   { id: 6, missions: ['compose', 'composed_part'] },
 ]
 
@@ -109,6 +109,9 @@ export function requiredLevel(project: Project): number {
 
   if (custom.some((definition) => definition.inherits && customNames.has(definition.inherits)))
     return 5
+
+  const forEach = events.some((event) => event.actions.some((action) => action.kind === 'for_each'))
+  if (forEach) return 5
 
   const advancedEvents = events.some(
     (event) => event.type === 'on_collision' || event.type === 'on_key',

@@ -1,5 +1,6 @@
 import {
   collisionKey,
+  objectsOfClass,
   resolveAttributeDefaults,
   resolveMethods,
   withDomainBases,
@@ -100,6 +101,13 @@ export class Simulation {
   }
 
   private runAction(action: Action): void {
+    if (action.kind === 'for_each') {
+      for (const instance of objectsOfClass(this.scene, action.class ?? '')) {
+        const object = this.findObject(instance.name)
+        if (object) this.invoke(object, action.method)
+      }
+      return
+    }
     const object = this.findObject(action.target)
     if (object) this.invoke(object, action.method)
   }

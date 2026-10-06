@@ -81,6 +81,7 @@ const MISSION_CONCEPT: Partial<Record<MissionId, ConceptId>> = {
   inherit: 'inheritance',
   inherited_behavior: 'inheritance',
   polymorphism: 'polymorphism',
+  same_message: 'polymorphism',
   compose: 'composition',
   composed_part: 'composition',
   two_instances: 'state',

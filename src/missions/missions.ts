@@ -27,6 +27,7 @@ export type MissionId =
   | 'inherit'
   | 'inherited_behavior'
   | 'polymorphism'
+  | 'same_message'
   | 'collision'
   | 'compose'
   | 'composed_part'
@@ -211,6 +212,28 @@ export function demonstratesPolymorphism(project: Project): boolean {
   return false
 }
 
+/**
+ * One loop, many responses: a `for_each` action sends the same method to two or
+ * more classes covered by the loop (the loop class or its subclasses).
+ */
+export function sameMessageToMany(project: Project): boolean {
+  for (const scene of project.scenes) {
+    const forEach = scene.events
+      .flatMap((event) => event.actions)
+      .filter((action) => action.kind === 'for_each' && action.class)
+    for (const action of forEach) {
+      const loopClass = action.class as string
+      const covered = scene.classes.filter(
+        (candidate) =>
+          (candidate.name === loopClass || inheritsFrom(scene, candidate.name, loopClass)) &&
+          candidate.methods.some((method) => method.name === action.method),
+      )
+      if (covered.length >= 2) return true
+    }
+  }
+  return false
+}
+
 export const MISSIONS: Mission[] = [
   {
     id: 'first_object',
@@ -268,6 +291,10 @@ export const MISSIONS: Mission[] = [
     isComplete: (project) => demonstratesPolymorphism(project),
   },
   {
+    id: 'same_message',
+    isComplete: (project) => sameMessageToMany(project),
+  },
+  {
     id: 'compose',
     isComplete: (project) =>
       classes(project).some((definition) => definition.components.length > 0),
@@ -282,7 +309,10 @@ export const BADGES: Badge[] = [
   { id: 'objects', missions: ['first_object'] },
   { id: 'orders', missions: ['give_order', 'say_hello', 'move_it'] },
   { id: 'classes', missions: ['own_class', 'own_attribute', 'own_method', 'two_instances'] },
-  { id: 'inheritance', missions: ['inherit', 'inherited_behavior', 'polymorphism'] },
+  {
+    id: 'inheritance',
+    missions: ['inherit', 'inherited_behavior', 'polymorphism', 'same_message'],
+  },
   { id: 'events', missions: ['collision'] },
   { id: 'composition', missions: ['compose', 'composed_part'] },
 ]

@@ -372,6 +372,15 @@ export const es = {
           'Por ejemplo: «Animal.hablar()», «Perro» dice «¡Guau!» y «Gato» dice «¡Miau!».',
         ],
       },
+      same_message: {
+        title: 'Un mensaje para todos',
+        description: 'Recorre los objetos de una clase y mándales el mismo mensaje.',
+        hints: [
+          'Puedes mandar el mismo mensaje a varios objetos a la vez.',
+          'En «Órdenes», elige «Tipo de acción → A todos los objetos».',
+          'Por ejemplo: «para cada SerVivo: hablar()», y cada uno responde distinto.',
+        ],
+      },
       composed_part: {
         title: 'Contiene una parte',
         description: 'Haz que un objeto contenga otro con comportamiento propio.',
@@ -446,6 +455,13 @@ export const es = {
     method: 'Orden',
     add: 'Agregar orden',
     remove: 'Quitar orden',
+    kind: 'Tipo de acción',
+    kindCall: 'A un objeto',
+    kindForEach: 'A todos los objetos',
+    forEachClass: 'Clase',
+    forEachVariable: 'Variable',
+    forEachTag: 'Para cada {class}',
+    addForEach: 'Agregar «para cada»',
     unlockEvents: 'En el Nivel {level} podrás usar choques y teclas.',
   },
   selection: {
