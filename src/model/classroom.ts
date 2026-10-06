@@ -60,15 +60,6 @@ export function classCustomAttributes(definition: ClassDefinition): Attribute[] 
   return definition.attributes.filter((attribute) => !VISUAL_ATTRIBUTES.has(attribute.name))
 }
 
-/** Default values of every class attribute, used to seed new instances. */
-export function classAttributeDefaults(
-  definition: ClassDefinition,
-): Record<string, AttributeValue> {
-  return Object.fromEntries(
-    definition.attributes.map((attribute) => [attribute.name, attribute.initial]),
-  )
-}
-
 export function classUsageCount(scene: Scene, className: string): number {
   return scene.objects.filter((object) => object.class === className).length
 }
@@ -377,7 +368,11 @@ export function instantiateClass(scene: Scene, classId: string): Scene {
   const definition = scene.classes.find((candidate) => candidate.id === classId)
   if (!definition) return scene
 
-  const object = createObject(scene, definition.name, classAttributeDefaults(definition))
+  const object = createObject(
+    scene,
+    definition.name,
+    resolveAttributeDefaults(scene, definition.name),
+  )
   return { ...scene, objects: [...scene.objects, object] }
 }
 
