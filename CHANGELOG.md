@@ -35,6 +35,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   template now uses it. The schema is migrated to v9.
 - **"Change" block**: add or subtract a number from an attribute, generating
   `self.x = self.x + n`.
+- **Step timeline**: step-by-step mode gains a scrubber to jump to any step, on
+  top of the existing step back/forward.
 - **Composition (level 6)**: a class can contain other objects as components;
   the class editor lets you pick the part class, the generated Python imports it
   and creates it in `__init__` (e.g. `self.bateria = Bateria("bateria")`), the
