@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -14,6 +14,7 @@ function api(overrides: Partial<RuntimeApi> = {}): RuntimeApi {
     setStepMode: vi.fn(),
     step: vi.fn(),
     back: vi.fn(),
+    seek: vi.fn(),
     resume: vi.fn(),
     ...overrides,
   }
@@ -69,6 +70,28 @@ describe('StepControls', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Atrás' }))
     expect(runtime.back).toHaveBeenCalled()
+  })
+
+  it('seeks to a step from the timeline', async () => {
+    const runtime = api()
+    useRuntimeStore.setState({
+      stepMode: true,
+      stepQueue: {
+        steps: [
+          [{ type: 'say', target: 'a', message: 'hola' }],
+          [{ type: 'say', target: 'a', message: 'adios' }],
+        ],
+        cursor: 2,
+        initializing: false,
+      },
+    })
+
+    render(<StepControls runtime={runtime} />)
+    const timeline = screen.getByRole('slider', { name: 'Línea de tiempo' })
+
+    fireEvent.change(timeline, { target: { value: '1' } })
+
+    expect(runtime.seek).toHaveBeenCalledWith(1)
   })
 
   it('resumes when step mode is turned off', async () => {

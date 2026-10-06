@@ -29,6 +29,15 @@ export function StepControls({ runtime }: StepControlsProps) {
           <Button variant="secondary" size="sm" disabled={cursor === 0} onClick={runtime.back}>
             {messages.bar.back}
           </Button>
+          <input
+            type="range"
+            aria-label={messages.bar.timeline}
+            min={0}
+            max={total}
+            value={cursor}
+            onChange={(event) => runtime.seek(Number(event.target.value))}
+            className="accent-primary h-1 w-28 cursor-pointer sm:w-40"
+          />
           <Button variant="secondary" size="sm" disabled={cursor >= total} onClick={runtime.step}>
             {messages.bar.step}
           </Button>

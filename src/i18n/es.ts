@@ -8,6 +8,7 @@ export const es = {
     stepMode: 'Paso a paso',
     step: 'Paso',
     back: 'Atrás',
+    timeline: 'Línea de tiempo',
     stepProgress: 'Paso {index} de {total}',
     save: 'Guardar',
     portfolio: 'Portafolio',

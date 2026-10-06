@@ -50,7 +50,6 @@ const rubricEntrySchema = z.object({
     'polymorphism',
     'composition',
     'events',
-    'sequences',
   ]),
   status: z.enum(['introduced', 'practiced', 'demonstrated']),
   count: z.number(),
