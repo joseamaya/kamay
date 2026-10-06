@@ -21,11 +21,8 @@ import {
   useRuntimeStore,
 } from '../../store'
 import { SelectionOverlay } from './SelectionOverlay'
-
-interface Point {
-  x: number
-  y: number
-}
+import { rotationFromPointer, scaleFromDrag } from './handles'
+import type { Point } from './handles'
 
 interface DragState {
   objectId: string
@@ -33,6 +30,21 @@ interface DragState {
   pointerStart: Point
   origin: Point
   offset: Point
+}
+
+type HandleMode = 'rotate' | 'scale'
+
+interface HandleDrag {
+  mode: HandleMode
+  objectId: string
+  startScale: number
+  startDistance: number
+}
+
+interface HandlePreview {
+  objectId: string
+  rotation?: number
+  scale?: number
 }
 
 const MOVE_STEP = 4
@@ -97,11 +109,17 @@ export function ScenarioCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+  const handlesRef = useRef<HTMLDivElement>(null)
+  const centerRef = useRef<Point>({ x: 0, y: 0 })
+  const handleDragRef = useRef<HandleDrag | null>(null)
+  const handlePreviewRef = useRef<HandlePreview | null>(null)
   const menuLayoutRef = useRef({ width: 288, height: 0 })
   const dragRef = useRef<DragState | null>(null)
   const controllerRef = useRef(new RuntimeController())
   const imageCacheRef = useRef(new Map<string, HTMLImageElement>())
   const [size, setSize] = useState<Point>({ x: 0, y: 0 })
+  const running =
+    runtimeStatus === 'loading' || runtimeStatus === 'running' || runtimeStatus === 'ready'
 
   const sceneRef = useRef(scene)
   const selectedRef = useRef(selectedObjectId)
@@ -264,7 +282,36 @@ export function ScenarioCanvas() {
       )
     }
 
+    const preview = handlePreviewRef.current
+    if (preview) {
+      actors = actors.map((actor) =>
+        actor.id === preview.objectId
+          ? {
+              ...actor,
+              transform: {
+                ...actor.transform,
+                rotation: preview.rotation ?? actor.transform.rotation,
+                scale: preview.scale ?? actor.transform.scale,
+              },
+            }
+          : actor,
+      )
+    }
+
     ensureImages(imageCacheRef.current, actors)
+
+    const handles = handlesRef.current
+    if (handles) {
+      const selected = actors.find((actor) => actor.id === selectedRef.current)
+      if (selected) {
+        const centerX = width / 2 + selected.transform.position.x
+        const centerY = height / 2 - selected.transform.position.y
+        const radius = (ACTOR_SIZE / 2) * Math.max(selected.transform.scale, 0.2)
+        centerRef.current = { x: centerX, y: centerY }
+        handles.style.transform = `translate(${centerX}px, ${centerY}px)`
+        handles.style.setProperty('--handle-radius', `${radius}px`)
+      }
+    }
 
     const menu = menuRef.current
     if (menu) {
@@ -378,6 +425,64 @@ export function ScenarioCanvas() {
     }
   }
 
+  const pointerInContainer = (event: ReactPointerEvent<HTMLElement>): Point | null => {
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (!rect) return null
+    return { x: event.clientX - rect.left, y: event.clientY - rect.top }
+  }
+
+  const handleDragStart = (mode: HandleMode) => (event: ReactPointerEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+    const scene = sceneRef.current
+    const object = scene?.objects.find((candidate) => candidate.id === selectedRef.current)
+    const pointer = pointerInContainer(event)
+    if (!scene || !object || !pointer) return
+    const startDistance = Math.hypot(
+      pointer.x - centerRef.current.x,
+      pointer.y - centerRef.current.y,
+    )
+    handleDragRef.current = {
+      mode,
+      objectId: object.id,
+      startScale: readNumber(object.attributes, 'scale', 1),
+      startDistance,
+    }
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+
+  const handleDragMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const drag = handleDragRef.current
+    const pointer = pointerInContainer(event)
+    if (!drag || !pointer) return
+    if (drag.mode === 'rotate') {
+      handlePreviewRef.current = {
+        objectId: drag.objectId,
+        rotation: rotationFromPointer(centerRef.current, pointer),
+      }
+    } else {
+      const distance = Math.hypot(pointer.x - centerRef.current.x, pointer.y - centerRef.current.y)
+      handlePreviewRef.current = {
+        objectId: drag.objectId,
+        scale: scaleFromDrag(drag.startScale, drag.startDistance, distance),
+      }
+    }
+  }
+
+  const handleDragEnd = () => {
+    const drag = handleDragRef.current
+    const preview = handlePreviewRef.current
+    handleDragRef.current = null
+    handlePreviewRef.current = null
+    const scene = sceneRef.current
+    if (!drag || !preview || !scene) return
+    if (preview.rotation !== undefined) {
+      updateObjectAttributes(scene.id, drag.objectId, { rotation: preview.rotation })
+    } else if (preview.scale !== undefined) {
+      updateObjectAttributes(scene.id, drag.objectId, { scale: preview.scale })
+    }
+  }
+
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLCanvasElement>) => {
     if (!scene) return
 
@@ -436,6 +541,39 @@ export function ScenarioCanvas() {
         onPointerCancel={handlePointerUp}
         onKeyDown={handleKeyDown}
       />
+      {selectedObjectId && !running ? (
+        <div
+          ref={handlesRef}
+          data-transform-handles
+          className="pointer-events-none absolute top-0 left-0 z-10"
+          style={{ transform: 'translate(-9999px, -9999px)' }}
+        >
+          <button
+            type="button"
+            aria-label={messages.scenario.rotateHandle}
+            onPointerDown={handleDragStart('rotate')}
+            onPointerMove={handleDragMove}
+            onPointerUp={handleDragEnd}
+            onPointerCancel={handleDragEnd}
+            className="border-border bg-card text-foreground pointer-events-auto absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border text-xs leading-none shadow"
+            style={{ top: 'calc(-1 * var(--handle-radius, 0px) - 16px)', left: '0px' }}
+          >
+            ↻
+          </button>
+          <button
+            type="button"
+            aria-label={messages.scenario.scaleHandle}
+            onPointerDown={handleDragStart('scale')}
+            onPointerMove={handleDragMove}
+            onPointerUp={handleDragEnd}
+            onPointerCancel={handleDragEnd}
+            className="border-border bg-card text-foreground pointer-events-auto absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border text-xs leading-none shadow"
+            style={{ top: 'var(--handle-radius, 0px)', left: 'var(--handle-radius, 0px)' }}
+          >
+            ⤢
+          </button>
+        </div>
+      ) : null}
       <SelectionOverlay ref={menuRef} />
     </div>
   )

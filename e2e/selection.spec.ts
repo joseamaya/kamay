@@ -25,6 +25,30 @@ test('opens a contextual menu anchored to the selected object', async ({ page })
   }
 })
 
+test('rotates the selected object with the mouse handle', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
+
+  const rotate = page.getByRole('button', { name: 'Rotar objeto' })
+  await expect(rotate).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Redimensionar objeto' })).toBeVisible()
+
+  const box = await rotate.boundingBox()
+  expect(box).not.toBeNull()
+  if (!box) return
+  const startX = box.x + box.width / 2
+  const startY = box.y + box.height / 2
+  await page.mouse.move(startX, startY)
+  await page.mouse.down()
+  await page.mouse.move(startX + 80, startY + 80, { steps: 8 })
+  await page.mouse.up()
+
+  const overlay = page.locator('[data-selection-overlay]')
+  await expect(overlay.getByLabel('Rotación')).not.toHaveValue('0')
+})
+
 test('duplicates and deletes the selected object from the menu', async ({ page }) => {
   await page.goto('/')
 

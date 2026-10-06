@@ -70,12 +70,7 @@ export const SelectionOverlay = forwardRef<HTMLDivElement>(function SelectionOve
           </section>
         ) : null}
 
-        <section className="flex flex-col">
-          <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-            {messages.selection.appearance}
-          </h3>
-          <ObjectAttributes key={object.id} scene={scene} object={object} />
-        </section>
+        <ObjectAttributes key={object.id} scene={scene} object={object} />
 
         <footer className="border-border flex items-center justify-end gap-2 border-t pt-3">
           <button
