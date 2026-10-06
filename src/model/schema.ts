@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /** Current version of the persisted project model. Bump when the shape changes. */
-export const CURRENT_SCHEMA_VERSION = 10
+export const CURRENT_SCHEMA_VERSION = 11
 
 /** Identifier pattern shared by class and variable names in the generated Python. */
 export const identifierPattern = /^[A-Za-z_][A-Za-z0-9_]*$/
@@ -97,11 +97,28 @@ export const classSchema = z.object({
   visuals: z.array(visualVariantSchema).default([]),
 })
 
+/**
+ * The simulation's own state for an object: where and how it is shown. It is
+ * separate from the domain (never emitted in the generated Python); the engine
+ * combines it with the domain's interpreted attributes (`distancia`, `altura`,
+ * `giro`, `tamano`, `sonido`).
+ */
+export const simulationSchema = z.object({
+  x: z.number().default(0),
+  y: z.number().default(0),
+  rotation: z.number().default(0),
+  scale: z.number().default(1),
+  mensaje: z.string().default(''),
+})
+
+const EMPTY_SIMULATION = { x: 0, y: 0, rotation: 0, scale: 1, mensaje: '' }
+
 export const objectSchema = z.object({
   id: z.string(),
   name: z.string().regex(identifierPattern, 'invalid_identifier'),
   class: z.string().regex(identifierPattern, 'invalid_identifier'),
   appearance: appearanceSchema.default(EMPTY_APPEARANCE),
+  simulation: simulationSchema.default(EMPTY_SIMULATION),
   attributes: z.record(z.string(), z.union([z.number(), z.string(), z.boolean()])).default({}),
 })
 
@@ -175,6 +192,7 @@ export type Parameter = z.infer<typeof parameterSchema>
 export type Attribute = z.infer<typeof attributeSchema>
 export type Component = z.infer<typeof componentSchema>
 export type Appearance = z.infer<typeof appearanceSchema>
+export type Simulation = z.infer<typeof simulationSchema>
 export type VisualCondition = z.infer<typeof visualConditionSchema>
 export type VisualVariant = z.infer<typeof visualVariantSchema>
 export type MethodBody = z.infer<typeof methodBodySchema>

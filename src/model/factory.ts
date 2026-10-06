@@ -11,6 +11,7 @@ import type {
   Operation,
   Project,
   Scene,
+  Simulation,
 } from './schema'
 
 export type ActorShape =
@@ -79,12 +80,14 @@ const VEHICULO: ClassDefinition = {
     { name: 'marca', type: 'string', initial: '' },
     { name: 'modelo', type: 'string', initial: '' },
     { name: 'encendido', type: 'boolean', initial: false },
+    { name: 'distancia', type: 'number', initial: 0 },
+    { name: 'sonido', type: 'string', initial: '' },
   ],
   components: [],
   methods: [
     domainBlockMethod('prender', [setOp('encendido', true)]),
     domainBlockMethod('apagar', [setOp('encendido', false)]),
-    domainBlockMethod('moverse', [changeOp('x', 50)]),
+    domainBlockMethod('moverse', [changeOp('distancia', 50)]),
   ],
   visuals: [
     {
@@ -108,6 +111,8 @@ const ANIMAL: ClassDefinition = {
   attributes: [
     { name: 'nombre', type: 'string', initial: '' },
     { name: 'energia', type: 'number', initial: 50 },
+    { name: 'altura', type: 'number', initial: 0 },
+    { name: 'sonido', type: 'string', initial: '' },
   ],
   components: [],
   methods: [
@@ -123,7 +128,12 @@ const COSA: ClassDefinition = {
   inherits: null,
   appearance: { color: '#8f9aa8', shape: null, glyph: null },
   image: null,
-  attributes: [{ name: 'nombre', type: 'string', initial: '' }],
+  attributes: [
+    { name: 'nombre', type: 'string', initial: '' },
+    { name: 'distancia', type: 'number', initial: 0 },
+    { name: 'altura', type: 'number', initial: 0 },
+    { name: 'sonido', type: 'string', initial: '' },
+  ],
   components: [],
   methods: [],
   visuals: [],
@@ -149,7 +159,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     group: 'vehiculos',
     base: 'Vehiculo',
     attributes: [{ name: 'anio', type: 'number', initial: 2024 }],
-    methods: [domainBlockMethod('tocar_bocina', [setOp('mensaje', '¡Beep!')])],
+    methods: [domainBlockMethod('tocar_bocina', [setOp('sonido', '¡Beep!')])],
   },
   {
     id: 'bicicleta',
@@ -161,7 +171,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     group: 'vehiculos',
     base: 'Vehiculo',
     attributes: [{ name: 'rodado', type: 'number', initial: 26 }],
-    methods: [domainBlockMethod('pedalear', [changeOp('x', 30)])],
+    methods: [domainBlockMethod('pedalear', [changeOp('distancia', 30)])],
   },
   {
     id: 'moto',
@@ -173,7 +183,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     group: 'vehiculos',
     base: 'Vehiculo',
     attributes: [{ name: 'cilindrada', type: 'number', initial: 150 }],
-    methods: [domainBlockMethod('acelerar', [changeOp('x', 80)])],
+    methods: [domainBlockMethod('acelerar', [changeOp('distancia', 80)])],
   },
   {
     id: 'perro',
@@ -184,7 +194,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     color: '#c98a4b',
     group: 'animales',
     base: 'Animal',
-    methods: [domainBlockMethod('ladrar', [setOp('mensaje', '¡Guau!')])],
+    methods: [domainBlockMethod('ladrar', [setOp('sonido', '¡Guau!')])],
   },
   {
     id: 'gato',
@@ -195,7 +205,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     color: '#e0a23c',
     group: 'animales',
     base: 'Animal',
-    methods: [domainBlockMethod('maullar', [setOp('mensaje', '¡Miau!')])],
+    methods: [domainBlockMethod('maullar', [setOp('sonido', '¡Miau!')])],
   },
   {
     id: 'pajaro',
@@ -206,7 +216,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     color: '#5b8def',
     group: 'animales',
     base: 'Animal',
-    methods: [domainBlockMethod('volar', [changeOp('y', 80)])],
+    methods: [domainBlockMethod('volar', [changeOp('altura', 80)])],
   },
   {
     id: 'casa',
@@ -237,7 +247,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     color: '#8f9aa8',
     group: 'cosas',
     base: 'Cosa',
-    methods: [domainBlockMethod('saludar', [setOp('mensaje', '¡Hola!')])],
+    methods: [domainBlockMethod('saludar', [setOp('sonido', '¡Hola!')])],
   },
   {
     id: 'cohete',
@@ -248,7 +258,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     color: '#5b8def',
     group: 'cosas',
     base: 'Cosa',
-    methods: [domainBlockMethod('despegar', [changeOp('y', 120)])],
+    methods: [domainBlockMethod('despegar', [changeOp('altura', 120)])],
   },
   {
     id: 'pelota',
@@ -259,7 +269,7 @@ const DOMAIN_CATALOG: CatalogItem[] = [
     color: '#3f9a86',
     group: 'cosas',
     base: 'Cosa',
-    methods: [domainBlockMethod('rodar', [changeOp('x', 60)])],
+    methods: [domainBlockMethod('rodar', [changeOp('distancia', 60)])],
   },
 ]
 
@@ -301,11 +311,12 @@ export function collisionKey(a: string, b: string): string {
   return [a, b].sort().join('|')
 }
 
-export const OBJECT_DEFAULTS = {
+export const DEFAULT_SIMULATION = {
   x: 0,
   y: 0,
   rotation: 0,
   scale: 1,
+  mensaje: '',
 }
 
 export function findCatalogItem(id: string): CatalogItem | undefined {
@@ -348,13 +359,15 @@ export function createObject(
   className: string,
   attributes: Record<string, number | string | boolean> = {},
   appearance: Appearance = { color: null, shape: null, glyph: null },
+  simulation: Simulation = { ...DEFAULT_SIMULATION },
 ): ObjectInstance {
   return {
     id: createId('object'),
     name: nextObjectName(scene, className),
     class: className,
     appearance,
-    attributes: { ...OBJECT_DEFAULTS, ...attributes },
+    simulation,
+    attributes: { ...attributes },
   }
 }
 
@@ -426,6 +439,21 @@ export function updateObjectAppearance(
     objects: scene.objects.map((object) =>
       object.id === objectId
         ? { ...object, appearance: { ...object.appearance, ...patch } }
+        : object,
+    ),
+  }
+}
+
+export function updateObjectSimulation(
+  scene: Scene,
+  objectId: string,
+  patch: Partial<Simulation>,
+): Scene {
+  return {
+    ...scene,
+    objects: scene.objects.map((object) =>
+      object.id === objectId
+        ? { ...object, simulation: { ...object.simulation, ...patch } }
         : object,
     ),
   }

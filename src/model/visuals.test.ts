@@ -35,7 +35,14 @@ function object(
   attributes: Record<string, number | string | boolean> = {},
   appearance: Appearance = EMPTY,
 ): ObjectInstance {
-  return { id: 'o1', name: 'carro1', class: 'Vehiculo', appearance, attributes }
+  return {
+    id: 'o1',
+    name: 'carro1',
+    class: 'Vehiculo',
+    appearance,
+    simulation: { x: 0, y: 0, rotation: 0, scale: 1, mensaje: '' },
+    attributes,
+  }
 }
 
 describe('resolveVisualVariants', () => {

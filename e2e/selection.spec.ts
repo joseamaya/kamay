@@ -1,5 +1,4 @@
 import { expect, test } from './fixtures'
-import { codeContent } from './helpers'
 
 test('opens a contextual menu anchored to the selected object', async ({ page }) => {
   await page.goto('/')
@@ -46,7 +45,8 @@ test('rotates the selected object with the mouse handle', async ({ page }) => {
   await page.mouse.move(startX + 80, startY + 80, { steps: 8 })
   await page.mouse.up()
 
-  await expect(codeContent(page)).toContainText(/carro1\.rotation = -?\d*[1-9]/)
+  const overlay = page.locator('[data-selection-overlay]')
+  await expect(overlay).toHaveAttribute('data-simulation', /"rotation":-?\d*[1-9]/)
 })
 
 test('duplicates and deletes the selected object from the menu', async ({ page }) => {

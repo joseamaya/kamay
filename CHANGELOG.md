@@ -32,6 +32,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   state variants override it, and an object can override it too. This removes the
   `glyph` leak into "custom attributes" and keeps the Python as clean domain code
   (see `docs/04`, "Dos capas").
+- **The scene state leaves the domain (schema v11)**: position, rotation, scale
+  and message move to `object.simulation`, which the stage edits and the generated
+  Python never contains. Movement and speech are now **domain attributes the
+  engine interprets by convention** (`distancia`, `altura`, `giro`, `tamano`,
+  `sonido`): the catalog methods change those attributes and the engine maps them
+  onto the scene. Old projects are migrated.
 
 ### Added
 

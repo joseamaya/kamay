@@ -3,17 +3,19 @@ import { describe, expect, it } from 'vitest'
 import { ACTOR_CATALOG, addCatalogObject, createScene } from '../model'
 import { DEFAULT_COLOR, DEFAULT_SHAPE, applyAppearance, toActor, toSceneState } from './scene'
 
-const EMPTY = { color: null, shape: null, glyph: null }
+const EMPTY_APPEARANCE = { color: null, shape: null, glyph: null }
+const SIMULATION = { x: 5, y: -3, rotation: 90, scale: 2, mensaje: '' }
 
 describe('toActor', () => {
-  it('reads the transform from the domain state and defaults the look', () => {
+  it('reads the transform from the simulation state and defaults the look', () => {
     const actor = toActor(
       {
         id: 'a',
         name: 'a',
         class: 'Circle',
-        appearance: EMPTY,
-        attributes: { x: 5, y: -3, rotation: 90, scale: 2 },
+        appearance: EMPTY_APPEARANCE,
+        simulation: SIMULATION,
+        attributes: {},
       },
       3,
     )
@@ -25,9 +27,35 @@ describe('toActor', () => {
     expect(actor.zIndex).toBe(3)
   })
 
+  it('offsets the scene with the interpreted domain attributes', () => {
+    const actor = toActor(
+      {
+        id: 'a',
+        name: 'a',
+        class: 'Circle',
+        appearance: EMPTY_APPEARANCE,
+        simulation: { x: 100, y: 0, rotation: 0, scale: 1, mensaje: '' },
+        attributes: { distancia: 50, altura: 20, giro: 90, tamano: 2 },
+      },
+      0,
+    )
+
+    expect(actor.transform).toEqual({ position: { x: 150, y: 20 }, rotation: 90, scale: 2 })
+  })
+
   it('overrides the look with a resolved appearance', () => {
     const actor = applyAppearance(
-      toActor({ id: 'a', name: 'a', class: 'Cat', appearance: EMPTY, attributes: {} }, 0),
+      toActor(
+        {
+          id: 'a',
+          name: 'a',
+          class: 'Cat',
+          appearance: EMPTY_APPEARANCE,
+          simulation: { x: 0, y: 0, rotation: 0, scale: 1, mensaje: '' },
+          attributes: {},
+        },
+        0,
+      ),
       { color: '#ffffff', shape: 'triangle', glyph: '🐱', image: null },
     )
 

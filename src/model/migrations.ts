@@ -137,6 +137,79 @@ function splitObjectAppearance(attributes: unknown): {
   return { appearance, attributes: rest }
 }
 
+/** Engine attributes that became interpreted domain attributes (v10 -> v11). */
+const SCENE_RENAME: Record<string, string> = {
+  x: 'distancia',
+  y: 'altura',
+  rotation: 'giro',
+  scale: 'tamano',
+  mensaje: 'sonido',
+}
+
+const SCENE_DEFAULTS: Record<string, { type: string; initial: number | string }> = {
+  distancia: { type: 'number', initial: 0 },
+  altura: { type: 'number', initial: 0 },
+  giro: { type: 'number', initial: 0 },
+  tamano: { type: 'number', initial: 1 },
+  sonido: { type: 'string', initial: '' },
+}
+
+function numberOr(value: unknown, fallback: number): number {
+  return typeof value === 'number' ? value : fallback
+}
+
+/** Renames `x`/`y`/... to the interpreted domain names, collecting those used. */
+function renameSceneOps(ops: unknown, used: Set<string>): Record<string, unknown>[] {
+  if (!Array.isArray(ops)) return []
+  const result: Record<string, unknown>[] = []
+  for (const raw of ops) {
+    if (typeof raw !== 'object' || raw === null) continue
+    const op = raw as Record<string, unknown>
+    if (op.op === 'repeat') {
+      result.push({ ...op, children: renameSceneOps(op.children, used) })
+      continue
+    }
+    if (
+      (op.op === 'set' || op.op === 'change') &&
+      typeof op.args === 'object' &&
+      op.args !== null
+    ) {
+      const args = { ...(op.args as Record<string, unknown>) }
+      const renamed = typeof args.name === 'string' ? SCENE_RENAME[args.name] : undefined
+      if (renamed) {
+        args.name = renamed
+        used.add(renamed)
+      }
+      result.push({ ...op, args })
+      continue
+    }
+    result.push(op)
+  }
+  return result
+}
+
+function migrateClassToV11(definition: Record<string, unknown>): Record<string, unknown> {
+  const methods = Array.isArray(definition.methods)
+    ? (definition.methods as Record<string, unknown>[])
+    : []
+  const used = new Set<string>()
+  const migratedMethods = methods.map((method) => {
+    const body = method.body as Record<string, unknown> | undefined
+    if (!body || body.kind !== 'blocks') return method
+    return { ...method, body: { ...body, ops: renameSceneOps(body.ops, used) } }
+  })
+
+  const attributes = Array.isArray(definition.attributes)
+    ? [...(definition.attributes as Record<string, unknown>[])]
+    : []
+  const existing = new Set(attributes.map((attribute) => attribute.name))
+  for (const name of used) {
+    if (!existing.has(name)) attributes.push({ name, ...SCENE_DEFAULTS[name] })
+  }
+
+  return { ...definition, methods: migratedMethods, attributes }
+}
+
 export const migrations: Record<number, SchemaMigration> = {
   // v1 -> v2: events gained a `source` field for click/collision triggers.
   1: (data) => mapEvents(data, 2, (event) => ({ source: null, ...event })),
@@ -217,6 +290,39 @@ export const migrations: Record<number, SchemaMigration> = {
         objects: objects.map((object) => {
           const { appearance, attributes } = splitObjectAppearance(object.attributes)
           return { ...object, appearance, attributes }
+        }),
+      }
+    }),
+  // v10 -> v11: the scene state (position/transform/message) leaves the domain
+  // and becomes `object.simulation`; methods use interpreted domain attributes.
+  10: (data) =>
+    mapScenes(data, 11, (scene) => {
+      const classes = Array.isArray(scene.classes)
+        ? (scene.classes as Record<string, unknown>[])
+        : []
+      const objects = Array.isArray(scene.objects)
+        ? (scene.objects as Record<string, unknown>[])
+        : []
+      return {
+        ...scene,
+        classes: classes.map(migrateClassToV11),
+        objects: objects.map((object) => {
+          const attributes =
+            typeof object.attributes === 'object' && object.attributes !== null
+              ? (object.attributes as Record<string, unknown>)
+              : {}
+          const simulation = {
+            x: numberOr(attributes.x, 0),
+            y: numberOr(attributes.y, 0),
+            rotation: numberOr(attributes.rotation, 0),
+            scale: numberOr(attributes.scale, 1),
+            mensaje: typeof attributes.mensaje === 'string' ? attributes.mensaje : '',
+          }
+          const rest: Record<string, unknown> = {}
+          for (const [key, value] of Object.entries(attributes)) {
+            if (!(key in SCENE_RENAME)) rest[key] = value
+          }
+          return { ...object, simulation, attributes: rest }
         }),
       }
     }),

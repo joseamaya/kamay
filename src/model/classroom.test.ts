@@ -84,7 +84,7 @@ describe('instantiateClass', () => {
     const object = scene.objects[0]!
     expect(object.class).toBe('Heroe')
     expect(object.name).toBe('heroe1')
-    expect(object.attributes).toMatchObject({ x: 0, y: 0, rotation: 0, scale: 1 })
+    expect(object.simulation).toMatchObject({ x: 0, y: 0, rotation: 0, scale: 1 })
     expect(classUsageCount(scene, 'Heroe')).toBe(1)
   })
 

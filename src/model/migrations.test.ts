@@ -131,9 +131,9 @@ describe('migrateProject', () => {
 
     const ops = result.scenes[0]?.classes[0]?.methods[0]?.body.ops ?? []
     expect(ops.map((op) => op.op)).toEqual(['set', 'set', 'set'])
-    expect(ops[0]?.args).toEqual({ name: 'mensaje', value: 'hola' })
-    expect(ops[1]?.args).toEqual({ name: 'x', value: 1 })
-    expect(ops[2]?.args).toEqual({ name: 'y', value: 2 })
+    expect(ops[0]?.args).toEqual({ name: 'sonido', value: 'hola' })
+    expect(ops[1]?.args).toEqual({ name: 'distancia', value: 1 })
+    expect(ops[2]?.args).toEqual({ name: 'altura', value: 2 })
 
     expect(result.scenes[0]?.events).toHaveLength(1)
     expect(result.scenes[0]?.events[0]?.signal).toBeUndefined()
@@ -196,7 +196,11 @@ describe('migrateProject', () => {
       version: number
       scenes: {
         classes: { appearance: Record<string, unknown>; attributes: { name: string }[] }[]
-        objects: { appearance: Record<string, unknown>; attributes: Record<string, unknown> }[]
+        objects: {
+          appearance: Record<string, unknown>
+          simulation: Record<string, unknown>
+          attributes: Record<string, unknown>
+        }[]
       }[]
     }
 
@@ -207,7 +211,73 @@ describe('migrateProject', () => {
 
     const object = result.scenes[0]!.objects[0]!
     expect(object.appearance).toEqual({ color: '#000', shape: null, glyph: '🐶' })
-    expect(object.attributes).toEqual({ x: 0 })
+    expect(object.attributes).toEqual({})
+    expect(object.simulation).toMatchObject({ x: 0 })
+  })
+
+  it('upgrades a v10 project: the scene state leaves the domain', () => {
+    const input = {
+      version: 10,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 's',
+          name: 'Principal',
+          classes: [
+            {
+              id: 'c',
+              name: 'Heroe',
+              attributes: [{ name: 'vida', type: 'number', initial: 100 }],
+              methods: [
+                {
+                  name: 'mover',
+                  parameters: [],
+                  body: {
+                    kind: 'blocks',
+                    ops: [
+                      {
+                        id: 'b',
+                        op: 'change',
+                        args: { name: 'x', operator: '+', amount: 10 },
+                        children: [],
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+          objects: [
+            {
+              id: 'o',
+              name: 'h1',
+              class: 'Heroe',
+              attributes: { x: 5, y: 0, rotation: 0, scale: 1, mensaje: 'hola', vida: 100 },
+            },
+          ],
+        },
+      ],
+    }
+
+    const result = migrateProject(input) as {
+      version: number
+      scenes: {
+        classes: {
+          attributes: { name: string }[]
+          methods: { body: { ops: { args: Record<string, unknown> }[] } }[]
+        }[]
+        objects: { simulation: Record<string, unknown>; attributes: Record<string, unknown> }[]
+      }[]
+    }
+
+    expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
+    const definition = result.scenes[0]!.classes[0]!
+    expect(definition.attributes.map((attribute) => attribute.name)).toEqual(['vida', 'distancia'])
+    expect(definition.methods[0]!.body.ops[0]!.args.name).toBe('distancia')
+
+    const object = result.scenes[0]!.objects[0]!
+    expect(object.simulation).toEqual({ x: 5, y: 0, rotation: 0, scale: 1, mensaje: 'hola' })
+    expect(object.attributes).toEqual({ vida: 100 })
   })
 
   it('upgrades a v4 project by adding physics settings', () => {

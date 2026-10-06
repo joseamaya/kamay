@@ -245,11 +245,11 @@ export const MISSIONS: Mission[] = [
   },
   {
     id: 'say_hello',
-    isComplete: (project) => actionSetsAttribute(project, new Set(['mensaje'])),
+    isComplete: (project) => actionSetsAttribute(project, new Set(['sonido'])),
   },
   {
     id: 'move_it',
-    isComplete: (project) => actionSetsAttribute(project, new Set(['x', 'y'])),
+    isComplete: (project) => actionSetsAttribute(project, new Set(['distancia', 'altura'])),
   },
   {
     id: 'own_class',

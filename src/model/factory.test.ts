@@ -15,6 +15,7 @@ import {
   setActionArg,
   setSceneBackground,
   updateObjectAttributes,
+  updateObjectSimulation,
   upsertClass,
   withDomainBases,
 } from './index'
@@ -79,9 +80,9 @@ describe('addCatalogObject', () => {
     expect(second.objects.map((object) => object.name)).toEqual(['carro1', 'carro2'])
   })
 
-  it('seeds the object transform and appearance', () => {
+  it('seeds the object simulation and appearance', () => {
     const scene = addCatalogObject(createScene('Principal'), carro)
-    expect(scene.objects[0]?.attributes).toMatchObject({ x: 0, y: 0, rotation: 0, scale: 1 })
+    expect(scene.objects[0]?.simulation).toMatchObject({ x: 0, y: 0, rotation: 0, scale: 1 })
     expect(scene.objects[0]?.appearance).toMatchObject({ shape: 'circle', color: carro.color })
   })
 
@@ -139,11 +140,21 @@ describe('scene operations', () => {
   it('patches object attributes immutably', () => {
     const scene = addCatalogObject(createScene('Principal'), carro)
     const id = scene.objects[0]!.id
-    const next = updateObjectAttributes(scene, id, { x: 42, color: '#000000' })
+    const next = updateObjectAttributes(scene, id, { distancia: 42, encendido: true })
 
-    expect(next.objects[0]?.attributes.x).toBe(42)
-    expect(next.objects[0]?.attributes.color).toBe('#000000')
-    expect(scene.objects[0]?.attributes.x).toBe(0)
+    expect(next.objects[0]?.attributes.distancia).toBe(42)
+    expect(next.objects[0]?.attributes.encendido).toBe(true)
+    expect(scene.objects[0]?.attributes.distancia).toBeUndefined()
+  })
+
+  it('patches the object simulation immutably', () => {
+    const scene = addCatalogObject(createScene('Principal'), carro)
+    const id = scene.objects[0]!.id
+    const next = updateObjectSimulation(scene, id, { x: 42, rotation: 90 })
+
+    expect(next.objects[0]?.simulation.x).toBe(42)
+    expect(next.objects[0]?.simulation.rotation).toBe(90)
+    expect(scene.objects[0]?.simulation.x).toBe(0)
   })
 
   it('sets the background', () => {
