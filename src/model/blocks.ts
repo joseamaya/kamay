@@ -1,14 +1,10 @@
 import { ENGINE_ATTRIBUTES } from './attributes'
 import { classCustomAttributes, resolveCustomAttributes, resolveMethods } from './classroom'
 import { createId } from './ids'
-import { BUILTIN_METHODS } from './methods'
-import type { BuiltinMethod } from './methods'
+import type { MethodSignature } from './methods'
 import type { Attribute, AttributeType, ClassDefinition, Operation, Scene } from './schema'
 
-export function createCallBlock(
-  method = BUILTIN_METHODS[0]?.name ?? '',
-  values: Record<string, unknown> = {},
-): Operation {
+export function createCallBlock(method = '', values: Record<string, unknown> = {}): Operation {
   return { id: createId('block'), op: 'call', args: { method, values }, children: [] }
 }
 
@@ -42,8 +38,11 @@ export function defaultValueFor(type: AttributeType): number | string | boolean 
   return ''
 }
 
-/** Methods a block can call: builtins plus the class's own and inherited methods. */
-export function availableBlockMethods(scene: Scene, definition: ClassDefinition): BuiltinMethod[] {
+/** Methods a block can call: the class's own and inherited methods. */
+export function availableBlockMethods(
+  scene: Scene,
+  definition: ClassDefinition,
+): MethodSignature[] {
   const own = definition.methods.map((method) => ({
     name: method.name,
     parameters: method.parameters,
@@ -55,16 +54,11 @@ export function availableBlockMethods(scene: Scene, definition: ClassDefinition)
       }))
     : []
 
-  const custom = new Map<string, BuiltinMethod>()
+  const result = new Map<string, MethodSignature>()
   for (const method of [...own, ...inherited]) {
-    if (!custom.has(method.name)) custom.set(method.name, method)
+    if (!result.has(method.name)) result.set(method.name, method)
   }
-
-  const customNames = new Set(custom.keys())
-  return [
-    ...BUILTIN_METHODS.filter((builtin) => !customNames.has(builtin.name)),
-    ...custom.values(),
-  ]
+  return [...result.values()]
 }
 
 /** Attributes a block can assign: the class's own and inherited custom attributes. */

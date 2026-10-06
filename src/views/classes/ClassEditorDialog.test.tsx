@@ -40,12 +40,13 @@ describe('ClassEditorDialog', () => {
     expect(screen.queryByText('Se desbloquea en el Nivel 5.')).not.toBeInTheDocument()
   })
 
-  it('hides Actor and defaults to a domain base', () => {
+  it('offers a no-base option and hides Actor', () => {
     useProgressStore.setState({ freeMode: true })
     renderDialog()
 
     const select = screen.getByLabelText('Hereda de') as HTMLSelectElement
-    expect(select.value).toBe('Cosa')
+    expect(select.value).toBe('')
+    expect(screen.getByRole('option', { name: 'Sin base' })).toBeInTheDocument()
     expect(screen.queryByRole('option', { name: 'Actor' })).not.toBeInTheDocument()
     expect(screen.getByRole('option', { name: 'Vehiculo' })).toBeInTheDocument()
   })

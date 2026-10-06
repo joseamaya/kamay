@@ -1,16 +1,15 @@
 import { useState } from 'react'
 
 import { format, getMessages } from '../../i18n'
-import { BASIC_METHODS } from '../../levels'
-import { BUILTIN_METHODS, findEvent, resolveMethods } from '../../model'
-import type { Action, AttributeType, BuiltinMethod, ObjectInstance, Scene } from '../../model'
+import { findEvent, resolveMethods } from '../../model'
+import type { Action, AttributeType, MethodSignature, ObjectInstance, Scene } from '../../model'
 import { useCapabilities, useEditorStore, useProjectStore } from '../../store'
 import { Button } from '../../ui/Button'
 import { NumberField } from '../../ui/NumberField'
 import { Select } from '../../ui/Select'
 import { TextField } from '../../ui/TextField'
 
-type Trigger = 'on_start' | 'on_click' | 'on_collision' | 'on_key' | 'on_signal'
+type Trigger = 'on_start' | 'on_click' | 'on_collision' | 'on_key'
 
 const KEYS = [
   'ArrowUp',
@@ -41,8 +40,7 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
   const [trigger, setTrigger] = useState<Trigger>('on_start')
   const [otherName, setOtherName] = useState('')
   const [keyName, setKeyName] = useState(KEYS[0]!)
-  const [signalName, setSignalName] = useState('')
-  const [methodName, setMethodName] = useState(BUILTIN_METHODS[0]!.name)
+  const [methodName, setMethodName] = useState('')
   const [values, setValues] = useState<Record<string, string>>({})
 
   const methodLabels: Record<string, string> = messages.methods
@@ -72,38 +70,20 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
       ? [
           { value: 'on_collision', label: messages.triggers.onCollision },
           { value: 'on_key', label: messages.triggers.onKey },
-          { value: 'on_signal', label: messages.triggers.onSignal },
         ]
       : []),
   ]
 
-  const customMethods: BuiltinMethod[] = resolveMethods(scene, object.class).map((method) => ({
+  const availableMethods: MethodSignature[] = resolveMethods(scene, object.class).map((method) => ({
     name: method.name,
     parameters: method.parameters,
   }))
-  const engineMethods: BuiltinMethod[] = BUILTIN_METHODS.filter(
-    (builtin) =>
-      (capabilities.events || BASIC_METHODS.includes(builtin.name)) &&
-      !customMethods.some((custom) => custom.name === builtin.name),
-  )
-  const availableMethods: BuiltinMethod[] = [...engineMethods, ...customMethods]
   const method =
-    availableMethods.find((candidate) => candidate.name === methodName) ?? availableMethods[0]!
-
-  // Once the object has its own methods, group them ahead of the engine verbs.
-  const grouped = customMethods.length > 0
-  const methodOptions = [
-    ...customMethods.map((candidate) => ({
-      value: candidate.name,
-      label: methodLabels[candidate.name] ?? candidate.name,
-      group: grouped ? messages.actions.ownMethods : undefined,
-    })),
-    ...engineMethods.map((candidate) => ({
-      value: candidate.name,
-      label: methodLabels[candidate.name] ?? candidate.name,
-      group: grouped ? messages.actions.engineMethods : undefined,
-    })),
-  ]
+    availableMethods.find((candidate) => candidate.name === methodName) ?? availableMethods[0]
+  const methodOptions = availableMethods.map((candidate) => ({
+    value: candidate.name,
+    label: methodLabels[candidate.name] ?? candidate.name,
+  }))
 
   const otherObjects = scene.objects.filter((candidate) => candidate.id !== object.id)
   const selectedOther =
@@ -114,22 +94,21 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
   const source = trigger === 'on_start' ? null : object.name
   const other = trigger === 'on_collision' ? selectedOther : null
   const key = trigger === 'on_key' ? keyName : null
-  const signal = trigger === 'on_signal' ? signalName.trim() || null : null
-  const event = findEvent(scene, trigger, source, other, key, signal)
+  const event = findEvent(scene, trigger, source, other, key)
   const actions = (event?.actions ?? [])
     .map((action, index) => ({ action, index }))
     .filter(({ action }) => action.target === object.name || action.target === object.id)
 
   const handleAdd = () => {
+    if (!method) return
     if (trigger === 'on_collision' && !selectedOther) return
-    if (trigger === 'on_signal' && !signalName.trim()) return
     const args: Record<string, number | string> = {}
     for (const parameter of method.parameters) {
       const raw = values[parameter.name] ?? defaultValue(parameter.type)
       args[parameter.name] = parameter.type === 'number' ? Number(raw) || 0 : raw
     }
     const action: Action = { target: object.name, method: method.name, args }
-    addAction(scene.id, trigger, source, other, action, key, signal)
+    addAction(scene.id, trigger, source, other, action, key)
     pushLog(messages.activity.actionAdded)
   }
 
@@ -148,7 +127,7 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
                 type="button"
                 aria-label={messages.actions.remove}
                 onClick={() => {
-                  removeAction(scene.id, trigger, source, other, index, key, signal)
+                  removeAction(scene.id, trigger, source, other, index, key)
                   pushLog(messages.activity.actionRemoved)
                 }}
                 className="text-muted-foreground hover:text-destructive rounded-md px-2 py-1 text-lg leading-none"
@@ -180,9 +159,6 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
             onChange={setKeyName}
           />
         ) : null}
-        {trigger === 'on_signal' ? (
-          <TextField label={messages.actions.signal} value={signalName} onChange={setSignalName} />
-        ) : null}
         {trigger === 'on_collision' ? (
           otherObjects.length > 0 ? (
             <Select
@@ -200,11 +176,11 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
         ) : null}
         <Select
           label={messages.actions.method}
-          value={method.name}
+          value={method?.name ?? ''}
           options={methodOptions}
           onChange={setMethodName}
         />
-        {method.parameters.map((parameter) =>
+        {method?.parameters.map((parameter) =>
           parameter.type === 'number' ? (
             <NumberField
               key={parameter.name}
@@ -225,7 +201,7 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
             />
           ),
         )}
-        <Button size="sm" onClick={handleAdd}>
+        <Button size="sm" disabled={!method} onClick={handleAdd}>
           {messages.actions.add}
         </Button>
       </div>

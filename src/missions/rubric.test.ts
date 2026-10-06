@@ -26,7 +26,7 @@ function status(project: Project, id: RubricCriterionId) {
 describe('evaluateRubric', () => {
   it('reports everything as introduced for an empty project', () => {
     const entries = evaluateRubric(createEmptyProject({ name: 'Demo' }))
-    expect(entries).toHaveLength(9)
+    expect(entries).toHaveLength(8)
     expect(entries.every((entry) => entry.status === 'introduced')).toBe(true)
   })
 
@@ -112,17 +112,15 @@ describe('evaluateRubric', () => {
     expect(status(projectWithScene(scene), 'polymorphism')).toBe('demonstrated')
   })
 
-  it('detects events and sequences', () => {
+  it('detects events', () => {
     let scene = addCatalogObject(createScene('Principal'), ACTOR_CATALOG[0]!)
     const name = scene.objects[0]!.name
     scene = addEventAction(scene, 'on_collision', name, 'otro', {
       target: name,
-      method: 'esperar',
-      args: { segundos: 1 },
+      method: 'prender',
+      args: {},
     })
 
-    const project = projectWithScene(scene)
-    expect(status(project, 'events')).toBe('practiced')
-    expect(status(project, 'sequences')).toBe('practiced')
+    expect(status(projectWithScene(scene), 'events')).toBe('practiced')
   })
 })

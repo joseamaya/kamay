@@ -5,7 +5,7 @@ import { createClassDraft, createScene, instantiateClass } from '../../model'
 import type { ClassDefinition } from '../../model'
 import { ObjectConcept } from './ObjectConcept'
 
-function klass(name: string, inherits: string, methods: string[] = []): ClassDefinition {
+function klass(name: string, inherits: string | null, methods: string[] = []): ClassDefinition {
   return {
     ...createClassDraft(name),
     inherits,
@@ -20,13 +20,13 @@ function klass(name: string, inherits: string, methods: string[] = []): ClassDef
 describe('ObjectConcept', () => {
   it('shows behavior, inherited state, the inheritance chain and the parts', () => {
     const animal: ClassDefinition = {
-      ...klass('Animal', 'Actor', ['comer']),
+      ...klass('Animal', null, ['comer']),
       attributes: [
         ...createClassDraft('Animal').attributes,
         { name: 'energia', type: 'number', initial: 50 },
       ],
     }
-    const collar = klass('Collar', 'Actor', ['ajustar'])
+    const collar = klass('Collar', null, ['ajustar'])
     const perro: ClassDefinition = {
       ...klass('Perro', 'Animal', ['ladrar']),
       components: [{ name: 'collar', class: 'Collar' }],
@@ -44,7 +44,7 @@ describe('ObjectConcept', () => {
     expect(screen.getAllByText('Heredado de Animal')).toHaveLength(2)
 
     expect(screen.getByText('Herencia')).toBeInTheDocument()
-    expect(screen.getByText('Perro → Animal → Actor')).toBeInTheDocument()
+    expect(screen.getByText('Perro → Animal')).toBeInTheDocument()
     expect(screen.getByText('energia')).toBeInTheDocument()
 
     expect(screen.getByText('Composición')).toBeInTheDocument()
@@ -53,7 +53,7 @@ describe('ObjectConcept', () => {
   })
 
   it('stays empty for a plain catalog object', () => {
-    const circle = klass('Circle', 'Actor')
+    const circle = klass('Circle', null)
     let scene = { ...createScene('Principal'), classes: [circle] }
     scene = instantiateClass(scene, circle.id)
 

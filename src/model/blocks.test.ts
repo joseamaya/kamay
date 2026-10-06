@@ -32,7 +32,7 @@ describe('block builders', () => {
 })
 
 describe('availableBlockMethods', () => {
-  it('lists builtins plus own and inherited methods, without duplicates', () => {
+  it('lists own and inherited methods, without duplicates', () => {
     const base = createClassDraft('Personaje')
     base.methods = [{ name: 'saludar', parameters: [], body: { kind: 'blocks', ops: [] } }]
     let scene = upsertClass(createScene('Principal'), base)
@@ -48,9 +48,7 @@ describe('availableBlockMethods', () => {
     scene = upsertClass(scene, heroe)
 
     const names = availableBlockMethods(scene, heroe).map((method) => method.name)
-    expect(names).toContain('mover')
-    expect(names).toContain('saludar')
-    expect(names.filter((name) => name === 'decir')).toHaveLength(1)
+    expect(names).toEqual(['decir', 'saludar'])
   })
 })
 

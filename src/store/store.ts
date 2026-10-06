@@ -52,7 +52,6 @@ export interface ProjectState {
     other: string | null,
     action: Action,
     key?: string | null,
-    signal?: string | null,
   ) => void
   removeAction: (
     sceneId: string,
@@ -61,7 +60,6 @@ export interface ProjectState {
     other: string | null,
     actionIndex: number,
     key?: string | null,
-    signal?: string | null,
   ) => void
   setActionArg: (
     sceneId: string,
@@ -72,7 +70,6 @@ export interface ProjectState {
     parameter: string,
     value: number | string | boolean,
     key?: string | null,
-    signal?: string | null,
   ) => void
   renameProject: (name: string) => void
   addScene: () => string
@@ -165,46 +162,26 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     )
   },
 
-  addAction: (sceneId, eventType, source, other, action, key = null, signal = null) => {
+  addAction: (sceneId, eventType, source, other, action, key = null) => {
     get().updateProject((project) =>
       updateScene(project, sceneId, (scene) =>
-        addEventAction(scene, eventType, source, other, action, key, signal),
+        addEventAction(scene, eventType, source, other, action, key),
       ),
     )
   },
 
-  removeAction: (sceneId, eventType, source, other, actionIndex, key = null, signal = null) => {
+  removeAction: (sceneId, eventType, source, other, actionIndex, key = null) => {
     get().updateProject((project) =>
       updateScene(project, sceneId, (scene) =>
-        removeEventAction(scene, eventType, source, other, actionIndex, key, signal),
+        removeEventAction(scene, eventType, source, other, actionIndex, key),
       ),
     )
   },
 
-  setActionArg: (
-    sceneId,
-    eventType,
-    source,
-    other,
-    actionIndex,
-    parameter,
-    value,
-    key = null,
-    signal = null,
-  ) => {
+  setActionArg: (sceneId, eventType, source, other, actionIndex, parameter, value, key = null) => {
     get().updateProject((project) =>
       updateScene(project, sceneId, (scene) =>
-        setActionArgInScene(
-          scene,
-          eventType,
-          source,
-          other,
-          actionIndex,
-          parameter,
-          value,
-          key,
-          signal,
-        ),
+        setActionArgInScene(scene, eventType, source, other, actionIndex, parameter, value, key),
       ),
     )
   },

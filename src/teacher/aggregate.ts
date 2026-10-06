@@ -11,7 +11,6 @@ export const CRITERION_ORDER: RubricCriterionId[] = [
   'polymorphism',
   'composition',
   'events',
-  'sequences',
 ]
 
 export interface ConceptTally {

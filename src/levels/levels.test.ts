@@ -24,7 +24,7 @@ function projectWithScene(scene: ReturnType<typeof createScene>) {
   return { ...createEmptyProject(), scenes: [scene] }
 }
 
-function klass(name: string, inherits = 'Actor'): ClassDefinition {
+function klass(name: string, inherits: string | null = null): ClassDefinition {
   return {
     id: `c-${name}`,
     name,
@@ -116,7 +116,7 @@ describe('nextMission', () => {
   })
 
   it('advances to inheritance once level 4 is complete', () => {
-    expect(nextMission([...levels123, 'collision', 'wait_sequence', 'signal'], 5)).toBe('inherit')
+    expect(nextMission([...levels123, 'collision'], 5)).toBe('inherit')
   })
 
   it('returns null when everything reachable is done', () => {
@@ -149,23 +149,15 @@ describe('requiredLevel', () => {
     expect(requiredLevel(projectWithScene(scene))).toBe(3)
   })
 
-  it('requires level 4 for advanced events or methods', () => {
+  it('requires level 4 for advanced events', () => {
     let scene = addCatalogObject(createScene('Principal'), ACTOR_CATALOG[0]!)
     const name = scene.objects[0]!.name
     scene = addEventAction(scene, 'on_collision', name, null, {
       target: name,
-      method: 'decir',
-      args: { mensaje: 'x' },
+      method: 'tocar_bocina',
+      args: {},
     })
     expect(requiredLevel(projectWithScene(scene))).toBe(4)
-
-    let sequence = addCatalogObject(createScene('Principal'), ACTOR_CATALOG[0]!)
-    sequence = addEventAction(sequence, 'on_start', null, null, {
-      target: sequence.objects[0]!.name,
-      method: 'esperar',
-      args: { segundos: 1 },
-    })
-    expect(requiredLevel(projectWithScene(sequence))).toBe(4)
   })
 
   it('requires level 5 for inheritance', () => {

@@ -71,6 +71,74 @@ describe('migrateProject', () => {
     expect(result.scenes[0]?.classes[0]?.visuals).toEqual([])
   })
 
+  it('upgrades a v7 project: drops Actor, primitives become state and signals go', () => {
+    const input = {
+      version: 7,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          classes: [
+            {
+              id: 'c',
+              name: 'Heroe',
+              inherits: 'Actor',
+              methods: [
+                {
+                  name: 'rutina',
+                  body: {
+                    kind: 'blocks',
+                    ops: [
+                      {
+                        id: 'b1',
+                        op: 'call',
+                        args: { method: 'decir', values: { mensaje: 'hola' } },
+                      },
+                      { id: 'b2', op: 'call', args: { method: 'mover', values: { x: 1, y: 2 } } },
+                      {
+                        id: 'b3',
+                        op: 'call',
+                        args: { method: 'esperar', values: { segundos: 1 } },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+          events: [
+            { type: 'on_signal', signal: 'boom', actions: [] },
+            { type: 'on_click', source: 'a', signal: null, actions: [] },
+          ],
+        },
+      ],
+    }
+
+    const result = migrateProject(input) as {
+      version: number
+      scenes: {
+        classes: {
+          inherits: unknown
+          methods: { body: { ops: { op: string; args: Record<string, unknown> }[] } }[]
+        }[]
+        events: { type: string; signal?: unknown }[]
+      }[]
+    }
+
+    expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
+    expect(result.scenes[0]?.classes[0]?.inherits).toBeNull()
+
+    const ops = result.scenes[0]?.classes[0]?.methods[0]?.body.ops ?? []
+    expect(ops.map((op) => op.op)).toEqual(['set', 'set', 'set'])
+    expect(ops[0]?.args).toEqual({ name: 'mensaje', value: 'hola' })
+    expect(ops[1]?.args).toEqual({ name: 'x', value: 1 })
+    expect(ops[2]?.args).toEqual({ name: 'y', value: 2 })
+
+    expect(result.scenes[0]?.events).toHaveLength(1)
+    expect(result.scenes[0]?.events[0]?.signal).toBeUndefined()
+  })
+
   it('upgrades a v4 project by adding physics settings', () => {
     const input = {
       version: 4,
@@ -87,7 +155,7 @@ describe('migrateProject', () => {
     expect(result.scenes[0]?.physics).toEqual({ enabled: false, gravityY: -9.8 })
   })
 
-  it('upgrades a v3 project by adding key and signal', () => {
+  it('upgrades a v3 project by adding key', () => {
     const input = {
       version: 3,
       meta: { name: 'Demo' },
@@ -96,12 +164,11 @@ describe('migrateProject', () => {
 
     const result = migrateProject(input) as {
       version: number
-      scenes: { events: { key: unknown; signal: unknown }[] }[]
+      scenes: { events: { key: unknown }[] }[]
     }
 
     expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
     expect(result.scenes[0]?.events[0]?.key).toBeNull()
-    expect(result.scenes[0]?.events[0]?.signal).toBeNull()
   })
 
   it('upgrades a v2 project by adding the collision other', () => {

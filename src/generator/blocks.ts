@@ -1,4 +1,4 @@
-import { defaultValueFor, findBuiltinMethod, resolveMethods } from '../model'
+import { defaultValueFor, resolveMethods } from '../model'
 import type { ClassDefinition, MethodParameter, Operation, Scene } from '../model'
 import { pyLiteral } from './python'
 
@@ -15,7 +15,7 @@ function findMethodParameters(
     )
     if (inherited) return inherited.parameters
   }
-  return findBuiltinMethod(name)?.parameters ?? []
+  return []
 }
 
 function blockToLines(scene: Scene, definition: ClassDefinition, op: Operation): string[] {

@@ -8,7 +8,7 @@ import {
   createSetBlock,
 } from './blocks'
 import type { ChangeOperator } from './blocks'
-import type { BuiltinMethod } from './methods'
+import type { MethodSignature } from './methods'
 import type { Attribute, ClassDefinition, Operation, Scene } from './schema'
 
 interface Line {
@@ -17,7 +17,7 @@ interface Line {
 }
 
 interface ParseContext {
-  methods: BuiltinMethod[]
+  methods: MethodSignature[]
   attributes: Attribute[]
 }
 

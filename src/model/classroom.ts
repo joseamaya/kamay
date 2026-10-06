@@ -1,11 +1,5 @@
 import type { AttributeValue } from './attributes'
-import {
-  BASE_CLASS,
-  createObject,
-  DOMAIN_BASE_NAMES,
-  isDomainBaseName,
-  nextObjectName,
-} from './factory'
+import { createObject, DOMAIN_BASE_NAMES, isDomainBaseName, nextObjectName } from './factory'
 import { createId } from './ids'
 import { identifierPattern } from './schema'
 import type { Attribute, ClassDefinition, Component, Method, ObjectInstance, Scene } from './schema'
@@ -43,7 +37,7 @@ export function createClassDraft(name = 'MiClase'): ClassDefinition {
   return {
     id: createId('class'),
     name,
-    inherits: 'Cosa',
+    inherits: null,
     image: null,
     attributes: [
       { name: 'color', type: 'string', initial: DEFAULT_CLASS_COLOR },
@@ -115,7 +109,7 @@ export function availableBaseClasses(scene: Scene, draft: ClassDefinition): stri
 
 function isValidBase(scene: Scene, definition: ClassDefinition): boolean {
   const base = definition.inherits
-  if (base === null || base === BASE_CLASS) return true
+  if (base === null) return true
 
   const selfNames = new Set([definition.name])
   const existing = scene.classes.find((candidate) => candidate.id === definition.id)

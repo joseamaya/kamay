@@ -57,7 +57,7 @@ export function ObjectConcept({ scene, object }: ObjectConceptProps) {
         </section>
       ) : null}
 
-      {ancestry.length > 2 ? (
+      {ancestry.length > 1 ? (
         <section className="flex flex-col">
           <h3 className="text-muted-foreground mb-1 text-xs font-semibold tracking-wide uppercase">
             {messages.inspector.inheritance}

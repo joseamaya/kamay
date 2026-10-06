@@ -29,9 +29,9 @@ function sceneWithClass(definition: ClassDefinition) {
 }
 
 describe('createClassDraft', () => {
-  it('creates a valid draft inheriting a domain base with color and shape', () => {
+  it('creates a valid root draft with color and shape', () => {
     const draft = createClassDraft('Heroe')
-    expect(draft.inherits).toBe('Cosa')
+    expect(draft.inherits).toBeNull()
     expect(draft.attributes.map((attribute) => attribute.name)).toEqual(['color', 'shape'])
   })
 })
@@ -297,7 +297,6 @@ describe('validateClassDraft', () => {
 describe('resolve with origin', () => {
   function hierarchy() {
     const animal = createClassDraft('Animal')
-    animal.inherits = 'Actor'
     animal.attributes.push({ name: 'energia', type: 'number', initial: 50 })
     animal.methods.push({ name: 'comer', parameters: [], body: { kind: 'blocks', ops: [] } })
     const collar = createClassDraft('Collar')
@@ -326,9 +325,9 @@ describe('resolve with origin', () => {
     expect(components.find((entry) => entry.value.name === 'collar')?.owner).toBe('Perro')
   })
 
-  it('builds the ancestry chain up to Actor', () => {
+  it('builds the ancestry chain up to the root', () => {
     const scene = hierarchy()
-    expect(classAncestry(scene, 'Perro')).toEqual(['Perro', 'Animal', 'Actor'])
-    expect(classAncestry(scene, 'Animal')).toEqual(['Animal', 'Actor'])
+    expect(classAncestry(scene, 'Perro')).toEqual(['Perro', 'Animal'])
+    expect(classAncestry(scene, 'Animal')).toEqual(['Animal'])
   })
 })

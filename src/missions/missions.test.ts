@@ -31,8 +31,8 @@ describe('MISSIONS', () => {
 
   it('completes the object and order missions', () => {
     let scene = addCatalogObject(createScene('Principal'), circle)
-    scene = withOrder(scene, 'decir', { mensaje: 'hola' })
-    scene = withOrder(scene, 'mover', { x: 10, y: 0 })
+    scene = withOrder(scene, 'tocar_bocina', {})
+    scene = withOrder(scene, 'moverse', {})
 
     const done = evaluateMissions(projectWith(scene))
 
@@ -41,22 +41,15 @@ describe('MISSIONS', () => {
     )
   })
 
-  it('does not count an empty message as greeting', () => {
-    let scene = addCatalogObject(createScene('Principal'), circle)
-    scene = withOrder(scene, 'decir', { mensaje: '   ' })
-
-    expect(evaluateMissions(projectWith(scene))).not.toContain('say_hello')
-  })
-
-  it('completes the class, inheritance and sequence missions', () => {
+  it('completes the class and inheritance missions', () => {
     const heroe: ClassDefinition = {
       id: 'c1',
       name: 'Heroe',
-      inherits: 'Actor',
+      inherits: null,
       image: null,
       attributes: [{ name: 'vida', type: 'number', initial: 100 }],
       components: [],
-      methods: [{ name: 'saltar', parameters: [], body: { kind: 'code', code: 'pass' } }],
+      methods: [{ name: 'saltar', parameters: [], body: { kind: 'blocks', ops: [] } }],
       visuals: [],
     }
     const enemigo: ClassDefinition = {
@@ -71,35 +64,24 @@ describe('MISSIONS', () => {
     }
     let scene: Scene = { ...createScene('Principal'), classes: [heroe, enemigo] }
     scene = addCatalogObject(scene, circle)
-    scene = withOrder(scene, 'esperar', { segundos: 1 })
 
     const done = evaluateMissions(projectWith(scene))
 
     expect(done).toEqual(
-      expect.arrayContaining([
-        'own_class',
-        'own_attribute',
-        'own_method',
-        'inherit',
-        'wait_sequence',
-      ]),
+      expect.arrayContaining(['own_class', 'own_attribute', 'own_method', 'inherit']),
     )
   })
 
-  it('completes the collision and signal missions', () => {
+  it('completes the collision mission', () => {
     let scene = addCatalogObject(createScene('Principal'), circle)
     const name = scene.objects[0]!.name
     scene = addEventAction(scene, 'on_collision', name, null, {
       target: name,
-      method: 'decir',
-      args: { mensaje: 'boom' },
+      method: 'tocar_bocina',
+      args: {},
     })
-    scene = withOrder(scene, 'emitir', { nombre: 'boom' })
 
-    const done = evaluateMissions(projectWith(scene))
-
-    expect(done).toContain('collision')
-    expect(done).toContain('signal')
+    expect(evaluateMissions(projectWith(scene))).toContain('collision')
   })
 })
 

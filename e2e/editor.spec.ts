@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures'
 
-import { codeContent, methodBody, openMore, useCodeBody } from './helpers'
+import { codeContent, methodBody, openMore, convertToCode } from './helpers'
 
 test('renders the code dock with a syntax-highlighted editor', async ({ page }) => {
   await page.goto('/')
@@ -82,12 +82,12 @@ test('creates a class with a method and instantiates it', async ({ page }) => {
   await page.getByLabel('Nombre de la clase').fill('Heroe')
   await dialog.getByRole('button', { name: 'Agregar método' }).click()
   await page.getByLabel('Nombre del método').fill('saludar')
-  await useCodeBody(page)
+  await convertToCode(page)
   await methodBody(page).fill('self.decir("hola")')
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
   await page.getByRole('button', { name: 'Heroe.py' }).click()
-  await expect(codeContent(page)).toContainText('class Heroe(Cosa):')
+  await expect(codeContent(page)).toContainText('class Heroe:')
   await expect(codeContent(page)).toContainText('def saludar(self):')
   await expect(codeContent(page)).toContainText('self.decir("hola")')
 
@@ -133,10 +133,10 @@ test('adds an action and reflects it in the code view', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   await page.getByRole('button', { name: 'carro1', exact: true }).click()
-  await page.getByLabel('Mensaje').fill('hola')
+  await page.getByLabel('Orden').selectOption('tocar_bocina')
   await page.getByRole('button', { name: 'Agregar orden' }).click()
 
-  await expect(codeContent(page)).toContainText('carro1.decir("hola")')
+  await expect(codeContent(page)).toContainText('carro1.tocar_bocina()')
 })
 
 test('warns before discarding unsaved changes', async ({ page }) => {
@@ -194,7 +194,7 @@ test('creates a class that inherits from another class', async ({ page }) => {
   await expect(codeContent(page)).toContainText('class Heroe(Personaje):')
 
   await page.getByRole('button', { name: 'Personaje.py' }).click()
-  await expect(codeContent(page)).toContainText('class Personaje(Cosa):')
+  await expect(codeContent(page)).toContainText('class Personaje:')
 
   await page.getByRole('button', { name: 'Crear objeto de Heroe' }).click()
   await page.getByRole('button', { name: 'heroe1', exact: true }).click()
@@ -202,7 +202,7 @@ test('creates a class that inherits from another class', async ({ page }) => {
 
   const overlay = page.locator('[data-selection-overlay]')
   await expect(overlay).toContainText('Instancia de Heroe')
-  await expect(overlay).toContainText('Heroe → Personaje → Cosa')
+  await expect(overlay).toContainText('Heroe → Personaje')
 })
 
 test('creates and switches between scenes', async ({ page }) => {
@@ -248,13 +248,12 @@ test('builds a method body with blocks', async ({ page }) => {
   await page.getByLabel('Nombre del método').fill('saludar')
 
   await dialog.getByRole('button', { name: 'Orden' }).click()
-  await dialog.getByLabel('Mensaje').fill('hola')
 
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
   await page.getByRole('button', { name: 'Heroe.py' }).click()
   await expect(codeContent(page)).toContainText('def saludar(self):')
-  await expect(codeContent(page)).toContainText('self.decir("hola")')
+  await expect(codeContent(page)).toContainText('self.saludar()')
 })
 
 test('converts code into blocks and keeps advanced code', async ({ page }) => {
@@ -265,7 +264,7 @@ test('converts code into blocks and keeps advanced code', async ({ page }) => {
   await page.getByLabel('Nombre de la clase').fill('Heroe')
   await dialog.getByRole('button', { name: 'Agregar método' }).click()
   await page.getByLabel('Nombre del método').fill('saludar')
-  await useCodeBody(page)
+  await convertToCode(page)
   await methodBody(page).fill('self.decir("hola")\nif True:\n    self.decir("x")')
   await dialog.getByRole('button', { name: 'Convertir a bloques' }).click()
 
@@ -279,7 +278,6 @@ test('adds a keyboard action', async ({ page }) => {
   await page.getByRole('button', { name: 'carro1', exact: true }).click()
   await page.getByLabel('Cuándo').selectOption('on_key')
   await page.getByLabel(/^Tecla/).selectOption('ArrowUp')
-  await page.getByLabel('Mensaje').fill('arriba')
   await page.getByRole('button', { name: 'Agregar orden' }).click()
 
   await expect(codeContent(page)).toContainText('registrar("key", "ArrowUp", al_pulsar_ArrowUp)')

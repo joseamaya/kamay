@@ -96,7 +96,6 @@ export function CodeView() {
         item.key,
         next,
         item.eventKey,
-        item.signal,
       )
     },
     [scene, updateObjectAttributes, setActionArg],

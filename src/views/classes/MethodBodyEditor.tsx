@@ -15,7 +15,7 @@ import {
 import type {
   Attribute,
   AttributeType,
-  BuiltinMethod,
+  MethodSignature,
   ClassDefinition,
   Method,
   MethodBody,
@@ -71,7 +71,7 @@ function ValueField({
   )
 }
 
-function methodLabel(methods: BuiltinMethod[], name: string): string {
+function methodLabel(methods: MethodSignature[], name: string): string {
   const labels = getMessages().methods as Record<string, string>
   return labels[name] ?? methods.find((method) => method.name === name)?.name ?? name
 }
@@ -88,7 +88,7 @@ function BlockCard({
   onChange,
 }: {
   op: Operation
-  methods: BuiltinMethod[]
+  methods: MethodSignature[]
   attributes: Attribute[]
   onChange: (op: Operation) => void
 }) {
@@ -248,7 +248,7 @@ function BlockList({
   onChange,
 }: {
   ops: Operation[]
-  methods: BuiltinMethod[]
+  methods: MethodSignature[]
   attributes: Attribute[]
   onChange: (ops: Operation[]) => void
 }) {
