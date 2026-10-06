@@ -593,6 +593,8 @@ export const es = {
     misconceptions: 'Misconceptions detectadas',
     predictions: 'Predicciones acertadas: {correct} de {total}',
     missions: 'Misiones completadas: {count}',
+    deliverySummary:
+      '{missions} misiones · {demonstrated} conceptos demostrados · {correct}/{total} predicciones',
     remove: 'Quitar',
     clear: 'Vaciar',
   },

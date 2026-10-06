@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ChangeEventHandler } from 'react'
 
 import { format, getMessages } from '../../i18n'
@@ -14,18 +14,35 @@ export interface TeacherDialogProps {
   onClose: () => void
 }
 
+function deliverySummary(delivery: Delivery) {
+  const demonstrated = delivery.rubric.filter((entry) => entry.status === 'demonstrated').length
+  const predictions = Object.values(delivery.evidence.predictions).reduce(
+    (totals, tally) => ({
+      correct: totals.correct + tally.correct,
+      total: totals.total + tally.correct + tally.misconception + tally.explained,
+    }),
+    { correct: 0, total: 0 },
+  )
+  return { missions: delivery.missions.completed.length, demonstrated, predictions }
+}
+
 export function TeacherDialog({ open, onClose }: TeacherDialogProps) {
   const messages = getMessages()
   const deliveries = useTeacherStore((state) => state.deliveries)
+  const hydrate = useTeacherStore((state) => state.hydrate)
   const add = useTeacherStore((state) => state.add)
   const remove = useTeacherStore((state) => state.remove)
   const clear = useTeacherStore((state) => state.clear)
   const [invalid, setInvalid] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
+  useEffect(() => {
+    if (open) void hydrate()
+  }, [open, hydrate])
+
   if (!open) return null
 
-  const report = aggregateDeliveries(deliveries)
+  const report = aggregateDeliveries(deliveries.map((record) => record.delivery))
 
   const handleFiles: ChangeEventHandler<HTMLInputElement> = async (event) => {
     const files = Array.from(event.target.files ?? [])
@@ -41,7 +58,7 @@ export function TeacherDialog({ open, onClose }: TeacherDialogProps) {
     )
     const valid = parsed.filter((delivery): delivery is Delivery => delivery !== null)
     setInvalid(valid.length < parsed.length)
-    if (valid.length > 0) add(valid)
+    if (valid.length > 0) void add(valid)
   }
 
   return (
@@ -60,7 +77,7 @@ export function TeacherDialog({ open, onClose }: TeacherDialogProps) {
           {messages.teacher.import}
         </Button>
         {deliveries.length > 0 ? (
-          <Button variant="ghost" size="sm" onClick={clear}>
+          <Button variant="ghost" size="sm" onClick={() => void clear()}>
             {messages.teacher.clear}
           </Button>
         ) : null}
@@ -123,23 +140,39 @@ export function TeacherDialog({ open, onClose }: TeacherDialogProps) {
           ) : null}
 
           <ul className="flex flex-col gap-1">
-            {deliveries.map((delivery, index) => (
-              <li
-                key={`${delivery.exportedAt}-${index}`}
-                className="border-border flex items-center justify-between gap-2 rounded-md border px-2 py-1 text-xs"
-              >
-                <span className="truncate">{delivery.project.meta.name}</span>
-                <span className="text-muted-foreground">{delivery.exportedAt.slice(0, 10)}</span>
-                <button
-                  type="button"
-                  aria-label={`${messages.teacher.remove}: ${delivery.project.meta.name}`}
-                  onClick={() => remove(index)}
-                  className="text-muted-foreground hover:text-destructive px-1 text-base leading-none"
+            {deliveries.map((record) => {
+              const { delivery } = record
+              const summary = deliverySummary(delivery)
+              return (
+                <li
+                  key={record.id}
+                  className="border-border flex flex-col gap-1 rounded-md border px-2 py-1 text-xs"
                 >
-                  ×
-                </button>
-              </li>
-            ))}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="truncate">{delivery.project.meta.name}</span>
+                    <span className="text-muted-foreground">
+                      {delivery.exportedAt.slice(0, 10)}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label={`${messages.teacher.remove}: ${delivery.project.meta.name}`}
+                      onClick={() => void remove(record.id)}
+                      className="text-muted-foreground hover:text-destructive px-1 text-base leading-none"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <p className="text-muted-foreground">
+                    {format(messages.teacher.deliverySummary, {
+                      missions: summary.missions,
+                      demonstrated: summary.demonstrated,
+                      correct: summary.predictions.correct,
+                      total: summary.predictions.total,
+                    })}
+                  </p>
+                </li>
+              )
+            })}
           </ul>
         </>
       )}

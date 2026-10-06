@@ -1,4 +1,5 @@
 import type { Project } from '../model'
+import type { Delivery } from './delivery'
 
 export interface ProjectRecord {
   id: string
@@ -12,4 +13,10 @@ export interface ProjectRepository {
   get: (id: string) => Promise<ProjectRecord | null>
   save: (record: ProjectRecord) => Promise<void>
   remove: (id: string) => Promise<void>
+}
+
+/** A student delivery stored locally by teacher mode. */
+export interface DeliveryRecord {
+  id: string
+  delivery: Delivery
 }
