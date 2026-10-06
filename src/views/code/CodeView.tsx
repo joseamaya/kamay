@@ -6,6 +6,7 @@ import type { EditableValue } from '../../generator'
 import { getMessages } from '../../i18n'
 import { translateRuntimeError, translateRuntimeHint } from '../../runtime'
 import {
+  askPredictionForAttribute,
   CODE_MIN_HEIGHT,
   useActiveScene,
   useCapabilities,
@@ -84,6 +85,7 @@ export function CodeView() {
         const object = scene.objects.find((candidate) => candidate.name === item.objectName)
         if (!object) return
         updateObjectAttributes(scene.id, object.id, { [item.key]: next })
+        askPredictionForAttribute(scene, object, item.key, next)
         return
       }
       if (!item.eventType) return
