@@ -103,13 +103,14 @@ describe('FactoryView', () => {
     ).toBeInTheDocument()
   })
 
-  it('hides base class tiles until level 5', () => {
+  it('locks base class tiles until level 5', () => {
     useProgressStore.setState({ completed: [], freeMode: false, unlockedLevel: 1 })
     render(<FactoryView />)
 
     expect(
       screen.queryByRole('button', { name: 'Crear clase que hereda de Vehiculo' }),
     ).not.toBeInTheDocument()
+    expect(screen.getByText('Se desbloquea en el Nivel 5.')).toBeInTheDocument()
   })
 
   it('creates a class that inherits a base from the palette', async () => {

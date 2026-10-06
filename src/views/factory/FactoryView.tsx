@@ -175,44 +175,6 @@ export function FactoryView() {
           ))}
         </div>
 
-        {capabilities.inheritance ? (
-          <div>
-            <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-              {messages.factory.baseClassesTitle}
-            </h3>
-            <div className="grid grid-cols-3 gap-2">
-              {DOMAIN_BASE_NAMES.map((name) => {
-                const methodNames = DOMAIN_BASES[name]?.methods.map((method) => method.name) ?? []
-                return (
-                  <button
-                    key={name}
-                    type="button"
-                    title={
-                      methodNames.length > 0
-                        ? format(messages.factory.baseMethods, { names: methodNames.join(', ') })
-                        : undefined
-                    }
-                    aria-label={format(messages.factory.deriveFrom, { name })}
-                    onClick={() => openNewClass(name)}
-                    className="border-border hover:bg-muted focus-visible:ring-ring flex flex-col items-center gap-1 rounded-md border border-dashed p-2 transition focus-visible:ring-2 focus-visible:outline-none"
-                  >
-                    <span
-                      aria-hidden
-                      className="border-border flex h-6 w-6 items-center justify-center rounded-md border border-dashed text-sm leading-none"
-                    >
-                      ＋
-                    </span>
-                    <span className="text-xs">{name}</span>
-                    <span className="text-muted-foreground text-[10px] leading-none uppercase">
-                      {messages.factory.baseTag}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        ) : null}
-
         <div>
           <div className="mb-2 flex items-center justify-between">
             <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
@@ -285,6 +247,48 @@ export function FactoryView() {
                 </li>
               ))}
             </ul>
+          )}
+        </div>
+
+        <div>
+          <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
+            {messages.factory.baseClassesTitle}
+          </h3>
+          {capabilities.inheritance ? (
+            <div className="grid grid-cols-3 gap-2">
+              {DOMAIN_BASE_NAMES.map((name) => {
+                const methodNames = DOMAIN_BASES[name]?.methods.map((method) => method.name) ?? []
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    title={
+                      methodNames.length > 0
+                        ? format(messages.factory.baseMethods, { names: methodNames.join(', ') })
+                        : undefined
+                    }
+                    aria-label={format(messages.factory.deriveFrom, { name })}
+                    onClick={() => openNewClass(name)}
+                    className="border-border hover:bg-muted focus-visible:ring-ring flex flex-col items-center gap-1 rounded-md border border-dashed p-2 transition focus-visible:ring-2 focus-visible:outline-none"
+                  >
+                    <span
+                      aria-hidden
+                      className="border-border flex h-6 w-6 items-center justify-center rounded-md border border-dashed text-sm leading-none"
+                    >
+                      ＋
+                    </span>
+                    <span className="text-xs">{name}</span>
+                    <span className="text-muted-foreground text-[10px] leading-none uppercase">
+                      {messages.factory.baseTag}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-sm">
+              {format(messages.levels.lockedHint, { level: 5 })}
+            </p>
           )}
         </div>
 
