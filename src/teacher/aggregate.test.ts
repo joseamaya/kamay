@@ -56,7 +56,7 @@ describe('aggregateDeliveries', () => {
     const report = aggregateDeliveries([])
 
     expect(report.count).toBe(0)
-    expect(report.concepts).toHaveLength(9)
+    expect(report.concepts).toHaveLength(8)
     expect(report.misconceptions).toEqual([])
     expect(report.predictions).toEqual({ correct: 0, total: 0 })
   })

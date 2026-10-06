@@ -23,16 +23,21 @@ function buildFixture(): Project {
           {
             id: 'class-heroe',
             name: 'Heroe',
-            inherits: 'Actor',
             attributes: [{ name: 'vida', type: 'number', initial: 100 }],
-            methods: [{ name: 'saltar', parameters: [], body: { kind: 'blocks', ops: [] } }],
+            methods: [
+              {
+                name: 'saltar',
+                parameters: [{ name: 'mensaje', type: 'string' }],
+                body: { kind: 'blocks', ops: [] },
+              },
+            ],
           },
         ],
         objects: [{ id: 'h1', name: 'h1', class: 'Heroe', attributes: { x: 0, y: 0 } }],
         events: [
           {
             type: 'on_start',
-            actions: [{ target: 'h1', method: 'decir', args: { mensaje: '¡Hola!' } }],
+            actions: [{ target: 'h1', method: 'saltar', args: { mensaje: '¡Hola!' } }],
           },
         ],
       },
@@ -128,14 +133,11 @@ describe('generatePython', () => {
     expect(heroe?.content).toBe(`# -*- coding: utf-8 -*-
 # Clase Heroe
 
-from kamay_runtime import Actor
-
-class Heroe(Actor):
+class Heroe:
     def __init__(self, name=None):
-        super().__init__(name)
         self.vida = 100
 
-    def saltar(self):
+    def saltar(self, mensaje: str):
         pass
 `)
   })
@@ -156,7 +158,7 @@ def main():
     h1 = Heroe("h1")
     h1.x = 0
     h1.y = 0
-    h1.decir("¡Hola!")
+    h1.saltar("¡Hola!")
 
 
 if __name__ == "__main__":
@@ -202,30 +204,6 @@ if __name__ == "__main__":
     expect(main?.content).toContain('h1.mover(1, 2)')
   })
 
-  it('orders builtin method arguments by the engine parameter order', () => {
-    const project = projectSchema.parse({
-      version: 1,
-      meta: { name: 'Demo' },
-      scenes: [
-        {
-          id: 'scene-1',
-          name: 'Principal',
-          classes: [{ id: 'class-heroe', name: 'Heroe', inherits: 'Actor' }],
-          objects: [{ id: 'h1', name: 'h1', class: 'Heroe' }],
-          events: [
-            {
-              type: 'on_start',
-              actions: [{ target: 'h1', method: 'mover', args: { y: 2, x: 1 } }],
-            },
-          ],
-        },
-      ],
-    })
-
-    const main = generatePython(project).files.find((file) => file.path === 'principal.py')
-    expect(main?.content).toContain('h1.mover(1, 2)')
-  })
-
   it('generates a user class with a code method and its call', () => {
     const project = projectSchema.parse({
       version: 1,
@@ -238,7 +216,6 @@ if __name__ == "__main__":
             {
               id: 'class-heroe',
               name: 'Heroe',
-              inherits: 'Actor',
               attributes: [{ name: 'vida', type: 'number', initial: 100 }],
               methods: [
                 {
@@ -281,7 +258,6 @@ if __name__ == "__main__":
             {
               id: 'class-heroe',
               name: 'Heroe',
-              inherits: 'Actor',
               attributes: [{ name: 'vida', type: 'number', initial: 100 }],
             },
           ],
@@ -306,7 +282,7 @@ if __name__ == "__main__":
         {
           id: 'scene-1',
           name: 'Principal',
-          classes: [{ id: 'class-heroe', name: 'Heroe', inherits: 'Actor' }],
+          classes: [{ id: 'class-heroe', name: 'Heroe' }],
           objects: [{ id: 'o1', name: 'heroe1', class: 'Heroe' }],
           events: [
             {
@@ -334,7 +310,7 @@ if __name__ == "__main__":
         {
           id: 'scene-1',
           name: 'Principal',
-          classes: [{ id: 'class-circle', name: 'Circle', inherits: 'Actor' }],
+          classes: [{ id: 'class-circle', name: 'Circle' }],
           objects: [
             { id: 'o1', name: 'circle1', class: 'Circle' },
             { id: 'o2', name: 'circle2', class: 'Circle' },
@@ -388,7 +364,7 @@ if __name__ == "__main__":
           id: 'scene-1',
           name: 'Principal',
           classes: [
-            { id: 'class-personaje', name: 'Personaje', inherits: 'Actor' },
+            { id: 'class-personaje', name: 'Personaje' },
             { id: 'class-heroe', name: 'Heroe', inherits: 'Personaje' },
           ],
         },
@@ -399,7 +375,7 @@ if __name__ == "__main__":
     const personaje = files.find((file) => file.path === 'Personaje.py')
     const heroe = files.find((file) => file.path === 'Heroe.py')
 
-    expect(personaje?.content).toContain('class Personaje(Actor):')
+    expect(personaje?.content).toContain('class Personaje:')
     expect(heroe?.content).toContain('from Personaje import Personaje')
     expect(heroe?.content).toContain('class Heroe(Personaje):')
   })
@@ -416,9 +392,21 @@ if __name__ == "__main__":
             {
               id: 'class-heroe',
               name: 'Heroe',
-              inherits: 'Actor',
               attributes: [{ name: 'vida', type: 'number', initial: 100 }],
               methods: [
+                {
+                  name: 'saludar',
+                  parameters: [{ name: 'mensaje', type: 'string' }],
+                  body: { kind: 'blocks', ops: [] },
+                },
+                {
+                  name: 'mover_a',
+                  parameters: [
+                    { name: 'x', type: 'number' },
+                    { name: 'y', type: 'number' },
+                  ],
+                  body: { kind: 'blocks', ops: [] },
+                },
                 {
                   name: 'rutina',
                   parameters: [],
@@ -429,7 +417,7 @@ if __name__ == "__main__":
                       {
                         id: 'b2',
                         op: 'call',
-                        args: { method: 'decir', values: { mensaje: 'hola' } },
+                        args: { method: 'saludar', values: { mensaje: 'hola' } },
                       },
                       {
                         id: 'b3',
@@ -439,7 +427,7 @@ if __name__ == "__main__":
                           {
                             id: 'b4',
                             op: 'call',
-                            args: { method: 'mover', values: { x: 1, y: 2 } },
+                            args: { method: 'mover_a', values: { x: 1, y: 2 } },
                           },
                         ],
                       },
@@ -456,9 +444,9 @@ if __name__ == "__main__":
     const heroe = generatePython(project).files.find((file) => file.path === 'Heroe.py')
     expect(heroe?.content).toContain('    def rutina(self):')
     expect(heroe?.content).toContain('        self.vida = 50')
-    expect(heroe?.content).toContain('        self.decir("hola")')
+    expect(heroe?.content).toContain('        self.saludar("hola")')
     expect(heroe?.content).toContain('        for _ in range(2):')
-    expect(heroe?.content).toContain('            self.mover(1, 2)')
+    expect(heroe?.content).toContain('            self.mover_a(1, 2)')
   })
 
   it('emits advanced code blocks verbatim', () => {
@@ -473,7 +461,6 @@ if __name__ == "__main__":
             {
               id: 'class-heroe',
               name: 'Heroe',
-              inherits: 'Actor',
               methods: [
                 {
                   name: 'rutina',
@@ -552,36 +539,6 @@ if __name__ == "__main__":
     expect(main?.content).toContain('h1.decir("otro")')
   })
 
-  it('generates signal handlers and emitir calls', () => {
-    const project = projectSchema.parse({
-      version: 1,
-      meta: { name: 'Demo' },
-      scenes: [
-        {
-          id: 'scene-1',
-          name: 'Principal',
-          objects: [{ id: 'h1', name: 'h1', class: 'Heroe' }],
-          events: [
-            {
-              type: 'on_signal',
-              source: 'h1',
-              signal: 'boom',
-              actions: [{ target: 'h1', method: 'decir', args: { mensaje: 'boom' } }],
-            },
-            {
-              type: 'on_start',
-              actions: [{ target: 'h1', method: 'emitir', args: { nombre: 'boom' } }],
-            },
-          ],
-        },
-      ],
-    })
-
-    const main = generatePython(project).files.find((file) => file.path === 'principal.py')
-    expect(main?.content).toContain('registrar("signal", "boom", al_recibir_boom)')
-    expect(main?.content).toContain('h1.emitir("boom")')
-  })
-
   it('is deterministic for the same model', () => {
     const first = generatePython(buildFixture())
     const second = generatePython(buildFixture())
@@ -630,11 +587,9 @@ describe('composition', () => {
         id: 'scene-1',
         name: 'Principal',
         classes: [
-          { id: 'c-bat', name: 'Bateria', inherits: 'Actor', attributes: [] },
           {
             id: 'c-robot',
             name: 'Robot',
-            inherits: 'Actor',
             attributes: [],
             components: [{ name: 'bateria', class: 'Bateria' }],
           },

@@ -14,7 +14,7 @@ export const LEVELS: Level[] = [
   { id: 1, missions: ['first_object'] },
   { id: 2, missions: ['give_order', 'say_hello', 'move_it'] },
   { id: 3, missions: ['own_class', 'own_attribute', 'own_method', 'two_instances'] },
-  { id: 4, missions: ['collision', 'wait_sequence', 'signal'] },
+  { id: 4, missions: ['collision'] },
   { id: 5, missions: ['inherit', 'inherited_behavior', 'polymorphism'] },
   { id: 6, missions: ['compose', 'composed_part'] },
 ]
@@ -28,7 +28,7 @@ export interface Capabilities {
   ownClasses: boolean
   /** Build method bodies with blocks. */
   blocks: boolean
-  /** Collision/key/signal events plus `esperar` and `emitir`. */
+  /** Collision and key events. */
   events: boolean
   /** Edit method bodies as free code. */
   freeCode: boolean
@@ -48,11 +48,6 @@ export const FREE_CAPABILITIES: Capabilities = {
   inheritance: true,
   composition: true,
 }
-
-export const BASIC_METHODS = ['decir', 'mover', 'girar', 'cambiar_escala']
-export const ADVANCED_METHODS = ['esperar', 'emitir']
-export const BASIC_TRIGGERS = ['on_start', 'on_click']
-export const ADVANCED_TRIGGERS = ['on_collision', 'on_key', 'on_signal']
 
 export function capabilitiesFor(level: number): Capabilities {
   const value = Math.min(Math.max(level, 1), MAX_LEVEL)
@@ -106,7 +101,6 @@ export function levelFromMissions(completed: readonly MissionId[]): number {
 export function requiredLevel(project: Project): number {
   const classes = project.scenes.flatMap((scene) => scene.classes)
   const events = project.scenes.flatMap((scene) => scene.events)
-  const actions = events.flatMap((event) => event.actions)
   // Catalog entities and domain bases are provided, so they do not require level.
   const custom = classes.filter((definition) => !isSystemClassName(definition.name))
   const customNames = new Set(custom.map((definition) => definition.name))
@@ -117,13 +111,9 @@ export function requiredLevel(project: Project): number {
     return 5
 
   const advancedEvents = events.some(
-    (event) =>
-      event.type === 'on_collision' || event.type === 'on_key' || event.type === 'on_signal',
+    (event) => event.type === 'on_collision' || event.type === 'on_key',
   )
-  const advancedMethods = actions.some(
-    (action) => action.method === 'esperar' || action.method === 'emitir',
-  )
-  if (advancedEvents || advancedMethods) return 4
+  if (advancedEvents) return 4
 
   if (custom.length > 0) return 3
 

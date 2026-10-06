@@ -5,27 +5,8 @@ export interface MethodParameter {
   type: AttributeType
 }
 
-export interface BuiltinMethod {
+/** The name and parameters of a method, used by blocks and the action composer. */
+export interface MethodSignature {
   name: string
   parameters: MethodParameter[]
-}
-
-/** Methods provided by the runtime engine, available on every actor. */
-export const BUILTIN_METHODS: BuiltinMethod[] = [
-  { name: 'decir', parameters: [{ name: 'mensaje', type: 'string' }] },
-  {
-    name: 'mover',
-    parameters: [
-      { name: 'x', type: 'number' },
-      { name: 'y', type: 'number' },
-    ],
-  },
-  { name: 'girar', parameters: [{ name: 'grados', type: 'number' }] },
-  { name: 'cambiar_escala', parameters: [{ name: 'factor', type: 'number' }] },
-  { name: 'esperar', parameters: [{ name: 'segundos', type: 'number' }] },
-  { name: 'emitir', parameters: [{ name: 'nombre', type: 'string' }] },
-]
-
-export function findBuiltinMethod(name: string): BuiltinMethod | undefined {
-  return BUILTIN_METHODS.find((method) => method.name === name)
 }

@@ -200,22 +200,6 @@ describe('event actions', () => {
     expect(findEvent(scene, 'on_key', 'heroe1', null, 'ArrowUp')?.actions).toHaveLength(1)
     expect(findEvent(scene, 'on_key', 'heroe1', null, 'ArrowDown')?.actions).toHaveLength(1)
   })
-
-  it('keys signal events by the signal name', () => {
-    let scene = addEventAction(
-      createScene('Principal'),
-      'on_signal',
-      'heroe1',
-      null,
-      action,
-      null,
-      'boom',
-    )
-    scene = addEventAction(scene, 'on_signal', 'heroe1', null, action, null, 'boom')
-
-    expect(scene.events.filter((event) => event.type === 'on_signal')).toHaveLength(1)
-    expect(findEvent(scene, 'on_signal', 'heroe1', null, null, 'boom')?.actions).toHaveLength(2)
-  })
 })
 
 describe('renameProject', () => {

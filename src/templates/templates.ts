@@ -6,6 +6,7 @@ import {
   createId,
   createObject,
   createScene,
+  createSetBlock,
 } from '../model'
 import type {
   Attribute,
@@ -45,7 +46,7 @@ function klass(
   return {
     id: createId('class'),
     name,
-    inherits: options.inherits ?? 'Actor',
+    inherits: options.inherits ?? null,
     image: null,
     attributes: [
       { name: 'color', type: 'string', initial: '#e2603a' },
@@ -71,8 +72,8 @@ function hello(): Project {
   const name = scene.objects[0]!.name
   scene = addEventAction(scene, 'on_start', null, null, {
     target: name,
-    method: 'decir',
-    args: { mensaje: '¡Hola!' },
+    method: 'tocar_bocina',
+    args: {},
   })
   return projectWith('Saludo', scene)
 }
@@ -83,8 +84,8 @@ function chase(): Project {
   const [first, second] = scene.objects
   scene = addEventAction(scene, 'on_collision', first!.name, second!.name, {
     target: first!.name,
-    method: 'decir',
-    args: { mensaje: '¡Choque!' },
+    method: 'tocar_bocina',
+    args: {},
   })
   return projectWith('Choque', scene)
 }
@@ -96,7 +97,7 @@ function ownClass(): Project {
       {
         name: 'saludar',
         parameters: [],
-        body: { kind: 'code', code: 'self.decir("¡Hola!")' },
+        body: { kind: 'blocks', ops: [createSetBlock('mensaje', '¡Hola!')] },
       },
     ],
   })
@@ -135,19 +136,31 @@ function inheritance(): Project {
 function polymorphism(): Project {
   const animal = klass('SerVivo', {
     methods: [
-      { name: 'hablar', parameters: [], body: { kind: 'code', code: 'self.decir("...")' } },
+      {
+        name: 'hablar',
+        parameters: [],
+        body: { kind: 'blocks', ops: [createSetBlock('mensaje', '...')] },
+      },
     ],
   })
   const perro = klass('Canino', {
     inherits: 'SerVivo',
     methods: [
-      { name: 'hablar', parameters: [], body: { kind: 'code', code: 'self.decir("¡Guau!")' } },
+      {
+        name: 'hablar',
+        parameters: [],
+        body: { kind: 'blocks', ops: [createSetBlock('mensaje', '¡Guau!')] },
+      },
     ],
   })
   const gato = klass('Felino', {
     inherits: 'SerVivo',
     methods: [
-      { name: 'hablar', parameters: [], body: { kind: 'code', code: 'self.decir("¡Miau!")' } },
+      {
+        name: 'hablar',
+        parameters: [],
+        body: { kind: 'blocks', ops: [createSetBlock('mensaje', '¡Miau!')] },
+      },
     ],
   })
   const base: Scene = { ...createScene('Principal'), classes: [animal, perro, gato] }
@@ -188,12 +201,22 @@ function physics(): Project {
 function composition(): Project {
   const bateria = klass('Bateria', {
     attributes: [{ name: 'carga', type: 'number', initial: 100 }],
-    methods: [{ name: 'cargar', parameters: [], body: { kind: 'code', code: 'self.carga = 100' } }],
+    methods: [
+      {
+        name: 'cargar',
+        parameters: [],
+        body: { kind: 'blocks', ops: [createSetBlock('carga', 100)] },
+      },
+    ],
   })
   const robot = klass('Maquina', {
     components: [{ name: 'bateria', class: 'Bateria' }],
     methods: [
-      { name: 'saludar', parameters: [], body: { kind: 'code', code: 'self.decir("¡Hola!")' } },
+      {
+        name: 'saludar',
+        parameters: [],
+        body: { kind: 'blocks', ops: [createSetBlock('mensaje', '¡Hola!')] },
+      },
     ],
   })
   const base: Scene = { ...createScene('Principal'), classes: [bateria, robot] }

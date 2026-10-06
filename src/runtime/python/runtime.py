@@ -8,51 +8,38 @@ def _emit(command):
     __kamay_emit(json.dumps(command))
 
 
-_signals = {}
+def _report_state(self, name, value):
+    object.__setattr__(self, name, value)
+    # Report public data attributes so the app can react to state changes.
+    if name.startswith("_") or callable(value):
+        return
+    if isinstance(value, (bool, int, float, str)):
+        _emit({"type": "state", "target": self._kamay_name, "name": name, "value": value})
 
 
 def registrar(kind, source, handler):
-    # Signals stay in Python: emitir() dispatches to them without a round trip.
-    if kind == "signal":
-        _signals.setdefault(source, []).append(handler)
-        return
     # Keep the handler alive beyond the call (borrowed proxies are auto-destroyed).
     __kamay_registrar(kind, source, create_proxy(handler))
 
 
-def _emitir_signal(nombre):
-    for handler in list(_signals.get(str(nombre), [])):
-        handler()
+def preparar(cls):
+    """Wires a student class to the runtime: object identity and state reporting.
 
+    Student classes have no base; the runtime injects the little it needs so the
+    generated code stays a plain domain model.
+    """
+    if getattr(cls, "_kamay_listo", False):
+        return cls
 
-class Actor:
-    """Base class for every object the student creates."""
+    original_init = cls.__dict__.get("__init__")
 
-    def __init__(self, name=None):
-        self._kamay_name = name or "actor"
+    def __init__(self, name=None, *args, **kwargs):
+        if not hasattr(self, "_kamay_name"):
+            self._kamay_name = name if name is not None else cls.__name__.lower()
+        if original_init is not None:
+            original_init(self, name, *args, **kwargs)
 
-    def __setattr__(self, name, value):
-        object.__setattr__(self, name, value)
-        # Report public data attributes so the app can show state changes.
-        if name.startswith("_") or callable(value):
-            return
-        if isinstance(value, (bool, int, float, str)):
-            _emit({"type": "state", "target": self._kamay_name, "name": name, "value": value})
-
-    def decir(self, mensaje):
-        _emit({"type": "say", "target": self._kamay_name, "message": str(mensaje)})
-
-    def mover(self, x, y):
-        _emit({"type": "move", "target": self._kamay_name, "x": float(x), "y": float(y)})
-
-    def girar(self, grados):
-        _emit({"type": "rotate", "target": self._kamay_name, "degrees": float(grados)})
-
-    def cambiar_escala(self, factor):
-        _emit({"type": "scale", "target": self._kamay_name, "factor": float(factor)})
-
-    def esperar(self, segundos):
-        _emit({"type": "wait", "seconds": float(segundos)})
-
-    def emitir(self, nombre):
-        _emitir_signal(nombre)
+    cls.__init__ = __init__
+    cls.__setattr__ = _report_state
+    cls._kamay_listo = True
+    return cls

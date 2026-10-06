@@ -16,7 +16,6 @@ const ORDER: RubricCriterionId[] = [
   'polymorphism',
   'composition',
   'events',
-  'sequences',
 ]
 
 const CRITERION_CONCEPT: Record<RubricCriterionId, ConceptId> = {
@@ -28,7 +27,6 @@ const CRITERION_CONCEPT: Record<RubricCriterionId, ConceptId> = {
   polymorphism: 'polymorphism',
   composition: 'composition',
   events: 'event',
-  sequences: 'event',
 }
 
 const STATUS_CLASS: Record<RubricStatus, string> = {

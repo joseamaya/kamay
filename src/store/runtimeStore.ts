@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-import { advance, createStepQueue, pushMessage } from '../runtime/steps'
+import { advance, createStepQueue, finishInitializing, pushMessage } from '../runtime/steps'
 import type { StepQueue } from '../runtime/steps'
 import type { RuntimeError, RuntimeMessage, RuntimeStatus, WarmupStatus } from '../runtime/types'
 
@@ -16,6 +16,7 @@ export interface RuntimeStoreState {
   setError: (error: RuntimeError | null) => void
   setStepMode: (stepMode: boolean) => void
   enqueueStep: (message: RuntimeMessage) => void
+  finishInitializing: () => void
   advanceStep: () => void
   setCursor: (cursor: number) => void
   resetSteps: () => void
@@ -32,6 +33,7 @@ export const useRuntimeStore = create<RuntimeStoreState>((set) => ({
   setError: (error) => set({ error }),
   setStepMode: (stepMode) => set({ stepMode }),
   enqueueStep: (message) => set((state) => ({ stepQueue: pushMessage(state.stepQueue, message) })),
+  finishInitializing: () => set((state) => ({ stepQueue: finishInitializing(state.stepQueue) })),
   advanceStep: () => set((state) => ({ stepQueue: advance(state.stepQueue) })),
   setCursor: (cursor) =>
     set((state) => ({

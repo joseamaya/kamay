@@ -65,12 +65,12 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
     value: shape,
     label: messages.shapes[shape],
   }))
-  const baseOptions = availableBaseClasses(scene, draft).map((name) => ({
-    value: name,
-    label: name,
-  }))
+  const baseOptions = [
+    { value: '', label: messages.classEditor.noBase },
+    ...availableBaseClasses(scene, draft).map((name) => ({ value: name, label: name })),
+  ]
   if (draft.inherits && !baseOptions.some((option) => option.value === draft.inherits)) {
-    baseOptions.unshift({ value: draft.inherits, label: messages.classEditor.noBase })
+    baseOptions.push({ value: draft.inherits, label: draft.inherits })
   }
   const componentClasses = availableComponentClasses(scene, draft)
 
@@ -208,9 +208,11 @@ export function ClassEditorDialog({ scene, initial, onSave, onClose }: ClassEdit
               <div className="flex flex-col gap-1">
                 <Select
                   label={messages.classEditor.base}
-                  value={draft.inherits ?? baseOptions[0]?.value ?? ''}
+                  value={draft.inherits ?? ''}
                   options={baseOptions}
-                  onChange={(value) => setDraft((current) => ({ ...current, inherits: value }))}
+                  onChange={(value) =>
+                    setDraft((current) => ({ ...current, inherits: value || null }))
+                  }
                 />
                 {errors.inheritsInvalid ? (
                   <span className="text-destructive text-xs">

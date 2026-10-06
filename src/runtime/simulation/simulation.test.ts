@@ -3,12 +3,12 @@ import { describe, expect, it } from 'vitest'
 import {
   addEventAction,
   collisionKey,
-  createCallBlock,
   createChangeBlock,
   createClassDraft,
   createEmptyProject,
   createObject,
   createScene,
+  createSetBlock,
   upsertClass,
 } from '../../model'
 import type { ClassDefinition, Project, Scene } from '../../model'
@@ -24,17 +24,12 @@ function heroe(): ClassDefinition {
       {
         name: 'saludar',
         parameters: [],
-        body: { kind: 'blocks', ops: [createCallBlock('decir', { mensaje: 'hola' })] },
+        body: { kind: 'blocks', ops: [createSetBlock('mensaje', 'hola')] },
       },
       {
         name: 'curar',
         parameters: [],
         body: { kind: 'blocks', ops: [createChangeBlock('vida', '+', 20)] },
-      },
-      {
-        name: 'avisar',
-        parameters: [],
-        body: { kind: 'blocks', ops: [createCallBlock('emitir', { nombre: 'listo' })] },
       },
     ],
   }
@@ -95,7 +90,7 @@ describe('Simulation', () => {
     const { messages, errors } = run(scene)
 
     expect(stateValue(messages, 'vida')).toBe(100)
-    expect(messages).toContainEqual({ type: 'say', target: 'heroe1', message: 'hola' })
+    expect(stateValue(messages, 'mensaje')).toBe('hola')
     expect(errors).toEqual([])
   })
 
@@ -124,26 +119,6 @@ describe('Simulation', () => {
 
     expect(stateValue(messages, 'encendido')).toBe(true)
     expect(errors).toEqual([])
-  })
-
-  it('dispatches signals to on_signal handlers', () => {
-    let scene = baseScene()
-    scene = addEventAction(scene, 'on_start', null, null, {
-      target: 'heroe1',
-      method: 'avisar',
-      args: {},
-    })
-    scene = addEventAction(
-      scene,
-      'on_signal',
-      null,
-      null,
-      { target: 'heroe1', method: 'curar', args: {} },
-      null,
-      'listo',
-    )
-
-    expect(stateValue(run(scene).messages, 'vida')).toBe(120)
   })
 
   it('runs a click handler for the matching object', () => {

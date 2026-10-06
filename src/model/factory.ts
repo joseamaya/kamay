@@ -56,8 +56,6 @@ export interface CatalogItem {
   methods?: Method[]
 }
 
-export const BASE_CLASS = 'Actor'
-
 function domainBlockMethod(name: string, ops: Operation[]): Method {
   return { name, parameters: [], body: { kind: 'blocks', ops } }
 }
@@ -73,7 +71,7 @@ function changeOp(name: string, amount: number, operator: '+' | '-' = '+'): Oper
 const VEHICULO: ClassDefinition = {
   id: 'base-vehiculo',
   name: 'Vehiculo',
-  inherits: BASE_CLASS,
+  inherits: null,
   image: null,
   attributes: [
     { name: 'color', type: 'string', initial: '#e2603a' },
@@ -103,7 +101,7 @@ const VEHICULO: ClassDefinition = {
 const ANIMAL: ClassDefinition = {
   id: 'base-animal',
   name: 'Animal',
-  inherits: BASE_CLASS,
+  inherits: null,
   image: null,
   attributes: [
     { name: 'color', type: 'string', initial: '#e0a23c' },
@@ -121,7 +119,7 @@ const ANIMAL: ClassDefinition = {
 const COSA: ClassDefinition = {
   id: 'base-cosa',
   name: 'Cosa',
-  inherits: BASE_CLASS,
+  inherits: null,
   image: null,
   attributes: [
     { name: 'color', type: 'string', initial: '#8f9aa8' },
@@ -272,7 +270,6 @@ export const ACTOR_CATALOG: CatalogItem[] = DOMAIN_CATALOG
 export const SYSTEM_CLASS_NAMES = new Set<string>([
   ...ACTOR_CATALOG.map((item) => item.className),
   ...DOMAIN_BASE_NAMES,
-  BASE_CLASS,
 ])
 
 export function isSystemClassName(name: string): boolean {
@@ -330,7 +327,7 @@ export function catalogClass(item: CatalogItem): ClassDefinition {
   return {
     id: createId('class'),
     name: item.className,
-    inherits: item.base ?? BASE_CLASS,
+    inherits: item.base ?? null,
     image: null,
     attributes: [...attributes, ...(item.attributes ?? [])],
     components: [],
@@ -434,7 +431,6 @@ interface EventIdentity {
   source: string | null
   other: string | null
   key: string | null
-  signal: string | null
 }
 
 function sameTrigger(event: Scene['events'][number], identity: EventIdentity) {
@@ -442,8 +438,7 @@ function sameTrigger(event: Scene['events'][number], identity: EventIdentity) {
     event.type === identity.eventType &&
     (event.source ?? null) === (identity.source ?? null) &&
     (event.other ?? null) === (identity.other ?? null) &&
-    (event.key ?? null) === (identity.key ?? null) &&
-    (event.signal ?? null) === (identity.signal ?? null)
+    (event.key ?? null) === (identity.key ?? null)
   )
 }
 
@@ -453,9 +448,8 @@ export function findEvent(
   source: string | null,
   other: string | null = null,
   key: string | null = null,
-  signal: string | null = null,
 ): Scene['events'][number] | undefined {
-  return scene.events.find((event) => sameTrigger(event, { eventType, source, other, key, signal }))
+  return scene.events.find((event) => sameTrigger(event, { eventType, source, other, key }))
 }
 
 export function addEventAction(
@@ -465,9 +459,8 @@ export function addEventAction(
   other: string | null,
   action: Action,
   key: string | null = null,
-  signal: string | null = null,
 ): Scene {
-  const identity = { eventType, source, other, key, signal }
+  const identity = { eventType, source, other, key }
   const events = [...scene.events]
   const index = events.findIndex((event) => sameTrigger(event, identity))
   if (index >= 0) {
@@ -479,7 +472,6 @@ export function addEventAction(
       source: source ?? null,
       other: other ?? null,
       key: key ?? null,
-      signal: signal ?? null,
       actions: [action],
     })
   }
@@ -496,9 +488,8 @@ export function setActionArg(
   parameter: string,
   value: number | string | boolean,
   key: string | null = null,
-  signal: string | null = null,
 ): Scene {
-  const event = findEvent(scene, eventType, source, other, key, signal)
+  const event = findEvent(scene, eventType, source, other, key)
   if (!event) return scene
   const events = scene.events.map((candidate) =>
     candidate === event
@@ -522,9 +513,8 @@ export function removeEventAction(
   other: string | null,
   actionIndex: number,
   key: string | null = null,
-  signal: string | null = null,
 ): Scene {
-  const identity = { eventType, source, other, key, signal }
+  const identity = { eventType, source, other, key }
   return {
     ...scene,
     events: scene.events.map((event) =>

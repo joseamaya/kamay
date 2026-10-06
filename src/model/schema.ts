@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /** Current version of the persisted project model. Bump when the shape changes. */
-export const CURRENT_SCHEMA_VERSION = 7
+export const CURRENT_SCHEMA_VERSION = 8
 
 /** Identifier pattern shared by class and variable names in the generated Python. */
 export const identifierPattern = /^[A-Za-z_][A-Za-z0-9_]*$/
@@ -96,24 +96,16 @@ export const actionSchema = z.object({
   args: z.record(z.string(), z.union([z.number(), z.string(), z.boolean()])).default({}),
 })
 
-export const eventTypeSchema = z.enum([
-  'on_start',
-  'on_collision',
-  'on_click',
-  'on_key',
-  'on_signal',
-])
+export const eventTypeSchema = z.enum(['on_start', 'on_collision', 'on_click', 'on_key'])
 
 export const eventSchema = z.object({
   type: eventTypeSchema,
-  /** Object id or name that triggers the event (click/collision/key/signal); null for on_start. */
+  /** Object id or name that triggers the event (click/collision/key); null for on_start. */
   source: z.string().nullable().default(null),
   /** Second object of a collision; null otherwise. */
   other: z.string().nullable().default(null),
   /** Key that triggers an `on_key` event; null otherwise. */
   key: z.string().nullable().default(null),
-  /** Signal name for an `on_signal` event; null otherwise. */
-  signal: z.string().nullable().default(null),
   actions: z.array(actionSchema).default([]),
 })
 

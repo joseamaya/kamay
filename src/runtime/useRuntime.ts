@@ -131,6 +131,7 @@ export function useRuntime(): RuntimeApi {
       emit: handleRuntimeMessage,
       onError: setError,
       onStatus: setStatus,
+      onInitialized: () => useRuntimeStore.getState().finishInitializing(),
     })
     simulationRef.current = simulation
     simulation.start()

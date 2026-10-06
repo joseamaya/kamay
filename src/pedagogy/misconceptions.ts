@@ -1,4 +1,4 @@
-import { BASE_CLASS, classCustomAttributes } from '../model'
+import { classCustomAttributes } from '../model'
 import type { ClassDefinition, Scene } from '../model'
 import type { MisconceptionId } from './concepts'
 
@@ -8,7 +8,7 @@ function ancestorNames(scene: Scene, className: string | null): Set<string> {
   const visited = new Set<string>()
   let current = className
 
-  while (current && current !== BASE_CLASS && !visited.has(current)) {
+  while (current && !visited.has(current)) {
     visited.add(current)
     names.add(current)
     current = scene.classes.find((candidate) => candidate.name === current)?.inherits ?? null
@@ -24,10 +24,9 @@ function ancestorNames(scene: Scene, className: string | null): Set<string> {
 export function detectMisconceptions(scene: Scene, definition: ClassDefinition): MisconceptionId[] {
   const result: MisconceptionId[] = []
   const base = definition.inherits
-  const baseDefinition =
-    base && base !== BASE_CLASS
-      ? scene.classes.find((candidate) => candidate.name === base)
-      : undefined
+  const baseDefinition = base
+    ? scene.classes.find((candidate) => candidate.name === base)
+    : undefined
 
   if (baseDefinition) {
     const baseHasMembers =

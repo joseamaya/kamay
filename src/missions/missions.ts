@@ -1,11 +1,19 @@
 import {
-  BASE_CLASS,
   classCustomAttributes,
   isSystemClassName,
   resolveAttributeDefaults,
   resolveCustomAttributes,
+  resolveMethods,
 } from '../model'
-import type { Action, ClassDefinition, ObjectInstance, Project, Scene, SceneEvent } from '../model'
+import type {
+  Action,
+  ClassDefinition,
+  ObjectInstance,
+  Operation,
+  Project,
+  Scene,
+  SceneEvent,
+} from '../model'
 
 export type MissionId =
   | 'first_object'
@@ -19,14 +27,11 @@ export type MissionId =
   | 'inherit'
   | 'inherited_behavior'
   | 'polymorphism'
-  | 'wait_sequence'
   | 'collision'
-  | 'signal'
   | 'compose'
   | 'composed_part'
 
-export type BadgeId =
-  'objects' | 'orders' | 'classes' | 'inheritance' | 'events' | 'sequences' | 'composition'
+export type BadgeId = 'objects' | 'orders' | 'classes' | 'inheritance' | 'events' | 'composition'
 
 export interface Mission {
   id: MissionId
@@ -58,8 +63,39 @@ export function customClasses(project: Project): ClassDefinition[] {
   return classes(project).filter((definition) => !isSystemClassName(definition.name))
 }
 
-function saysSomething(action: Action): boolean {
-  return action.method === 'decir' && String(action.args.mensaje ?? '').trim() !== ''
+function opSetsAttribute(op: Operation, names: Set<string>): boolean {
+  if (op.op === 'set' || op.op === 'change') return names.has(String(op.args.name ?? ''))
+  if (op.op === 'repeat') return op.children.some((child) => opSetsAttribute(child, names))
+  if (op.op === 'code') {
+    const code = String(op.args.code ?? '')
+    return [...names].some((name) => new RegExp(`self\\.${name}\\s*=`).test(code))
+  }
+  return false
+}
+
+/** Whether a method of the target's class assigns any of the given attributes. */
+function actionSetsAttribute(project: Project, names: Set<string>): boolean {
+  for (const scene of project.scenes) {
+    for (const event of scene.events) {
+      for (const action of event.actions) {
+        const object = scene.objects.find(
+          (candidate) => candidate.id === action.target || candidate.name === action.target,
+        )
+        if (!object) continue
+        const method = resolveMethods(scene, object.class).find(
+          (candidate) => candidate.name === action.method,
+        )
+        if (!method) continue
+        const body = method.body
+        const sets =
+          body.kind === 'code'
+            ? [...names].some((name) => new RegExp(`self\\.${name}\\s*=`).test(body.code))
+            : body.ops.some((op) => opSetsAttribute(op, names))
+        if (sets) return true
+      }
+    }
+  }
+  return false
 }
 
 function customClassDefinitions(scene: Scene): ClassDefinition[] {
@@ -102,7 +138,7 @@ export function inheritsBehavior(project: Project): boolean {
   for (const scene of project.scenes) {
     for (const definition of scene.classes) {
       const base = definition.inherits
-      if (!base || base === BASE_CLASS) continue
+      if (!base) continue
       const baseDefinition = scene.classes.find((candidate) => candidate.name === base)
       if (!baseDefinition || isSystemClassName(baseDefinition.name)) continue
       const own = new Set(definition.methods.map((method) => method.name))
@@ -133,7 +169,7 @@ function inheritsFrom(scene: Scene, className: string, baseName: string): boolea
   const visited = new Set<string>()
   let current = scene.classes.find((candidate) => candidate.name === className)?.inherits ?? null
 
-  while (current && current !== BASE_CLASS && !visited.has(current)) {
+  while (current && !visited.has(current)) {
     if (current === baseName) return true
     visited.add(current)
     current = scene.classes.find((candidate) => candidate.name === current)?.inherits ?? null
@@ -186,11 +222,11 @@ export const MISSIONS: Mission[] = [
   },
   {
     id: 'say_hello',
-    isComplete: (project) => actions(project).some(saysSomething),
+    isComplete: (project) => actionSetsAttribute(project, new Set(['mensaje'])),
   },
   {
     id: 'move_it',
-    isComplete: (project) => actions(project).some((action) => action.method === 'mover'),
+    isComplete: (project) => actionSetsAttribute(project, new Set(['x', 'y'])),
   },
   {
     id: 'own_class',
@@ -211,18 +247,8 @@ export const MISSIONS: Mission[] = [
     isComplete: (project) => hasDistinctInstances(project),
   },
   {
-    id: 'wait_sequence',
-    isComplete: (project) => actions(project).some((action) => action.method === 'esperar'),
-  },
-  {
     id: 'collision',
     isComplete: (project) => events(project).some((event) => event.type === 'on_collision'),
-  },
-  {
-    id: 'signal',
-    isComplete: (project) =>
-      events(project).some((event) => event.type === 'on_signal') ||
-      actions(project).some((action) => action.method === 'emitir'),
   },
   {
     id: 'inherit',
@@ -257,8 +283,7 @@ export const BADGES: Badge[] = [
   { id: 'orders', missions: ['give_order', 'say_hello', 'move_it'] },
   { id: 'classes', missions: ['own_class', 'own_attribute', 'own_method', 'two_instances'] },
   { id: 'inheritance', missions: ['inherit', 'inherited_behavior', 'polymorphism'] },
-  { id: 'events', missions: ['collision', 'signal'] },
-  { id: 'sequences', missions: ['wait_sequence'] },
+  { id: 'events', missions: ['collision'] },
   { id: 'composition', missions: ['compose', 'composed_part'] },
 ]
 

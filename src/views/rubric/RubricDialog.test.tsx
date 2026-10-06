@@ -18,7 +18,7 @@ describe('RubricDialog', () => {
     expect(screen.getByText('Objetos')).toBeInTheDocument()
     expect(screen.getByText('Estado')).toBeInTheDocument()
     expect(screen.getByText('Herencia')).toBeInTheDocument()
-    expect(screen.getAllByText('Presentado')).toHaveLength(9)
+    expect(screen.getAllByText('Presentado')).toHaveLength(8)
   })
 
   it('shows the recorded learning evidence', () => {

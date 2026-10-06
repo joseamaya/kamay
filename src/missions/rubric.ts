@@ -21,7 +21,6 @@ export type RubricCriterionId =
   | 'polymorphism'
   | 'composition'
   | 'events'
-  | 'sequences'
 
 export interface RubricEntry {
   id: RubricCriterionId
@@ -62,10 +61,8 @@ export function evaluateRubric(project: Project): RubricEntry[] {
     (definition) => definition.components.length > 0,
   ).length
   const eventsCount = events.filter(
-    (event) =>
-      event.type === 'on_collision' || event.type === 'on_key' || event.type === 'on_signal',
+    (event) => event.type === 'on_collision' || event.type === 'on_key',
   ).length
-  const sequencesCount = actions.filter((action) => action.method === 'esperar').length
   const stateCount = customClassInstanceCount(project)
 
   return [
@@ -93,10 +90,5 @@ export function evaluateRubric(project: Project): RubricEntry[] {
       count: compositionCount,
     },
     { id: 'events', status: evidence(eventsCount, eventsCount >= 2), count: eventsCount },
-    {
-      id: 'sequences',
-      status: evidence(sequencesCount, sequencesCount >= 2),
-      count: sequencesCount,
-    },
   ]
 }

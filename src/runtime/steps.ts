@@ -25,6 +25,11 @@ export function pushMessage(queue: StepQueue, message: RuntimeMessage): StepQueu
   return { steps: [...queue.steps, [message]], cursor: queue.cursor, initializing: false }
 }
 
+/** Stops coalescing leading state messages once the initial setup is done. */
+export function finishInitializing(queue: StepQueue): StepQueue {
+  return queue.initializing ? { ...queue, initializing: false } : queue
+}
+
 export function currentStep(queue: StepQueue): Step | null {
   return queue.steps[queue.cursor] ?? null
 }

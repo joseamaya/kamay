@@ -1,6 +1,5 @@
 import {
   collisionKey,
-  findBuiltinMethod,
   resolveAttributeDefaults,
   resolveMethods,
   withDomainBases,
@@ -21,6 +20,8 @@ export interface SimulationOptions {
   emit: (message: RuntimeMessage) => void
   onError: (error: RuntimeError) => void
   onStatus: (status: RuntimeStatus) => void
+  /** Called once objects are instantiated, before `on_start` runs. */
+  onInitialized?: () => void
 }
 
 /** Whether the scene has any method the simulator cannot interpret (raw code). */
@@ -67,6 +68,7 @@ export class Simulation {
         this.emitState(object.name, name, value)
       }
     }
+    this.options.onInitialized?.()
     for (const event of this.scene.events) {
       if (event.type === 'on_start') this.runActions(event)
     }
@@ -99,14 +101,10 @@ export class Simulation {
 
   private runAction(action: Action): void {
     const object = this.findObject(action.target)
-    if (object) this.invoke(object, action.method, action.args)
+    if (object) this.invoke(object, action.method)
   }
 
-  private invoke(
-    object: RuntimeObject,
-    name: string,
-    values: Record<string, AttributeValue>,
-  ): void {
+  private invoke(object: RuntimeObject, name: string): void {
     const method = resolveMethods(this.scene, object.class).find(
       (candidate) => candidate.name === name,
     )
@@ -118,59 +116,7 @@ export class Simulation {
       this.runOps(object, method.body.ops)
       return
     }
-    if (findBuiltinMethod(name)) {
-      this.runBuiltin(object, name, values)
-      return
-    }
     this.error(`No existe el método ${name} en ${object.class}.`)
-  }
-
-  private runBuiltin(
-    object: RuntimeObject,
-    name: string,
-    values: Record<string, AttributeValue>,
-  ): void {
-    switch (name) {
-      case 'decir':
-        this.options.emit({
-          type: 'say',
-          target: object.name,
-          message: String(values.mensaje ?? ''),
-        })
-        break
-      case 'mover':
-        this.options.emit({
-          type: 'move',
-          target: object.name,
-          x: Number(values.x) || 0,
-          y: Number(values.y) || 0,
-        })
-        break
-      case 'girar':
-        this.options.emit({
-          type: 'rotate',
-          target: object.name,
-          degrees: Number(values.grados) || 0,
-        })
-        break
-      case 'cambiar_escala':
-        this.options.emit({
-          type: 'scale',
-          target: object.name,
-          factor: Number(values.factor) || 0,
-        })
-        break
-      case 'esperar':
-        this.options.emit({ type: 'wait', seconds: Number(values.segundos) || 0 })
-        break
-      case 'emitir': {
-        const signal = String(values.nombre ?? '')
-        for (const event of this.scene.events) {
-          if (event.type === 'on_signal' && event.signal === signal) this.runActions(event)
-        }
-        break
-      }
-    }
   }
 
   private runOps(object: RuntimeObject, ops: Operation[]): void {
@@ -187,11 +133,7 @@ export class Simulation {
           op.args.operator === '-' ? current - amount : current + amount,
         )
       } else if (op.op === 'call') {
-        this.invoke(
-          object,
-          String(op.args.method ?? ''),
-          (op.args.values ?? {}) as Record<string, AttributeValue>,
-        )
+        this.invoke(object, String(op.args.method ?? ''))
       } else if (op.op === 'repeat') {
         const times = Number(op.args.times) || 0
         for (let index = 0; index < times; index += 1) this.runOps(object, op.children)

@@ -60,21 +60,17 @@ describe('projectSchema', () => {
       expect(result.data.scenes[0]?.events[0]?.source).toBeNull()
       expect(result.data.scenes[0]?.events[0]?.other).toBeNull()
       expect(result.data.scenes[0]?.events[0]?.key).toBeNull()
-      expect(result.data.scenes[0]?.events[0]?.signal).toBeNull()
     }
   })
 
-  it('accepts keyboard and signal events', () => {
+  it('accepts keyboard events', () => {
     const result = projectSchema.safeParse({
       ...minimalProject,
       scenes: [
         {
           id: 's',
           name: 'Principal',
-          events: [
-            { type: 'on_key', source: 'h1', key: 'ArrowUp', actions: [] },
-            { type: 'on_signal', source: 'h1', signal: 'boom', actions: [] },
-          ],
+          events: [{ type: 'on_key', source: 'h1', key: 'ArrowUp', actions: [] }],
         },
       ],
     })
@@ -82,7 +78,6 @@ describe('projectSchema', () => {
     expect(result.success).toBe(true)
     if (result.success) {
       expect(result.data.scenes[0]?.events[0]?.key).toBe('ArrowUp')
-      expect(result.data.scenes[0]?.events[1]?.signal).toBe('boom')
     }
   })
 

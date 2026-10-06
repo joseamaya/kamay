@@ -17,7 +17,7 @@ describe('TEMPLATES', () => {
 
   it('hello greets on start', () => {
     const actions = build('hello').scenes[0]!.events.flatMap((event) => event.actions)
-    expect(actions.some((action) => action.method === 'decir')).toBe(true)
+    expect(actions.some((action) => action.method === 'tocar_bocina')).toBe(true)
   })
 
   it('chase reacts to a collision', () => {

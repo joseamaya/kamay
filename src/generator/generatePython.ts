@@ -1,4 +1,4 @@
-import { collisionKey, DOMAIN_BASES, findBuiltinMethod, resolveMethods } from '../model'
+import { collisionKey, DOMAIN_BASES, resolveMethods } from '../model'
 import type {
   Action,
   ClassDefinition,
@@ -27,7 +27,6 @@ export interface ValueTarget {
   source: string | null
   other: string | null
   eventKey: string | null
-  signal: string | null
   actionIndex: number
 }
 
@@ -72,7 +71,6 @@ function eventRef(
     source: event.source,
     other: event.other,
     eventKey: event.key,
-    signal: event.signal,
   }
 }
 
@@ -116,9 +114,7 @@ function generateClassFile(definition: ClassDefinition, scene: Scene): string {
   ].filter((name) => name !== definition.name && name !== definition.inherits)
 
   const imports: string[] = []
-  if (definition.inherits === 'Actor') {
-    imports.push('from kamay_runtime import Actor')
-  } else if (definition.inherits) {
+  if (definition.inherits) {
     imports.push(`from ${definition.inherits} import ${definition.inherits}`)
   }
   for (const name of componentClasses) imports.push(`from ${name} import ${name}`)
@@ -179,7 +175,7 @@ function orderedArgs(scene: Scene, action: Action): OrderedArg[] {
   const method = object
     ? resolveMethods(scene, object.class).find((candidate) => candidate.name === action.method)
     : undefined
-  const parameters = method?.parameters ?? findBuiltinMethod(action.method)?.parameters
+  const parameters = method?.parameters
   if (!parameters) return Object.entries(action.args).map(([name, value]) => ({ name, value }))
 
   const byParameter = parameters
@@ -231,7 +227,6 @@ function generateObjectStatements(object: ObjectInstance, collected: CollectedVa
           source: null,
           other: null,
           eventKey: null,
-          signal: null,
           actionIndex: -1,
         },
         value,
@@ -297,19 +292,6 @@ function generateSceneBody(scene: Scene, collected: CollectedValue[]): string[] 
     lines.push(`registrar("key", ${pyLiteral(key)}, ${name})`)
   }
 
-  const signalGroups = groupActionsBy(scene, 'on_signal', (event) => event.signal)
-  for (const [signal, refs] of signalGroups) {
-    const name = `al_recibir_${pyIdentifier(signal)}`
-    pushHandler(
-      lines,
-      name,
-      refs.map(({ event, actionIndex }) =>
-        generateAction(scene, event.actions[actionIndex]!, event, actionIndex, collected),
-      ),
-    )
-    lines.push(`registrar("signal", ${pyLiteral(signal)}, ${name})`)
-  }
-
   // Run start actions last so every handler is registered before they fire.
   for (const event of scene.events) {
     if (event.type !== 'on_start') continue
@@ -329,7 +311,7 @@ interface ActionRef {
 /** Groups the generated actions of an event type by a discriminating field. */
 function groupActionsBy(
   scene: Scene,
-  type: 'on_key' | 'on_signal',
+  type: 'on_key',
   pick: (event: SceneEvent) => string | null,
 ): Map<string, ActionRef[]> {
   const groups = new Map<string, ActionRef[]>()
@@ -354,25 +336,34 @@ function generateBootstrap(
     for (const object of scene.objects) usedClassNames.add(object.class)
   }
 
-  const imports = classes
-    .filter((definition) => usedClassNames.has(definition.name))
-    .map((definition) => `from ${definition.name} import ${definition.name}`)
+  // Raw-code projects run in Python and need the runtime to report object state.
+  const rawCode = classes.some((definition) =>
+    definition.methods.some((method) => method.body.kind === 'code'),
+  )
+
+  const imports = (
+    rawCode ? classes : classes.filter((definition) => usedClassNames.has(definition.name))
+  ).map((definition) => `from ${definition.name} import ${definition.name}`)
 
   const needsRegistrar = project.scenes.some((scene) =>
     scene.events.some(
       (event) =>
         ((event.type === 'on_click' || event.type === 'on_collision') && event.source) ||
-        (event.type === 'on_key' && event.key) ||
-        (event.type === 'on_signal' && event.signal),
+        (event.type === 'on_key' && event.key),
     ),
   )
   if (needsRegistrar) imports.push('from kamay_runtime import registrar')
+  if (rawCode) imports.push('from kamay_runtime import preparar')
 
   const header = [ENCODING_HEADER, `# Proyecto: ${project.meta.name}`]
   if (project.meta.author) header.push(`# Autor: ${project.meta.author}`)
   header.push('# Generado por Kamay. Se regenera desde el modelo JSON; no edites a mano.')
 
   const body: string[] = []
+  if (rawCode) {
+    for (const definition of classes) body.push(`preparar(${definition.name})`)
+    body.push('')
+  }
   project.scenes.forEach((scene, index) => {
     if (index > 0) body.push('')
     body.push(...generateSceneBody(scene, collected))

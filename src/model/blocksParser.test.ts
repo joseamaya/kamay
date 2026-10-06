@@ -11,6 +11,11 @@ function setup() {
     parameters: [{ name: 'veces', type: 'number' }],
     body: { kind: 'blocks', ops: [] },
   })
+  draft.methods.push({
+    name: 'saludar',
+    parameters: [{ name: 'mensaje', type: 'string' }],
+    body: { kind: 'blocks', ops: [] },
+  })
   const scene = upsertClass(createScene('Principal'), draft)
   return { scene, draft }
 }
@@ -21,14 +26,14 @@ describe('codeToBlocks', () => {
     const ops = codeToBlocks(
       scene,
       draft,
-      `self.decir("hola")
+      `self.saludar("hola")
 self.vida = 50
 for _ in range(3):
     self.saltar(2)`,
     )
 
     expect(ops.map((op) => op.op)).toEqual(['call', 'set', 'repeat'])
-    expect(ops[0]?.args).toMatchObject({ method: 'decir', values: { mensaje: 'hola' } })
+    expect(ops[0]?.args).toMatchObject({ method: 'saludar', values: { mensaje: 'hola' } })
     expect(ops[1]?.args).toMatchObject({ name: 'vida', value: 50 })
     expect(ops[2]?.args).toMatchObject({ times: 3 })
     expect(ops[2]?.children.map((op) => op.op)).toEqual(['call'])
@@ -41,13 +46,13 @@ for _ in range(3):
       scene,
       draft,
       `if self.vida > 0:
-    self.decir("vivo")
-self.mover(1, 2)`,
+    self.saludar("vivo")
+self.saltar(1)`,
     )
 
     expect(ops.map((op) => op.op)).toEqual(['code', 'call'])
     expect(String(ops[0]?.args.code)).toContain('if self.vida > 0:')
-    expect(String(ops[0]?.args.code)).toContain('self.decir("vivo")')
+    expect(String(ops[0]?.args.code)).toContain('self.saludar("vivo")')
   })
 
   it('marks unknown calls, complex values and unknown attributes as advanced', () => {
