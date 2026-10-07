@@ -341,6 +341,22 @@ export const migrations: Record<number, SchemaMigration> = {
       delete rest.events
       return { ...rest, orders }
     }),
+  // v12 -> v13: appearance belongs only to the class; the per-object override
+  // is removed (the class already carries the base look and its variants).
+  12: (data) =>
+    mapScenes(data, 13, (scene) => {
+      const objects = Array.isArray(scene.objects)
+        ? (scene.objects as Record<string, unknown>[])
+        : []
+      return {
+        ...scene,
+        objects: objects.map((object) => {
+          const rest = { ...object }
+          delete rest.appearance
+          return rest
+        }),
+      }
+    }),
 }
 
 export class MigrationError extends Error {

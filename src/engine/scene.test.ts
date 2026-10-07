@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest'
 import { ACTOR_CATALOG, addCatalogObject, createScene } from '../model'
 import { DEFAULT_COLOR, DEFAULT_SHAPE, applyAppearance, toActor, toSceneState } from './scene'
 
-const EMPTY_APPEARANCE = { color: null, shape: null, glyph: null }
 const SIMULATION = { x: 5, y: -3, rotation: 90, scale: 2, mensaje: '' }
 
 describe('toActor', () => {
@@ -13,7 +12,6 @@ describe('toActor', () => {
         id: 'a',
         name: 'a',
         class: 'Circle',
-        appearance: EMPTY_APPEARANCE,
         simulation: SIMULATION,
         attributes: {},
       },
@@ -33,7 +31,6 @@ describe('toActor', () => {
         id: 'a',
         name: 'a',
         class: 'Circle',
-        appearance: EMPTY_APPEARANCE,
         simulation: { x: 100, y: 0, rotation: 0, scale: 1, mensaje: '' },
         attributes: { distancia: 50, altura: 20, giro: 90, tamano: 2 },
       },
@@ -50,7 +47,6 @@ describe('toActor', () => {
           id: 'a',
           name: 'a',
           class: 'Cat',
-          appearance: EMPTY_APPEARANCE,
           simulation: { x: 0, y: 0, rotation: 0, scale: 1, mensaje: '' },
           attributes: {},
         },

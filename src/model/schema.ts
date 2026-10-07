@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /** Current version of the persisted project model. Bump when the shape changes. */
-export const CURRENT_SCHEMA_VERSION = 12
+export const CURRENT_SCHEMA_VERSION = 13
 
 /** Identifier pattern shared by class and variable names in the generated Python. */
 export const identifierPattern = /^[A-Za-z_][A-Za-z0-9_]*$/
@@ -117,7 +117,6 @@ export const objectSchema = z.object({
   id: z.string(),
   name: z.string().regex(identifierPattern, 'invalid_identifier'),
   class: z.string().regex(identifierPattern, 'invalid_identifier'),
-  appearance: appearanceSchema.default(EMPTY_APPEARANCE),
   simulation: simulationSchema.default(EMPTY_SIMULATION),
   attributes: z.record(z.string(), z.union([z.number(), z.string(), z.boolean()])).default({}),
 })

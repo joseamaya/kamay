@@ -19,14 +19,13 @@ beforeEach(() => {
 })
 
 describe('SelectionOverlay', () => {
-  it('shows the object menu with appearance and orders', () => {
+  it('shows the object menu with orders', () => {
     selectCircle()
 
     render(<SelectionOverlay />)
 
     expect(screen.getByText('carro1')).toBeInTheDocument()
     expect(screen.getByText('Instancia de Carro')).toBeInTheDocument()
-    expect(screen.getByText('Aspecto')).toBeInTheDocument()
     expect(screen.getByText('Llamadas')).toBeInTheDocument()
     expect(screen.getByLabelText('Método')).toBeInTheDocument()
   })
@@ -37,7 +36,7 @@ describe('SelectionOverlay', () => {
 
     render(<SelectionOverlay />)
 
-    expect(screen.getByText('Aspecto')).toBeInTheDocument()
+    expect(screen.getByText('Estado')).toBeInTheDocument()
     expect(screen.queryByText('Llamadas')).not.toBeInTheDocument()
   })
 
