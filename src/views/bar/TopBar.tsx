@@ -153,7 +153,7 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
   }
 
   return (
-    <header className="border-border bg-card flex flex-col gap-1.5 border-b px-3 py-1.5">
+    <header className="border-border bg-card flex flex-wrap items-center gap-1 border-b px-3 py-1.5">
       <MenuBar
         name={projectName}
         dirty={dirty}
@@ -172,6 +172,8 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
         onMissions={() => setMissionsOpen(true)}
         canSave={persistence.ready}
       />
+
+      <span className="bg-border mx-1 h-5 w-px" aria-hidden="true" />
 
       <Toolbar
         runtime={runtime}

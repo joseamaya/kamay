@@ -34,7 +34,7 @@ export function Toolbar({ runtime, onSave, canSave, onLevels, onMissions }: Tool
   const completedMissions = useProgressStore((state) => state.completed)
 
   return (
-    <div className="flex flex-wrap items-center gap-1">
+    <div className="flex flex-1 flex-wrap items-center gap-1">
       <IconButton label={messages.bar.save} onClick={onSave} disabled={!canSave}>
         <SaveIcon />
       </IconButton>
