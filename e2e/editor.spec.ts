@@ -133,8 +133,8 @@ test('adds an action and reflects it in the code view', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   await page.getByRole('button', { name: 'carro1', exact: true }).click()
-  await page.getByLabel('Orden').selectOption('tocar_bocina')
-  await page.getByRole('button', { name: 'Agregar orden' }).click()
+  await page.getByRole('combobox', { name: 'Mensaje', exact: true }).selectOption('tocar_bocina')
+  await page.getByRole('button', { name: 'Enviar mensaje' }).click()
 
   await expect(codeContent(page)).toContainText('carro1.tocar_bocina()')
 })
@@ -247,7 +247,7 @@ test('builds a method body with blocks', async ({ page }) => {
   await dialog.getByRole('button', { name: 'Agregar método' }).click()
   await page.getByLabel('Nombre del método').fill('saludar')
 
-  await dialog.getByRole('button', { name: 'Orden' }).click()
+  await dialog.getByRole('button', { name: 'Mensaje' }).click()
 
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
@@ -276,9 +276,9 @@ test('adds orders that run in order', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   await page.getByRole('button', { name: 'carro1', exact: true }).click()
-  await page.getByRole('button', { name: 'Agregar orden' }).click()
-  await page.getByRole('combobox', { name: 'Orden' }).selectOption('moverse')
-  await page.getByRole('button', { name: 'Agregar orden' }).click()
+  await page.getByRole('button', { name: 'Enviar mensaje' }).click()
+  await page.getByRole('combobox', { name: 'Mensaje', exact: true }).selectOption('moverse')
+  await page.getByRole('button', { name: 'Enviar mensaje' }).click()
 
   await expect(codeContent(page)).toContainText('carro1.tocar_bocina()')
   await expect(codeContent(page)).toContainText('carro1.moverse()')
