@@ -19,12 +19,11 @@ import {
   setOrderArg as setOrderArgInScene,
   setSceneBackground,
   setScenePhysics,
-  updateObjectAppearance as updateObjectAppearanceOnScene,
   updateObjectAttributes as updateObjectAttributesOnScene,
   updateObjectSimulation as updateObjectSimulationOnScene,
   upsertClass,
 } from '../model'
-import type { Action, Appearance, ClassDefinition, Project, Scene, Simulation } from '../model'
+import type { Action, ClassDefinition, Project, Scene, Simulation } from '../model'
 
 const HISTORY_LIMIT = 50
 
@@ -42,7 +41,6 @@ export interface ProjectState {
     objectId: string,
     patch: Record<string, number | string | boolean>,
   ) => void
-  updateObjectAppearance: (sceneId: string, objectId: string, patch: Partial<Appearance>) => void
   updateObjectSimulation: (sceneId: string, objectId: string, patch: Partial<Simulation>) => void
   setBackground: (sceneId: string, background: string) => void
   setPhysics: (sceneId: string, patch: Partial<Scene['physics']>) => void
@@ -114,14 +112,6 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     get().updateProject((project) =>
       updateScene(project, sceneId, (scene) =>
         updateObjectAttributesOnScene(scene, objectId, patch),
-      ),
-    )
-  },
-
-  updateObjectAppearance: (sceneId, objectId, patch) => {
-    get().updateProject((project) =>
-      updateScene(project, sceneId, (scene) =>
-        updateObjectAppearanceOnScene(scene, objectId, patch),
       ),
     )
   },

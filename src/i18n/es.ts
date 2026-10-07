@@ -463,7 +463,6 @@ export const es = {
   selection: {
     menu: 'Menú del objeto',
     class: 'Instancia de {name}',
-    appearance: 'Aspecto',
     state: 'Estado',
     orders: 'Llamadas',
     duplicate: 'Duplicar',

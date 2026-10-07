@@ -2,7 +2,6 @@ import type { AttributeValue } from './attributes'
 import { createId } from './ids'
 import type {
   Action,
-  Appearance,
   Attribute,
   ClassDefinition,
   Method,
@@ -331,9 +330,8 @@ export function catalogClass(item: CatalogItem): ClassDefinition {
     id: createId('class'),
     name: item.className,
     inherits: item.base ?? null,
-    // Domain entities inherit their color from the base; abstract items own it.
     appearance: {
-      color: item.base ? null : item.color,
+      color: item.color,
       shape: item.shape,
       glyph: item.glyph ?? null,
     },
@@ -357,26 +355,19 @@ export function createObject(
   scene: Scene,
   className: string,
   attributes: Record<string, number | string | boolean> = {},
-  appearance: Appearance = { color: null, shape: null, glyph: null },
   simulation: Simulation = { ...DEFAULT_SIMULATION },
 ): ObjectInstance {
   return {
     id: createId('object'),
     name: nextObjectName(scene, className),
     class: className,
-    appearance,
     simulation,
     attributes: { ...attributes },
   }
 }
 
 export function createObjectFromCatalog(scene: Scene, item: CatalogItem): ObjectInstance {
-  return createObject(
-    scene,
-    item.className,
-    {},
-    { color: item.color, shape: item.shape, glyph: item.glyph ?? null },
-  )
+  return createObject(scene, item.className, {})
 }
 
 /** Adds the catalog object and its class chain (domain base included) to the scene. */
@@ -414,21 +405,6 @@ export function updateObjectAttributes(
     objects: scene.objects.map((object) =>
       object.id === objectId
         ? { ...object, attributes: { ...object.attributes, ...patch } }
-        : object,
-    ),
-  }
-}
-
-export function updateObjectAppearance(
-  scene: Scene,
-  objectId: string,
-  patch: Partial<Appearance>,
-): Scene {
-  return {
-    ...scene,
-    objects: scene.objects.map((object) =>
-      object.id === objectId
-        ? { ...object, appearance: { ...object.appearance, ...patch } }
         : object,
     ),
   }

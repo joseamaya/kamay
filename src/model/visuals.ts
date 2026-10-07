@@ -103,9 +103,9 @@ function resolveClassAppearance(
 }
 
 /**
- * The appearance an object shows right now: the class's base look (with the
- * object's optional override) plus the first matching state variant. Appearance
- * belongs to the simulation, not to the domain.
+ * The appearance an object shows right now: the class's base look plus the first
+ * matching state variant. Appearance belongs to the simulation, not to the
+ * domain, and is defined only on the class.
  */
 export function objectAppearance(
   scene: Scene,
@@ -115,14 +115,12 @@ export function objectAppearance(
   const resolved = withDomainBases(scene)
   const attributes = resolveObjectAttributes(scene, object, runtimeValues)
   const chain = resolveClassAppearance(resolved, object.class)
-  const override = object.appearance
-  const shape = override.shape ?? chain.shape
 
   const base: ResolvedAppearance = {
-    glyph: override.glyph ?? chain.glyph,
+    glyph: chain.glyph,
     image: chain.image,
-    color: override.color ?? chain.color ?? DEFAULT_COLOR,
-    shape: isActorShape(shape) ? shape : DEFAULT_SHAPE,
+    color: chain.color ?? DEFAULT_COLOR,
+    shape: isActorShape(chain.shape) ? chain.shape : DEFAULT_SHAPE,
   }
 
   const variant = matchVisualVariant(resolveVisualVariants(resolved, object.class), attributes)

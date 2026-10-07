@@ -22,16 +22,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `volar`, `despegar`) are relative.
 - **Missions and rubric**: removed the wait/signal missions and the `sequences`
   badge and criterion; the rubric now has eight criteria (added `state`).
-- **Orders and triggers**: the "Cuándo" selector now appears only when events
-  unlock (level 4). Before that, orders run on start with a short note, and the
-  trigger labels are more concrete ("al iniciar el programa", "cuando toco este
-  objeto", "cuando choca con", "cuando pulso una tecla").
-- **Appearance leaves the domain (schema v10)**: `color`/`shape`/`glyph` are no
-  longer class/object attributes and are no longer emitted in the generated
-  Python. They belong to the simulation: the class declares its base appearance,
-  state variants override it, and an object can override it too. This removes the
-  `glyph` leak into "custom attributes" and keeps the Python as clean domain code
-  (see `docs/04`, "Dos capas").
+- **Appearance leaves the domain (schemas v10 and v13)**: `color`/`shape`/`glyph`
+  are no longer class/object attributes and are no longer emitted in the generated
+  Python. They belong to the simulation and are defined **only on the class**: the
+  class declares its base appearance and state variants override it (the
+  per-object override was removed in v13). This removes the `glyph` leak into
+  "custom attributes" and keeps the Python as clean domain code (see `docs/04`,
+  "Dos capas").
 - **The scene state leaves the domain (schema v11)**: position, rotation, scale
   and message move to `object.simulation`, which the stage edits and the generated
   Python never contains. Movement and speech are now **domain attributes the
@@ -41,7 +38,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Orders instead of events (schema v12)**: triggers are gone. A scene keeps a
   flat, **ordered list of orders** (method calls) that the simulation runs in the
   order they were added, and the generated `main()` inlines them the same way.
-  The "Tipo de acción" (a un objeto / a todos los objetos) stays. Click, collision
+  The "Tipo de llamada" (a un objeto / a todos los objetos) stays. Click, collision
   and key interactions were removed, and level 4 now teaches writing a method as
   code (`own_code`); old events are migrated to orders.
 - **Vocabulary**: the method call is now a **call** throughout the UI — the panel

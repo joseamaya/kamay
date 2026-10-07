@@ -195,7 +195,6 @@ describe('migrateProject', () => {
       scenes: {
         classes: { appearance: Record<string, unknown>; attributes: { name: string }[] }[]
         objects: {
-          appearance: Record<string, unknown>
           simulation: Record<string, unknown>
           attributes: Record<string, unknown>
         }[]
@@ -208,9 +207,58 @@ describe('migrateProject', () => {
     expect(definition.attributes.map((attribute) => attribute.name)).toEqual(['vida'])
 
     const object = result.scenes[0]!.objects[0]!
-    expect(object.appearance).toEqual({ color: '#000', shape: null, glyph: '🐶' })
+    expect(object).not.toHaveProperty('appearance')
     expect(object.attributes).toEqual({})
     expect(object.simulation).toMatchObject({ x: 0 })
+  })
+
+  it('upgrades a v12 project: appearance is only on the class', () => {
+    const input = {
+      version: 12,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 's',
+          name: 'Principal',
+          classes: [
+            {
+              id: 'c',
+              name: 'Heroe',
+              appearance: { color: '#fff', shape: 'circle', glyph: null },
+              attributes: [],
+            },
+          ],
+          objects: [
+            {
+              id: 'o',
+              name: 'h1',
+              class: 'Heroe',
+              appearance: { color: '#000', shape: null, glyph: '🐶' },
+              simulation: { x: 0, y: 0, rotation: 0, scale: 1, mensaje: '' },
+              attributes: {},
+            },
+          ],
+          orders: [],
+        },
+      ],
+    }
+
+    const result = migrateProject(input) as {
+      version: number
+      scenes: {
+        classes: { appearance: Record<string, unknown> }[]
+        objects: Record<string, unknown>[]
+        orders: unknown[]
+      }[]
+    }
+
+    expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
+    expect(result.scenes[0]!.classes[0]!.appearance).toEqual({
+      color: '#fff',
+      shape: 'circle',
+      glyph: null,
+    })
+    expect(result.scenes[0]!.objects[0]).not.toHaveProperty('appearance')
   })
 
   it('upgrades a v10 project: the scene state leaves the domain', () => {

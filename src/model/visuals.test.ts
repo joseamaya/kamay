@@ -2,9 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { createClassDraft, createScene, upsertClass } from './index'
 import { matchVisualVariant, objectAppearance, resolveVisualVariants } from './visuals'
-import type { Appearance, ClassDefinition, ObjectInstance, VisualVariant } from './schema'
-
-const EMPTY: Appearance = { color: null, shape: null, glyph: null }
+import type { ClassDefinition, ObjectInstance, VisualVariant } from './schema'
 
 const prendido: VisualVariant = {
   id: 'v-prendido',
@@ -31,15 +29,11 @@ function sceneWith(...classes: ClassDefinition[]) {
   return scene
 }
 
-function object(
-  attributes: Record<string, number | string | boolean> = {},
-  appearance: Appearance = EMPTY,
-): ObjectInstance {
+function object(attributes: Record<string, number | string | boolean> = {}): ObjectInstance {
   return {
     id: 'o1',
     name: 'carro1',
     class: 'Vehiculo',
-    appearance,
     simulation: { x: 0, y: 0, rotation: 0, scale: 1, mensaje: '' },
     attributes,
   }
@@ -69,29 +63,22 @@ describe('matchVisualVariant', () => {
 describe('objectAppearance', () => {
   it('returns the base look when no variant matches', () => {
     const scene = sceneWith(vehiculo([prendido]))
-    const appearance = objectAppearance(
-      scene,
-      object({}, { color: '#d64b4b', shape: 'circle', glyph: null }),
-    )
+    const appearance = objectAppearance(scene, object())
 
-    expect(appearance.color).toBe('#d64b4b')
+    expect(appearance.color).toBe('#8f9aa8')
     expect(appearance.glyph).toBeNull()
     expect(appearance.shape).toBe('circle')
   })
 
   it('overrides color and glyph when the state matches', () => {
     const scene = sceneWith(vehiculo([prendido]))
-    const appearance = objectAppearance(
-      scene,
-      object({}, { color: '#d64b4b', shape: 'circle', glyph: null }),
-      { encendido: true },
-    )
+    const appearance = objectAppearance(scene, object(), { encendido: true })
 
     expect(appearance.color).toBe('#f4c542')
     expect(appearance.glyph).toBe('🔥')
   })
 
-  it('uses the class default when the object has no explicit value', () => {
+  it('uses the class default when there is no variant', () => {
     const scene = sceneWith(vehiculo([]))
     expect(objectAppearance(scene, object()).color).toBe('#8f9aa8')
   })

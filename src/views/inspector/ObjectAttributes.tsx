@@ -1,12 +1,7 @@
 import { format, getMessages } from '../../i18n'
-import {
-  objectAppearance,
-  resolveAttributeDefaults,
-  resolveCustomAttributesWithOrigin,
-} from '../../model'
+import { resolveAttributeDefaults, resolveCustomAttributesWithOrigin } from '../../model'
 import type { ObjectInstance, Scene } from '../../model'
 import { askPredictionForAttribute, useProjectStore } from '../../store'
-import { ColorInput } from '../../ui/ColorInput'
 import { NumberField } from '../../ui/NumberField'
 import { Select } from '../../ui/Select'
 import { TextField } from '../../ui/TextField'
@@ -27,7 +22,6 @@ function SectionTitle({ children }: { children: string }) {
 export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
   const messages = getMessages()
   const updateObjectAttributes = useProjectStore((state) => state.updateObjectAttributes)
-  const updateObjectAppearance = useProjectStore((state) => state.updateObjectAppearance)
 
   const patch = (values: Record<string, number | string | boolean>) => {
     updateObjectAttributes(scene.id, object.id, values)
@@ -37,21 +31,11 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
     askPredictionForAttribute(scene, object, name, value)
   }
 
-  const appearance = objectAppearance(scene, object)
   const customAttributes = resolveCustomAttributesWithOrigin(scene, object.class)
   const defaults = resolveAttributeDefaults(scene, object.class)
 
   return (
     <div className="flex flex-col gap-4">
-      <section className="flex flex-col gap-2">
-        <SectionTitle>{messages.selection.appearance}</SectionTitle>
-        <ColorInput
-          label={messages.inspector.color}
-          value={appearance.color}
-          onChange={(value) => updateObjectAppearance(scene.id, object.id, { color: value })}
-        />
-      </section>
-
       {customAttributes.length > 0 ? (
         <section className="flex flex-col gap-2">
           <SectionTitle>{messages.selection.state}</SectionTitle>

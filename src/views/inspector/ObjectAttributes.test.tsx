@@ -71,7 +71,7 @@ describe('ObjectAttributes', () => {
     expect(screen.getByText('Heredado de Animal')).toBeInTheDocument()
   })
 
-  it('shows appearance and state without transform fields', () => {
+  it('shows state without appearance or transform fields', () => {
     const definition = createClassDraft('Heroe')
     definition.attributes.push({ name: 'vida', type: 'number', initial: 100 })
     useProjectStore.getState().saveClass(currentScene().id, definition)
@@ -80,8 +80,8 @@ describe('ObjectAttributes', () => {
 
     render(<Harness />)
 
-    expect(screen.getByText('Aspecto')).toBeInTheDocument()
     expect(screen.getByText('Estado')).toBeInTheDocument()
+    expect(screen.queryByText('Aspecto')).not.toBeInTheDocument()
     expect(screen.queryByText('Transformación')).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Rotación')).not.toBeInTheDocument()
   })

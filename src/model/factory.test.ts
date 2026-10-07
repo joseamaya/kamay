@@ -79,10 +79,12 @@ describe('addCatalogObject', () => {
     expect(second.objects.map((object) => object.name)).toEqual(['carro1', 'carro2'])
   })
 
-  it('seeds the object simulation and appearance', () => {
+  it('seeds the object simulation and the class appearance', () => {
     const scene = addCatalogObject(createScene('Principal'), carro)
     expect(scene.objects[0]?.simulation).toMatchObject({ x: 0, y: 0, rotation: 0, scale: 1 })
-    expect(scene.objects[0]?.appearance).toMatchObject({ shape: 'circle', color: carro.color })
+    expect(
+      scene.classes.find((definition) => definition.name === 'Carro')?.appearance,
+    ).toMatchObject({ shape: 'circle', color: carro.color })
   })
 
   it('seeds the glyph for a real-world entity', () => {
@@ -91,7 +93,6 @@ describe('addCatalogObject', () => {
     expect(scene.classes.find((definition) => definition.name === 'Perro')?.appearance.glyph).toBe(
       '🐶',
     )
-    expect(scene.objects[0]?.appearance.glyph).toBe('🐶')
   })
 
   it('adds the domain base chain for a real-world entity', () => {
