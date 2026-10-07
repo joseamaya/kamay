@@ -54,6 +54,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   **State** panel (`before → after`); a new **"Volver a editar"** (back to editing)
   button ends the session and returns the scene to the model, clearing the
   observations and unlocking editing. "Ejecutar" re-runs from scratch.
+- **Icon controls**: run/stop, back-to-editing, step mode/step/back and
+  undo/redo are now **icon-only buttons with a tooltip** (`src/ui/IconButton`,
+  `src/ui/icons`), keeping the accessible name for tests and screen readers.
 
 ### Added
 

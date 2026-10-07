@@ -21,6 +21,8 @@ import { findTemplate } from '../../templates'
 import type { TemplateId } from '../../templates'
 import { Button } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
+import { EditIcon, PlayIcon, RedoIcon, StopIcon, UndoIcon } from '../../ui/icons'
+import { IconButton } from '../../ui/IconButton'
 import { Menu, MenuItem } from '../../ui/Menu'
 import { Select } from '../../ui/Select'
 import { LevelsDialog } from '../levels/LevelsDialog'
@@ -215,26 +217,26 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
 
         <span className="bg-border mx-1 h-5 w-px" aria-hidden="true" />
 
-        <Button variant="ghost" size="sm" onClick={undo} disabled={!hasPast}>
-          {messages.bar.undo}
-        </Button>
-        <Button variant="ghost" size="sm" onClick={redo} disabled={!hasFuture}>
-          {messages.bar.redo}
-        </Button>
+        <IconButton label={messages.bar.undo} onClick={undo} disabled={!hasPast}>
+          <UndoIcon />
+        </IconButton>
+        <IconButton label={messages.bar.redo} onClick={redo} disabled={!hasFuture}>
+          <RedoIcon />
+        </IconButton>
         <StepControls runtime={runtime} />
         {runtimeStatus === 'ready' ? (
-          <Button variant="secondary" size="sm" onClick={runtime.stop}>
-            {messages.bar.reset}
-          </Button>
+          <IconButton label={messages.bar.reset} variant="secondary" onClick={runtime.stop}>
+            <EditIcon />
+          </IconButton>
         ) : null}
         {isRunning ? (
-          <Button variant="secondary" size="sm" onClick={runtime.stop}>
-            {messages.bar.stop}
-          </Button>
+          <IconButton label={messages.bar.stop} variant="secondary" onClick={runtime.stop}>
+            <StopIcon />
+          </IconButton>
         ) : (
-          <Button variant="primary" size="sm" onClick={runtime.run}>
-            {messages.bar.run}
-          </Button>
+          <IconButton label={messages.bar.run} variant="primary" onClick={runtime.run}>
+            <PlayIcon />
+          </IconButton>
         )}
 
         <span className="bg-border mx-1 h-5 w-px" aria-hidden="true" />
