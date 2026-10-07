@@ -24,7 +24,7 @@ test('guides to a reachable mission instead of a locked one', async ({ page }) =
 
   await page.goto('/')
 
-  await expect(page.getByText('Muchos objetos e identidad')).toBeVisible()
-  await expect(page.getByText('Siguiente misión: Provoca un choque')).toBeVisible()
+  await expect(page.getByText('Escribe código')).toBeVisible()
+  await expect(page.getByText('Siguiente misión: Escribe tu método')).toBeVisible()
   await expect(page.getByText('Siguiente misión: Hereda')).toHaveCount(0)
 })

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   ACTOR_CATALOG,
   addCatalogObject,
-  addEventAction,
+  addOrder,
   createClassDraft,
   createEmptyProject,
   createScene,
@@ -98,29 +98,21 @@ describe('evaluateRubric', () => {
     scene = upsertClass(scene, gato)
     scene = instantiateClass(scene, perro.id)
     scene = instantiateClass(scene, gato.id)
-    scene = addEventAction(scene, 'on_start', null, null, {
-      target: scene.objects[0]!.name,
-      method: 'hablar',
-      args: {},
-    })
-    scene = addEventAction(scene, 'on_start', null, null, {
-      target: scene.objects[1]!.name,
-      method: 'hablar',
-      args: {},
-    })
+    scene = addOrder(scene, { target: scene.objects[0]!.name, method: 'hablar', args: {} })
+    scene = addOrder(scene, { target: scene.objects[1]!.name, method: 'hablar', args: {} })
 
     expect(status(projectWithScene(scene), 'polymorphism')).toBe('demonstrated')
   })
 
-  it('detects events', () => {
-    let scene = addCatalogObject(createScene('Principal'), ACTOR_CATALOG[0]!)
-    const name = scene.objects[0]!.name
-    scene = addEventAction(scene, 'on_collision', name, 'otro', {
-      target: name,
-      method: 'prender',
-      args: {},
+  it('detects a method written as code', () => {
+    const heroe = createClassDraft('Heroe')
+    heroe.methods.push({
+      name: 'rutina',
+      parameters: [],
+      body: { kind: 'code', code: 'self.vida = 0' },
     })
+    const scene = upsertClass(createScene('Principal'), heroe)
 
-    expect(status(projectWithScene(scene), 'events')).toBe('practiced')
+    expect(status(projectWithScene(scene), 'code')).toBe('demonstrated')
   })
 })

@@ -3,16 +3,15 @@ import { describe, expect, it } from 'vitest'
 import {
   ACTOR_CATALOG,
   addCatalogObject,
-  addEventAction,
+  addOrder,
   createClassDraft,
   createEmptyProject,
   createScene,
   DOMAIN_BASES,
-  findEvent,
-  removeEventAction,
   removeObject,
+  removeOrder,
   renameProject,
-  setActionArg,
+  setOrderArg,
   setSceneBackground,
   updateObjectAttributes,
   updateObjectSimulation,
@@ -108,25 +107,21 @@ describe('addCatalogObject', () => {
   })
 })
 
-describe('setActionArg', () => {
-  it('updates a single action argument immutably', () => {
+describe('setOrderArg', () => {
+  it('updates a single order argument immutably', () => {
     let scene = addCatalogObject(createScene('Principal'), carro)
     const name = scene.objects[0]!.name
-    scene = addEventAction(scene, 'on_start', null, null, {
-      target: name,
-      method: 'decir',
-      args: { mensaje: 'hola' },
-    })
+    scene = addOrder(scene, { target: name, method: 'decir', args: { mensaje: 'hola' } })
 
-    const next = setActionArg(scene, 'on_start', null, null, 0, 'mensaje', 'adios')
+    const next = setOrderArg(scene, 0, 'mensaje', 'adios')
 
-    expect(next.events[0]?.actions[0]?.args.mensaje).toBe('adios')
-    expect(scene.events[0]?.actions[0]?.args.mensaje).toBe('hola')
+    expect(next.orders[0]?.args.mensaje).toBe('adios')
+    expect(scene.orders[0]?.args.mensaje).toBe('hola')
   })
 
-  it('ignores a missing event', () => {
+  it('ignores a missing order', () => {
     const scene = addCatalogObject(createScene('Principal'), carro)
-    expect(setActionArg(scene, 'on_start', null, null, 0, 'mensaje', 'x')).toEqual(scene)
+    expect(setOrderArg(scene, 3, 'mensaje', 'x')).toEqual(scene)
   })
 })
 
@@ -161,49 +156,29 @@ describe('scene operations', () => {
     expect(setSceneBackground(createScene('Principal'), 'night').background).toBe('night')
   })
 
-  it('drops the object events and actions when deleting it', () => {
+  it('drops the object orders when deleting it', () => {
     let scene = addCatalogObject(createScene('Principal'), carro)
     const object = scene.objects[0]!
-    const action = { target: object.name, method: 'decir', args: { mensaje: 'hola' } }
-    scene = addEventAction(scene, 'on_click', object.name, null, action)
-    scene = addEventAction(scene, 'on_start', null, null, action)
+    scene = addOrder(scene, { target: object.name, method: 'decir', args: { mensaje: 'hola' } })
 
     scene = removeObject(scene, object.id)
 
     expect(scene.objects).toHaveLength(0)
-    expect(scene.events.find((event) => event.type === 'on_click')).toBeUndefined()
-    expect(findEvent(scene, 'on_start', null)?.actions ?? []).toHaveLength(0)
+    expect(scene.orders).toHaveLength(0)
   })
 })
 
-describe('event actions', () => {
+describe('orders', () => {
   const action = { target: 'heroe1', method: 'decir', args: { mensaje: 'hola' } }
 
-  it('keys events by type and source', () => {
-    let scene = addEventAction(createScene('Principal'), 'on_click', 'heroe1', null, action)
+  it('appends orders in order and removes by index', () => {
+    let scene = addOrder(createScene('Principal'), action)
+    scene = addOrder(scene, { ...action, method: 'saltar' })
 
-    expect(findEvent(scene, 'on_click', 'heroe1')?.actions).toHaveLength(1)
-    expect(findEvent(scene, 'on_click', 'heroe2')).toBeUndefined()
-    expect(findEvent(scene, 'on_start', null)?.actions ?? []).toHaveLength(0)
+    expect(scene.orders.map((order) => order.method)).toEqual(['decir', 'saltar'])
 
-    scene = removeEventAction(scene, 'on_click', 'heroe1', null, 0)
-    expect(findEvent(scene, 'on_click', 'heroe1')?.actions).toHaveLength(0)
-  })
-
-  it('keys keyboard events by the pressed key', () => {
-    let scene = addEventAction(
-      createScene('Principal'),
-      'on_key',
-      'heroe1',
-      null,
-      action,
-      'ArrowUp',
-    )
-    scene = addEventAction(scene, 'on_key', 'heroe1', null, action, 'ArrowDown')
-
-    expect(scene.events.filter((event) => event.type === 'on_key')).toHaveLength(2)
-    expect(findEvent(scene, 'on_key', 'heroe1', null, 'ArrowUp')?.actions).toHaveLength(1)
-    expect(findEvent(scene, 'on_key', 'heroe1', null, 'ArrowDown')?.actions).toHaveLength(1)
+    scene = removeOrder(scene, 0)
+    expect(scene.orders.map((order) => order.method)).toEqual(['saltar'])
   })
 })
 

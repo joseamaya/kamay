@@ -10,7 +10,7 @@ import {
   useRuntimeStore,
 } from '../store'
 import { createRuntimeBridge } from './bridge'
-import { emitRuntimeCommand, emitRuntimeReset, onRuntimeTrigger } from './bus'
+import { emitRuntimeCommand, emitRuntimeReset } from './bus'
 import { stateEffect } from './effects'
 import { hasRawCode, Simulation } from './simulation'
 import { currentStep, remainingSteps } from './steps'
@@ -88,16 +88,10 @@ export function useRuntime(): RuntimeApi {
       useAnalyticsStore.getState().record({ type: 'error', detail: error.kind })
     })
     const offStatus = bridge.onStatus((status) => setStatus(status))
-    const offTrigger = onRuntimeTrigger((trigger) => {
-      const simulation = simulationRef.current
-      if (simulation) simulation.trigger(trigger.kind, trigger.source)
-      else bridge.trigger(trigger.kind, trigger.source)
-    })
     return () => {
       offCommand()
       offError()
       offStatus()
-      offTrigger()
       bridge.stop()
     }
   }, [bridge, setStatus, setError])

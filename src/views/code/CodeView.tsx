@@ -32,7 +32,7 @@ export function CodeView() {
   const scene = useActiveScene()
   const capabilities = useCapabilities()
   const updateObjectAttributes = useProjectStore((state) => state.updateObjectAttributes)
-  const setActionArg = useProjectStore((state) => state.setActionArg)
+  const setOrderArg = useProjectStore((state) => state.setOrderArg)
   const generation = useMemo(() => generatePython(project, activeSceneId), [project, activeSceneId])
   const files = generation.files
 
@@ -88,19 +88,9 @@ export function CodeView() {
         askPredictionForAttribute(scene, object, item.key, next)
         return
       }
-      if (!item.eventType) return
-      setActionArg(
-        scene.id,
-        item.eventType,
-        item.source,
-        item.other,
-        item.actionIndex,
-        item.key,
-        next,
-        item.eventKey,
-      )
+      setOrderArg(scene.id, item.orderIndex, item.key, next)
     },
-    [scene, updateObjectAttributes, setActionArg],
+    [scene, updateObjectAttributes, setOrderArg],
   )
 
   const handleCopy = async () => {

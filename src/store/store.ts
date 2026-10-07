@@ -2,7 +2,7 @@ import { create } from 'zustand'
 
 import {
   addCatalogObject,
-  addEventAction,
+  addOrder as addOrderToScene,
   createEmptyProject,
   createScene,
   duplicateObject as duplicateObjectInScene,
@@ -10,13 +10,13 @@ import {
   instantiateClass as instantiateClassInScene,
   nextSceneName,
   removeClass as removeClassFromScene,
-  removeEventAction,
   removeObject as removeObjectFromScene,
+  removeOrder as removeOrderFromScene,
   removeScene as removeSceneFromProject,
   renameProject as renameProjectInProject,
   renameScene as renameSceneInProject,
   replaceScene,
-  setActionArg as setActionArgInScene,
+  setOrderArg as setOrderArgInScene,
   setSceneBackground,
   setScenePhysics,
   updateObjectAppearance as updateObjectAppearanceOnScene,
@@ -24,15 +24,7 @@ import {
   updateObjectSimulation as updateObjectSimulationOnScene,
   upsertClass,
 } from '../model'
-import type {
-  Action,
-  Appearance,
-  ClassDefinition,
-  EventType,
-  Project,
-  Scene,
-  Simulation,
-} from '../model'
+import type { Action, Appearance, ClassDefinition, Project, Scene, Simulation } from '../model'
 
 const HISTORY_LIMIT = 50
 
@@ -57,31 +49,13 @@ export interface ProjectState {
   saveClass: (sceneId: string, definition: ClassDefinition) => void
   removeClass: (sceneId: string, classId: string) => void
   instantiateClass: (sceneId: string, classId: string) => void
-  addAction: (
+  addOrder: (sceneId: string, action: Action) => void
+  removeOrder: (sceneId: string, index: number) => void
+  setOrderArg: (
     sceneId: string,
-    eventType: EventType,
-    source: string | null,
-    other: string | null,
-    action: Action,
-    key?: string | null,
-  ) => void
-  removeAction: (
-    sceneId: string,
-    eventType: EventType,
-    source: string | null,
-    other: string | null,
-    actionIndex: number,
-    key?: string | null,
-  ) => void
-  setActionArg: (
-    sceneId: string,
-    eventType: EventType,
-    source: string | null,
-    other: string | null,
-    actionIndex: number,
+    index: number,
     parameter: string,
     value: number | string | boolean,
-    key?: string | null,
   ) => void
   renameProject: (name: string) => void
   addScene: () => string
@@ -190,27 +164,21 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     )
   },
 
-  addAction: (sceneId, eventType, source, other, action, key = null) => {
+  addOrder: (sceneId, action) => {
     get().updateProject((project) =>
-      updateScene(project, sceneId, (scene) =>
-        addEventAction(scene, eventType, source, other, action, key),
-      ),
+      updateScene(project, sceneId, (scene) => addOrderToScene(scene, action)),
     )
   },
 
-  removeAction: (sceneId, eventType, source, other, actionIndex, key = null) => {
+  removeOrder: (sceneId, index) => {
     get().updateProject((project) =>
-      updateScene(project, sceneId, (scene) =>
-        removeEventAction(scene, eventType, source, other, actionIndex, key),
-      ),
+      updateScene(project, sceneId, (scene) => removeOrderFromScene(scene, index)),
     )
   },
 
-  setActionArg: (sceneId, eventType, source, other, actionIndex, parameter, value, key = null) => {
+  setOrderArg: (sceneId, index, parameter, value) => {
     get().updateProject((project) =>
-      updateScene(project, sceneId, (scene) =>
-        setActionArgInScene(scene, eventType, source, other, actionIndex, parameter, value, key),
-      ),
+      updateScene(project, sceneId, (scene) => setOrderArgInScene(scene, index, parameter, value)),
     )
   },
 

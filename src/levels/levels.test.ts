@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  ACTOR_CATALOG,
-  addCatalogObject,
-  addEventAction,
-  createEmptyProject,
-  createScene,
-} from '../model'
+import { ACTOR_CATALOG, addCatalogObject, createEmptyProject, createScene } from '../model'
 import type { ClassDefinition } from '../model'
 import { MISSIONS } from '../missions'
 import type { MissionId } from '../missions'
@@ -45,7 +39,6 @@ describe('capabilitiesFor', () => {
       orders: false,
       ownClasses: false,
       blocks: false,
-      events: false,
       freeCode: false,
       inheritance: false,
       composition: false,
@@ -55,8 +48,6 @@ describe('capabilitiesFor', () => {
     expect(capabilitiesFor(2).ownClasses).toBe(false)
     expect(capabilitiesFor(3).ownClasses).toBe(true)
     expect(capabilitiesFor(3).blocks).toBe(true)
-    expect(capabilitiesFor(3).events).toBe(false)
-    expect(capabilitiesFor(4).events).toBe(true)
     expect(capabilitiesFor(4).freeCode).toBe(true)
     expect(capabilitiesFor(4).inheritance).toBe(false)
     expect(capabilitiesFor(5).inheritance).toBe(true)
@@ -90,7 +81,7 @@ describe('levelFromMissions', () => {
 describe('missionLevel', () => {
   it('maps missions to their level', () => {
     expect(missionLevel('first_object')).toBe(1)
-    expect(missionLevel('collision')).toBe(4)
+    expect(missionLevel('own_code')).toBe(4)
     expect(missionLevel('inherit')).toBe(5)
     expect(missionLevel('compose')).toBe(MAX_LEVEL)
   })
@@ -113,11 +104,11 @@ describe('nextMission', () => {
   })
 
   it('never suggests a mission above the reachable level', () => {
-    expect(nextMission(levels123, 4)).toBe('collision')
+    expect(nextMission(levels123, 4)).toBe('own_code')
   })
 
   it('advances to inheritance once level 4 is complete', () => {
-    expect(nextMission([...levels123, 'collision'], 5)).toBe('inherit')
+    expect(nextMission([...levels123, 'own_code'], 5)).toBe('inherit')
   })
 
   it('returns null when everything reachable is done', () => {
@@ -150,14 +141,14 @@ describe('requiredLevel', () => {
     expect(requiredLevel(projectWithScene(scene))).toBe(3)
   })
 
-  it('requires level 4 for advanced events', () => {
-    let scene = addCatalogObject(createScene('Principal'), ACTOR_CATALOG[0]!)
-    const name = scene.objects[0]!.name
-    scene = addEventAction(scene, 'on_collision', name, null, {
-      target: name,
-      method: 'tocar_bocina',
-      args: {},
+  it('requires level 4 for a method written as code', () => {
+    const heroe = klass('Heroe')
+    heroe.methods.push({
+      name: 'rutina',
+      parameters: [],
+      body: { kind: 'code', code: 'self.vida = 0' },
     })
+    const scene = { ...createScene('Principal'), classes: [heroe] }
     expect(requiredLevel(projectWithScene(scene))).toBe(4)
   })
 

@@ -9,7 +9,6 @@ export type ConceptId =
   | 'method'
   | 'method_call'
   | 'parameter'
-  | 'event'
   | 'inheritance'
   | 'composition'
   | 'polymorphism'
@@ -29,7 +28,6 @@ export const CONCEPTS: ConceptDefinition[] = [
   { id: 'object', prerequisites: [], level: 1, misconceptions: [] },
   { id: 'method_call', prerequisites: ['object'], level: 2, misconceptions: [] },
   { id: 'parameter', prerequisites: ['method_call'], level: 2, misconceptions: [] },
-  { id: 'event', prerequisites: ['method_call'], level: 2, misconceptions: [] },
   { id: 'class', prerequisites: ['object'], level: 3, misconceptions: ['class_is_object'] },
   {
     id: 'instance',
@@ -74,10 +72,10 @@ const MISSION_CONCEPT: Partial<Record<MissionId, ConceptId>> = {
   give_order: 'method_call',
   say_hello: 'method_call',
   move_it: 'parameter',
-  collision: 'event',
   own_class: 'class',
   own_attribute: 'attribute',
   own_method: 'method',
+  own_code: 'method',
   inherit: 'inheritance',
   inherited_behavior: 'inheritance',
   polymorphism: 'polymorphism',

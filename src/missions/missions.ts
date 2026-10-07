@@ -5,15 +5,7 @@ import {
   resolveCustomAttributes,
   resolveMethods,
 } from '../model'
-import type {
-  Action,
-  ClassDefinition,
-  ObjectInstance,
-  Operation,
-  Project,
-  Scene,
-  SceneEvent,
-} from '../model'
+import type { Action, ClassDefinition, ObjectInstance, Operation, Project, Scene } from '../model'
 
 export type MissionId =
   | 'first_object'
@@ -28,11 +20,11 @@ export type MissionId =
   | 'inherited_behavior'
   | 'polymorphism'
   | 'same_message'
-  | 'collision'
+  | 'own_code'
   | 'compose'
   | 'composed_part'
 
-export type BadgeId = 'objects' | 'orders' | 'classes' | 'inheritance' | 'events' | 'composition'
+export type BadgeId = 'objects' | 'orders' | 'classes' | 'inheritance' | 'code' | 'composition'
 
 export interface Mission {
   id: MissionId
@@ -52,12 +44,8 @@ function objects(project: Project): ObjectInstance[] {
   return project.scenes.flatMap((scene) => scene.objects)
 }
 
-function events(project: Project): SceneEvent[] {
-  return project.scenes.flatMap((scene) => scene.events)
-}
-
 function actions(project: Project): Action[] {
-  return events(project).flatMap((event) => event.actions)
+  return project.scenes.flatMap((scene) => scene.orders)
 }
 
 export function customClasses(project: Project): ClassDefinition[] {
@@ -77,23 +65,21 @@ function opSetsAttribute(op: Operation, names: Set<string>): boolean {
 /** Whether a method of the target's class assigns any of the given attributes. */
 function actionSetsAttribute(project: Project, names: Set<string>): boolean {
   for (const scene of project.scenes) {
-    for (const event of scene.events) {
-      for (const action of event.actions) {
-        const object = scene.objects.find(
-          (candidate) => candidate.id === action.target || candidate.name === action.target,
-        )
-        if (!object) continue
-        const method = resolveMethods(scene, object.class).find(
-          (candidate) => candidate.name === action.method,
-        )
-        if (!method) continue
-        const body = method.body
-        const sets =
-          body.kind === 'code'
-            ? [...names].some((name) => new RegExp(`self\\.${name}\\s*=`).test(body.code))
-            : body.ops.some((op) => opSetsAttribute(op, names))
-        if (sets) return true
-      }
+    for (const action of scene.orders) {
+      const object = scene.objects.find(
+        (candidate) => candidate.id === action.target || candidate.name === action.target,
+      )
+      if (!object) continue
+      const method = resolveMethods(scene, object.class).find(
+        (candidate) => candidate.name === action.method,
+      )
+      if (!method) continue
+      const body = method.body
+      const sets =
+        body.kind === 'code'
+          ? [...names].some((name) => new RegExp(`self\\.${name}\\s*=`).test(body.code))
+          : body.ops.some((op) => opSetsAttribute(op, names))
+      if (sets) return true
     }
   }
   return false
@@ -187,7 +173,7 @@ export function demonstratesPolymorphism(project: Project): boolean {
   for (const scene of project.scenes) {
     const classOf = (target: string) =>
       scene.objects.find((object) => object.id === target || object.name === target)?.class ?? null
-    const sceneActions = scene.events.flatMap((event) => event.actions)
+    const sceneActions = scene.orders
 
     for (const base of customClassDefinitions(scene)) {
       for (const method of base.methods) {
@@ -218,9 +204,7 @@ export function demonstratesPolymorphism(project: Project): boolean {
  */
 export function sameMessageToMany(project: Project): boolean {
   for (const scene of project.scenes) {
-    const forEach = scene.events
-      .flatMap((event) => event.actions)
-      .filter((action) => action.kind === 'for_each' && action.class)
+    const forEach = scene.orders.filter((action) => action.kind === 'for_each' && action.class)
     for (const action of forEach) {
       const loopClass = action.class as string
       const covered = scene.classes.filter(
@@ -270,8 +254,11 @@ export const MISSIONS: Mission[] = [
     isComplete: (project) => hasDistinctInstances(project),
   },
   {
-    id: 'collision',
-    isComplete: (project) => events(project).some((event) => event.type === 'on_collision'),
+    id: 'own_code',
+    isComplete: (project) =>
+      customClasses(project).some((definition) =>
+        definition.methods.some((method) => method.body.kind === 'code'),
+      ),
   },
   {
     id: 'inherit',
@@ -313,7 +300,7 @@ export const BADGES: Badge[] = [
     id: 'inheritance',
     missions: ['inherit', 'inherited_behavior', 'polymorphism', 'same_message'],
   },
-  { id: 'events', missions: ['collision'] },
+  { id: 'code', missions: ['own_code'] },
   { id: 'composition', missions: ['compose', 'composed_part'] },
 ]
 

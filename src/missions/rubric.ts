@@ -20,7 +20,7 @@ export type RubricCriterionId =
   | 'inheritance'
   | 'polymorphism'
   | 'composition'
-  | 'events'
+  | 'code'
 
 export interface RubricEntry {
   id: RubricCriterionId
@@ -39,8 +39,7 @@ export function evaluateRubric(project: Project): RubricEntry[] {
   const scenes = project.scenes
   const objects = scenes.flatMap((scene) => scene.objects)
   const classes = scenes.flatMap((scene) => scene.classes)
-  const events = scenes.flatMap((scene) => scene.events)
-  const actions = events.flatMap((event) => event.actions)
+  const actions = scenes.flatMap((scene) => scene.orders)
 
   const ownClasses = customClasses(project)
   const customNames = new Set(ownClasses.map((definition) => definition.name))
@@ -60,8 +59,8 @@ export function evaluateRubric(project: Project): RubricEntry[] {
   const compositionCount = ownClasses.filter(
     (definition) => definition.components.length > 0,
   ).length
-  const eventsCount = events.filter(
-    (event) => event.type === 'on_collision' || event.type === 'on_key',
+  const codeCount = ownClasses.filter((definition) =>
+    definition.methods.some((method) => method.body.kind === 'code'),
   ).length
   const stateCount = customClassInstanceCount(project)
 
@@ -89,6 +88,6 @@ export function evaluateRubric(project: Project): RubricEntry[] {
       status: evidence(compositionCount, composesMeaningfulPart(project)),
       count: compositionCount,
     },
-    { id: 'events', status: evidence(eventsCount, eventsCount >= 2), count: eventsCount },
+    { id: 'code', status: evidence(codeCount, codeCount >= 1), count: codeCount },
   ]
 }

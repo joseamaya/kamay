@@ -7,8 +7,6 @@ export type IntegrityIssueCode =
   | 'inheritance_cycle'
   | 'component_class_missing'
   | 'composition_cycle'
-  | 'event_source_missing'
-  | 'event_other_missing'
   | 'action_target_missing'
   | 'action_class_missing'
 
@@ -96,25 +94,17 @@ export function validateProjectIntegrity(project: Project): IntegrityIssue[] {
       issues.push({ code: 'composition_cycle', sceneId: scene.id, detail: '' })
     }
 
-    for (const event of scene.events) {
-      if (event.source && !objectExists(scene, event.source)) {
-        issues.push({ code: 'event_source_missing', sceneId: scene.id, detail: event.source })
-      }
-      if (event.other && !objectExists(scene, event.other)) {
-        issues.push({ code: 'event_other_missing', sceneId: scene.id, detail: event.other })
-      }
-      for (const action of event.actions) {
-        if (action.kind === 'for_each') {
-          if (!action.class || !classExists(scene, action.class)) {
-            issues.push({
-              code: 'action_class_missing',
-              sceneId: scene.id,
-              detail: action.class ?? '',
-            })
-          }
-        } else if (!objectExists(scene, action.target)) {
-          issues.push({ code: 'action_target_missing', sceneId: scene.id, detail: action.target })
+    for (const action of scene.orders) {
+      if (action.kind === 'for_each') {
+        if (!action.class || !classExists(scene, action.class)) {
+          issues.push({
+            code: 'action_class_missing',
+            sceneId: scene.id,
+            detail: action.class ?? '',
+          })
         }
+      } else if (!objectExists(scene, action.target)) {
+        issues.push({ code: 'action_target_missing', sceneId: scene.id, detail: action.target })
       }
     }
   }

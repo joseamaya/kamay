@@ -15,7 +15,7 @@ test('guides a new browser from level 1 to level 2', async ({ page }) => {
   await expect(page.getByText('¡Nivel 2 desbloqueado!')).toBeVisible()
 
   await page.getByRole('button', { name: 'carro1', exact: true }).click()
-  await expect(page.getByText('Estas órdenes se ejecutan al iniciar.')).toBeVisible()
+  await expect(page.getByRole('combobox', { name: 'Orden' })).toBeVisible()
   await expect(page.getByLabel('Cuándo')).toHaveCount(0)
 })
 

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /** Current version of the persisted project model. Bump when the shape changes. */
-export const CURRENT_SCHEMA_VERSION = 11
+export const CURRENT_SCHEMA_VERSION = 12
 
 /** Identifier pattern shared by class and variable names in the generated Python. */
 export const identifierPattern = /^[A-Za-z_][A-Za-z0-9_]*$/
@@ -137,19 +137,6 @@ export const actionSchema = z.object({
   args: z.record(z.string(), z.union([z.number(), z.string(), z.boolean()])).default({}),
 })
 
-export const eventTypeSchema = z.enum(['on_start', 'on_collision', 'on_click', 'on_key'])
-
-export const eventSchema = z.object({
-  type: eventTypeSchema,
-  /** Object id or name that triggers the event (click/collision/key); null for on_start. */
-  source: z.string().nullable().default(null),
-  /** Second object of a collision; null otherwise. */
-  other: z.string().nullable().default(null),
-  /** Key that triggers an `on_key` event; null otherwise. */
-  key: z.string().nullable().default(null),
-  actions: z.array(actionSchema).default([]),
-})
-
 export const physicsSchema = z.object({
   enabled: z.boolean().default(false),
   gravityY: z.number().default(-9.8),
@@ -162,7 +149,8 @@ export const sceneSchema = z.object({
   physics: physicsSchema.default({ enabled: false, gravityY: -9.8 }),
   classes: z.array(classSchema).default([]),
   objects: z.array(objectSchema).default([]),
-  events: z.array(eventSchema).default([]),
+  /** Flat, ordered list of method calls the scene runs in this order. */
+  orders: z.array(actionSchema).default([]),
 })
 
 export const projectMetaSchema = z.object({
@@ -200,8 +188,6 @@ export type Method = z.infer<typeof methodSchema>
 export type ClassDefinition = z.infer<typeof classSchema>
 export type ObjectInstance = z.infer<typeof objectSchema>
 export type Action = z.infer<typeof actionSchema>
-export type EventType = z.infer<typeof eventTypeSchema>
-export type SceneEvent = z.infer<typeof eventSchema>
 export type PhysicsConfig = z.infer<typeof physicsSchema>
 export type Scene = z.infer<typeof sceneSchema>
 export type ProjectMeta = z.infer<typeof projectMetaSchema>

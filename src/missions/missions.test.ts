@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   ACTOR_CATALOG,
   addCatalogObject,
-  addEventAction,
+  addOrder,
   createClassDraft,
   createEmptyProject,
   createScene,
@@ -21,7 +21,7 @@ function projectWith(scene: Scene): Project {
 
 function withOrder(scene: Scene, method: string, args: Record<string, string | number>): Scene {
   const name = scene.objects[0]!.name
-  return addEventAction(scene, 'on_start', null, null, { target: name, method, args })
+  return addOrder(scene, { target: name, method, args })
 }
 
 describe('MISSIONS', () => {
@@ -74,16 +74,14 @@ describe('MISSIONS', () => {
     )
   })
 
-  it('completes the collision mission', () => {
-    let scene = addCatalogObject(createScene('Principal'), circle)
-    const name = scene.objects[0]!.name
-    scene = addEventAction(scene, 'on_collision', name, null, {
-      target: name,
-      method: 'tocar_bocina',
-      args: {},
-    })
+  it('completes the own_code mission', () => {
+    const heroe: ClassDefinition = {
+      ...createClassDraft('Heroe'),
+      methods: [{ name: 'rutina', parameters: [], body: { kind: 'code', code: 'pass' } }],
+    }
+    const scene: Scene = { ...createScene('Principal'), classes: [heroe] }
 
-    expect(evaluateMissions(projectWith(scene))).toContain('collision')
+    expect(evaluateMissions(projectWith(scene))).toContain('own_code')
   })
 })
 
@@ -137,16 +135,8 @@ describe('comprehension missions', () => {
     scene = instantiateClass(scene, gato.id)
     expect(evaluateMissions(projectWith(scene))).not.toContain('polymorphism')
 
-    scene = addEventAction(scene, 'on_start', null, null, {
-      target: scene.objects[0]!.name,
-      method: 'hablar',
-      args: {},
-    })
-    scene = addEventAction(scene, 'on_start', null, null, {
-      target: scene.objects[1]!.name,
-      method: 'hablar',
-      args: {},
-    })
+    scene = addOrder(scene, { target: scene.objects[0]!.name, method: 'hablar', args: {} })
+    scene = addOrder(scene, { target: scene.objects[1]!.name, method: 'hablar', args: {} })
     expect(evaluateMissions(projectWith(scene))).toContain('polymorphism')
   })
 
@@ -165,7 +155,7 @@ describe('comprehension missions', () => {
     scene = instantiateClass(scene, gato.id)
     expect(evaluateMissions(projectWith(scene))).not.toContain('same_message')
 
-    scene = addEventAction(scene, 'on_start', null, null, {
+    scene = addOrder(scene, {
       kind: 'for_each',
       target: '',
       class: 'SerVivo',

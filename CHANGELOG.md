@@ -38,6 +38,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   engine interprets by convention** (`distancia`, `altura`, `giro`, `tamano`,
   `sonido`): the catalog methods change those attributes and the engine maps them
   onto the scene. Old projects are migrated.
+- **Orders instead of events (schema v12)**: triggers are gone. A scene keeps a
+  flat, **ordered list of orders** (method calls) that the simulation runs in the
+  order they were added, and the generated `main()` inlines them the same way.
+  The "Tipo de acción" (a un objeto / a todos los objetos) stays. Click, collision
+  and key interactions were removed, and level 4 now teaches writing a method as
+  code (`own_code`); old events are migrated to orders.
 
 ### Added
 

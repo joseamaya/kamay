@@ -48,23 +48,6 @@ test('runs a raw-code method with pyodide', async ({ page }) => {
   await expect(page.locator('[data-state-panel]')).toContainText('heroe1.vida')
 })
 
-test('runs a click handler with pyodide', async ({ page }) => {
-  test.skip(!process.env.PYODIDE_E2E, 'set PYODIDE_E2E=1 to run the real Pyodide test')
-  test.setTimeout(180_000)
-
-  await page.goto('/')
-  await addHeroeWithRawMethod(page, 'self.vida = self.vida + 10')
-  await page.getByLabel('Cuándo').selectOption('on_click')
-  await page.getByLabel('Orden').selectOption('curar')
-  await page.getByRole('button', { name: 'Agregar orden' }).click()
-
-  await page.getByRole('button', { name: 'Ejecutar' }).click()
-  await expect(page.getByText('Listo.')).toBeVisible({ timeout: 150_000 })
-
-  await page.locator('canvas').click()
-  await expect(page.locator('[data-state-panel]')).toContainText('heroe1.vida')
-})
-
 test('shows an inline error when a method fails', async ({ page }) => {
   test.skip(!process.env.PYODIDE_E2E, 'set PYODIDE_E2E=1 to run the real Pyodide test')
   test.setTimeout(180_000)

@@ -15,14 +15,15 @@ describe('TEMPLATES', () => {
     }
   })
 
-  it('hello greets on start', () => {
-    const actions = build('hello').scenes[0]!.events.flatMap((event) => event.actions)
-    expect(actions.some((action) => action.method === 'tocar_bocina')).toBe(true)
+  it('hello greets with an order', () => {
+    const orders = build('hello').scenes[0]!.orders
+    expect(orders.some((order) => order.method === 'tocar_bocina')).toBe(true)
   })
 
-  it('chase reacts to a collision', () => {
-    const events = build('chase').scenes[0]!.events
-    expect(events.some((event) => event.type === 'on_collision')).toBe(true)
+  it('chase places two objects with an order', () => {
+    const scene = build('chase').scenes[0]!
+    expect(scene.objects).toHaveLength(2)
+    expect(scene.orders.some((order) => order.method === 'tocar_bocina')).toBe(true)
   })
 
   it('own_class defines a class with an attribute and a method', () => {
