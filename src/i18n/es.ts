@@ -5,6 +5,7 @@ export const es = {
   bar: {
     run: 'Ejecutar',
     stop: 'Detener',
+    reset: 'Volver a editar',
     stepMode: 'Paso a paso',
     step: 'Paso',
     back: 'Atrás',

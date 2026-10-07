@@ -222,6 +222,11 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
           {messages.bar.redo}
         </Button>
         <StepControls runtime={runtime} />
+        {runtimeStatus === 'ready' ? (
+          <Button variant="secondary" size="sm" onClick={runtime.stop}>
+            {messages.bar.reset}
+          </Button>
+        ) : null}
         {isRunning ? (
           <Button variant="secondary" size="sm" onClick={runtime.stop}>
             {messages.bar.stop}
