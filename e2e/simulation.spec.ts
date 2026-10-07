@@ -5,8 +5,8 @@ test('simulates a block-only project without Pyodide', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   await page.getByRole('button', { name: 'carro1', exact: true }).click()
-  await page.getByLabel('Orden').selectOption('prender')
-  await page.getByRole('button', { name: 'Agregar orden' }).click()
+  await page.getByRole('combobox', { name: 'Mensaje', exact: true }).selectOption('prender')
+  await page.getByRole('button', { name: 'Enviar mensaje' }).click()
 
   await page.getByRole('button', { name: 'Ejecutar' }).click()
   await expect(page.getByText('Listo.')).toBeVisible()
@@ -21,11 +21,11 @@ test('drives movement and speech from state', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   await page.getByRole('button', { name: 'carro1', exact: true }).click()
-  await page.getByRole('combobox', { name: 'Orden' }).selectOption('moverse')
-  await page.getByRole('button', { name: 'Agregar orden' }).click()
+  await page.getByRole('combobox', { name: 'Mensaje', exact: true }).selectOption('moverse')
+  await page.getByRole('button', { name: 'Enviar mensaje' }).click()
 
-  await page.getByRole('combobox', { name: 'Orden' }).selectOption('tocar_bocina')
-  await page.getByRole('button', { name: 'Agregar orden' }).click()
+  await page.getByRole('combobox', { name: 'Mensaje', exact: true }).selectOption('tocar_bocina')
+  await page.getByRole('button', { name: 'Enviar mensaje' }).click()
 
   await page.getByRole('button', { name: 'Ejecutar' }).click()
   await expect(page.getByText('Listo.')).toBeVisible()
@@ -42,10 +42,10 @@ test('scrubs the step timeline', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   await page.getByRole('button', { name: 'carro1', exact: true }).click()
-  await page.getByRole('combobox', { name: 'Orden' }).selectOption('moverse')
-  await page.getByRole('button', { name: 'Agregar orden' }).click()
-  await page.getByRole('combobox', { name: 'Orden' }).selectOption('tocar_bocina')
-  await page.getByRole('button', { name: 'Agregar orden' }).click()
+  await page.getByRole('combobox', { name: 'Mensaje', exact: true }).selectOption('moverse')
+  await page.getByRole('button', { name: 'Enviar mensaje' }).click()
+  await page.getByRole('combobox', { name: 'Mensaje', exact: true }).selectOption('tocar_bocina')
+  await page.getByRole('button', { name: 'Enviar mensaje' }).click()
 
   await page.getByRole('button', { name: 'Paso a paso' }).click()
   await page.getByRole('button', { name: 'Ejecutar' }).click()
@@ -71,9 +71,9 @@ test('runs a for-each action over a class and its subclasses', async ({ page }) 
   await page.getByRole('button', { name: 'Agregar Gato al escenario' }).click()
   await page.getByRole('button', { name: 'perro1', exact: true }).click()
 
-  await page.getByRole('combobox', { name: 'Tipo de acción' }).selectOption('for_each')
+  await page.getByRole('combobox', { name: 'Tipo de mensaje' }).selectOption('for_each')
   await page.getByRole('combobox', { name: 'Clase' }).selectOption('Animal')
-  await page.getByRole('combobox', { name: 'Orden' }).selectOption('comer')
+  await page.getByRole('combobox', { name: 'Mensaje', exact: true }).selectOption('comer')
   await page.getByRole('button', { name: 'Agregar «para cada»' }).click()
 
   await page.getByRole('button', { name: 'Ejecutar' }).click()

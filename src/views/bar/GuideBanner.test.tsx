@@ -71,6 +71,6 @@ describe('GuideBanner', () => {
     expect(
       screen.getByText('Usa el menú junto al objeto para cambiar sus propiedades.'),
     ).toBeInTheDocument()
-    expect(screen.queryByText(/darle órdenes/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/mandarle mensajes/)).not.toBeInTheDocument()
   })
 })

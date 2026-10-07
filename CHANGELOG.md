@@ -44,6 +44,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   The "Tipo de acción" (a un objeto / a todos los objetos) stays. Click, collision
   and key interactions were removed, and level 4 now teaches writing a method as
   code (`own_code`); old events are migrated to orders.
+- **Vocabulary**: the method call is now called a **message** ("Enviar mensaje")
+  throughout the UI, which indicates you are working with objects and unifies the
+  term the polymorphism missions already used. The speech bubble content is now
+  "texto" to avoid clashing with the new meaning.
 
 ### Added
 

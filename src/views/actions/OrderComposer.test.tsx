@@ -38,9 +38,9 @@ describe('OrderComposer', () => {
     useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
 
     render(<Harness />)
-    await user.selectOptions(screen.getByLabelText('Orden'), 'saludar')
-    await user.type(screen.getByLabelText('Mensaje'), 'hola')
-    await user.click(screen.getByRole('button', { name: 'Agregar orden' }))
+    await user.selectOptions(screen.getByLabelText('Mensaje'), 'saludar')
+    await user.type(screen.getByLabelText('Texto'), 'hola')
+    await user.click(screen.getByRole('button', { name: 'Enviar mensaje' }))
 
     expect(currentScene().orders[0]).toMatchObject({
       target: 'heroe1',
@@ -56,9 +56,9 @@ describe('OrderComposer', () => {
     useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
 
     render(<Harness />)
-    await user.selectOptions(screen.getByLabelText('Tipo de acción'), 'for_each')
+    await user.selectOptions(screen.getByLabelText('Tipo de mensaje'), 'for_each')
     await user.selectOptions(screen.getByLabelText('Clase'), 'Animal')
-    await user.selectOptions(screen.getByLabelText('Orden'), 'comer')
+    await user.selectOptions(screen.getByLabelText('Mensaje'), 'comer')
     await user.click(screen.getByRole('button', { name: 'Agregar «para cada»' }))
 
     expect(currentScene().orders[0]).toMatchObject({
@@ -76,9 +76,9 @@ describe('OrderComposer', () => {
     useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
 
     render(<Harness />)
-    await user.click(screen.getByRole('button', { name: 'Agregar orden' }))
-    await user.selectOptions(screen.getByLabelText('Orden'), 'moverse')
-    await user.click(screen.getByRole('button', { name: 'Agregar orden' }))
+    await user.click(screen.getByRole('button', { name: 'Enviar mensaje' }))
+    await user.selectOptions(screen.getByLabelText('Mensaje'), 'moverse')
+    await user.click(screen.getByRole('button', { name: 'Enviar mensaje' }))
 
     expect(currentScene().orders.map((order) => order.method)).toEqual(['tocar_bocina', 'moverse'])
   })

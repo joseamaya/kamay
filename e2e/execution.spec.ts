@@ -26,8 +26,8 @@ test('simulates a block-only project without pyodide', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   await page.getByRole('button', { name: 'carro1', exact: true }).click()
-  await page.getByLabel('Orden').selectOption('prender')
-  await page.getByRole('button', { name: 'Agregar orden' }).click()
+  await page.getByRole('combobox', { name: 'Mensaje', exact: true }).selectOption('prender')
+  await page.getByRole('button', { name: 'Enviar mensaje' }).click()
 
   await page.getByRole('button', { name: 'Ejecutar' }).click()
   await expect(page.getByText('Listo.')).toBeVisible()
@@ -40,8 +40,8 @@ test('runs a raw-code method with pyodide', async ({ page }) => {
 
   await page.goto('/')
   await addHeroeWithRawMethod(page, 'self.vida = self.vida + 10')
-  await page.getByLabel('Orden').selectOption('curar')
-  await page.getByRole('button', { name: 'Agregar orden' }).click()
+  await page.getByRole('combobox', { name: 'Mensaje', exact: true }).selectOption('curar')
+  await page.getByRole('button', { name: 'Enviar mensaje' }).click()
 
   await page.getByRole('button', { name: 'Ejecutar' }).click()
   await expect(page.getByText('Listo.')).toBeVisible({ timeout: 150_000 })
@@ -54,8 +54,8 @@ test('shows an inline error when a method fails', async ({ page }) => {
 
   await page.goto('/')
   await addHeroeWithRawMethod(page, 'self.no_existe()')
-  await page.getByLabel('Orden').selectOption('curar')
-  await page.getByRole('button', { name: 'Agregar orden' }).click()
+  await page.getByRole('combobox', { name: 'Mensaje', exact: true }).selectOption('curar')
+  await page.getByRole('button', { name: 'Enviar mensaje' }).click()
 
   await page.getByRole('button', { name: 'Ejecutar' }).click()
 
@@ -77,8 +77,8 @@ test('runs step by step', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   await page.getByRole('button', { name: 'carro1', exact: true }).click()
-  await page.getByLabel('Orden').selectOption('prender')
-  await page.getByRole('button', { name: 'Agregar orden' }).click()
+  await page.getByRole('combobox', { name: 'Mensaje', exact: true }).selectOption('prender')
+  await page.getByRole('button', { name: 'Enviar mensaje' }).click()
 
   await page.getByRole('button', { name: 'Paso a paso' }).click()
   await page.getByRole('button', { name: 'Ejecutar' }).click()
