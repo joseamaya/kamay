@@ -113,15 +113,15 @@ export const es = {
     convertToCode: 'Convertir a código',
     convertToBlocks: 'Convertir a bloques',
     preview: 'Vista previa',
-    addCall: 'Mensaje',
+    addCall: 'Llamada',
     addSet: 'Asignar',
     addChange: 'Cambiar',
     addRepeat: 'Repetir',
-    blockCall: 'Mensaje',
+    blockCall: 'Llamada',
     blockSet: 'Asignar',
     blockChange: 'Cambiar',
     blockRepeat: 'Repetir',
-    blockMethod: 'Mensaje',
+    blockMethod: 'Método',
     blockAttribute: 'Atributo',
     blockValue: 'Valor',
     blockOperator: 'Operación',
@@ -225,11 +225,11 @@ export const es = {
     list: {
       hello: {
         title: 'Saludo',
-        description: 'Un objeto que saluda al iniciar.',
+        description: 'Un objeto que toca la bocina.',
       },
       chase: {
-        title: 'Choque',
-        description: 'Dos objetos que reaccionan al chocar.',
+        title: 'Dos objetos',
+        description: 'Dos objetos y una llamada.',
       },
       own_class: {
         title: 'Mi clase',
@@ -249,7 +249,7 @@ export const es = {
       },
       polymorphism: {
         title: 'Polimorfismo',
-        description: 'Dos animales que responden distinto al mismo mensaje.',
+        description: 'Dos animales que responden distinto al mismo método.',
       },
     },
   },
@@ -273,30 +273,30 @@ export const es = {
         ],
       },
       give_order: {
-        title: 'Envía un mensaje',
-        description: 'Manda un mensaje a un objeto.',
+        title: 'Llama a un método',
+        description: 'Llama a un método de un objeto.',
         hints: [
           'Selecciona un objeto del escenario.',
-          'En «Mensajes» elige qué quieres que haga.',
-          'Por ejemplo: mensaje «Tocar bocina» a un Carro.',
+          'En «Llamadas» elige qué quieres que haga.',
+          'Por ejemplo: llamada «Tocar bocina» a un Carro.',
         ],
       },
       say_hello: {
         title: 'Haz que salude',
-        description: 'Usa un mensaje que muestre un texto.',
+        description: 'Usa una llamada que muestre un texto.',
         hints: [
           'Quieres que tu objeto diga algo.',
-          'Usa un mensaje que cambie el texto, como «Saludar» en un Robot.',
+          'Usa una llamada que cambie el texto, como «Saludar» en un Robot.',
           'El bocadillo mostrará «¡Hola!».',
         ],
       },
       move_it: {
         title: 'Muévelo',
-        description: 'Usa un mensaje que cambie la posición.',
+        description: 'Usa una llamada que cambie la posición.',
         hints: [
           'Puedes cambiar dónde está un objeto.',
-          'Usa un mensaje que cambie la posición, como «Moverse» en un Carro.',
-          'Cada vez que lo usas, el objeto avanza.',
+          'Usa una llamada que cambie la posición, como «Moverse» en un Carro.',
+          'Cada vez que la usas, el objeto avanza.',
         ],
       },
       own_class: {
@@ -372,7 +372,7 @@ export const es = {
         ],
       },
       polymorphism: {
-        title: 'Mismo mensaje, distinto comportamiento',
+        title: 'Mismo método, distinto comportamiento',
         description: 'Dos subclases que cambian el mismo método y responden distinto.',
         hints: [
           'Dos clases pueden compartir un método con el mismo nombre.',
@@ -381,11 +381,11 @@ export const es = {
         ],
       },
       same_message: {
-        title: 'Un mensaje para todos',
-        description: 'Recorre los objetos de una clase y mándales el mismo mensaje.',
+        title: 'Un método para todos',
+        description: 'Recorre los objetos de una clase y llámales al mismo método.',
         hints: [
-          'Puedes mandar el mismo mensaje a varios objetos a la vez.',
-          'En «Mensajes», elige «Tipo de mensaje → A todos los objetos».',
+          'Puedes llamar al mismo método en varios objetos a la vez.',
+          'En «Llamadas», elige «Tipo de llamada → A todos los objetos».',
           'Por ejemplo: «para cada SerVivo: hablar()», y cada uno responde distinto.',
         ],
       },
@@ -401,7 +401,7 @@ export const es = {
     },
     badges: {
       objects: { title: 'Objetos', description: 'Pones objetos en el escenario.' },
-      orders: { title: 'Mensajes', description: 'Les mandas mensajes a los objetos.' },
+      orders: { title: 'Llamadas', description: 'Llamas a los métodos de los objetos.' },
       classes: { title: 'Mi clase', description: 'Creas tus propias clases.' },
       inheritance: { title: 'Herencia', description: 'Reutilizas una clase como base.' },
       code: { title: 'Código', description: 'Escribes el cuerpo de un método a mano.' },
@@ -420,7 +420,7 @@ export const es = {
     unlockedToast: '¡Nivel {level} desbloqueado!',
     list: {
       1: { title: 'Cosas en el escenario', description: 'Objetos del catálogo y sus propiedades.' },
-      2: { title: 'Mensajes', description: 'Manda mensajes a los objetos.' },
+      2: { title: 'Llamadas', description: 'Llama a los métodos de los objetos.' },
       3: {
         title: 'Mi primera clase',
         description: 'Crea clases propias con atributos y métodos.',
@@ -432,7 +432,7 @@ export const es = {
       5: { title: 'Familia de clases', description: 'Hereda y reutiliza.' },
       6: {
         title: 'Polimorfismo y composición',
-        description: 'Objetos que contienen objetos y mensajes que cambian según el objeto.',
+        description: 'Objetos que contienen objetos y métodos que responden según el objeto.',
       },
     },
   },
@@ -448,11 +448,11 @@ export const es = {
     inheritedFrom: 'Heredado de {name}',
   },
   actions: {
-    noActions: 'Este objeto todavía no recibe mensajes.',
-    method: 'Mensaje',
-    add: 'Enviar mensaje',
-    remove: 'Quitar mensaje',
-    kind: 'Tipo de mensaje',
+    noActions: 'Este objeto todavía no tiene llamadas.',
+    method: 'Método',
+    add: 'Llamar método',
+    remove: 'Quitar llamada',
+    kind: 'Tipo de llamada',
     kindCall: 'A un objeto',
     kindForEach: 'A todos los objetos',
     forEachClass: 'Clase',
@@ -465,7 +465,7 @@ export const es = {
     class: 'Instancia de {name}',
     appearance: 'Aspecto',
     state: 'Estado',
-    orders: 'Mensajes',
+    orders: 'Llamadas',
     duplicate: 'Duplicar',
   },
   guide: {
@@ -473,7 +473,7 @@ export const es = {
     level: 'Nivel {level}',
     noObjects: 'Toca un objeto de la Fábrica para empezar.',
     select: 'Selecciona un objeto en el escenario para ver qué puede hacer.',
-    selected: 'Usa el menú junto al objeto para cambiar sus propiedades o mandarle mensajes.',
+    selected: 'Usa el menú junto al objeto para cambiar sus propiedades o llamar a sus métodos.',
     selectedProperties: 'Usa el menú junto al objeto para cambiar sus propiedades.',
     createClass: 'Crea tu clase desde la Fábrica, sección «Clases».',
     nextMission: 'Siguiente misión: {title}',
@@ -498,7 +498,7 @@ export const es = {
     },
     criteria: {
       objects: { title: 'Objetos', description: 'Pone objetos en el escenario.' },
-      orders: { title: 'Mensajes', description: 'Manda mensajes a los objetos.' },
+      orders: { title: 'Llamadas', description: 'Llama a los métodos de los objetos.' },
       classes: { title: 'Mi clase', description: 'Crea una clase con atributos y métodos.' },
       state: {
         title: 'Estado',
@@ -507,7 +507,7 @@ export const es = {
       inheritance: { title: 'Herencia', description: 'Reutiliza una clase como base.' },
       polymorphism: {
         title: 'Polimorfismo',
-        description: 'El mismo mensaje con comportamientos distintos.',
+        description: 'El mismo método con comportamientos distintos.',
       },
       composition: { title: 'Composición', description: 'Una clase contiene a otra como parte.' },
       code: { title: 'Código', description: 'Escribe el cuerpo de un método a mano.' },
@@ -528,8 +528,8 @@ export const es = {
       },
       method: { title: 'Método', description: 'Lo que un objeto sabe hacer.' },
       method_call: {
-        title: 'Mensaje',
-        description: 'Pedirle algo a un objeto mandándole un mensaje.',
+        title: 'Llamada',
+        description: 'Pedirle a un objeto que haga algo llamando a un método.',
       },
       parameter: {
         title: 'Parámetro',
@@ -542,7 +542,7 @@ export const es = {
       },
       polymorphism: {
         title: 'Polimorfismo',
-        description: 'El mismo mensaje, comportamientos distintos.',
+        description: 'El mismo método, comportamientos distintos.',
       },
     },
     prediction: {
@@ -637,7 +637,7 @@ export const es = {
   },
   activity: {
     title: 'Actividad',
-    idle: 'Sin mensajes por ahora.',
+    idle: 'Sin actividad por ahora.',
     saved: 'Proyecto guardado.',
     imported: 'Proyecto importado.',
     exported: 'Proyecto exportado.',
@@ -649,8 +649,8 @@ export const es = {
     objectAdded: 'Objeto agregado.',
     objectRemoved: 'Objeto eliminado.',
     objectDuplicated: 'Objeto duplicado.',
-    actionAdded: 'Mensaje enviado.',
-    actionRemoved: 'Mensaje quitado.',
+    actionAdded: 'Llamada agregada.',
+    actionRemoved: 'Llamada quitada.',
     classSaved: 'Clase guardada.',
     classRemoved: 'Clase eliminada.',
     running: 'Ejecutando el programa…',
