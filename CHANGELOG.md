@@ -50,6 +50,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the document**, positioned in window coordinates with a window-height max, so it
   is no longer capped to the (small) stage and no longer shrinks when the code
   editor is open. It is slightly wider and stays non-modal.
+- **Run session**: after a run the scene stays in the results state with the
+  **State** panel (`before → after`); a new **"Volver a editar"** (back to editing)
+  button ends the session and returns the scene to the model, clearing the
+  observations and unlocking editing. "Ejecutar" re-runs from scratch.
 
 ### Added
 

@@ -84,3 +84,22 @@ test('runs a for-each action over a class and its subclasses', async ({ page }) 
   await expect(panel).toContainText('perro1.energia')
   await expect(panel).toContainText('gato1.energia')
 })
+
+test('returns to editing after a run', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
+  await page.getByRole('button', { name: 'carro1', exact: true }).click()
+  await page.getByRole('combobox', { name: 'Método', exact: true }).selectOption('prender')
+  await page.getByRole('button', { name: 'Llamar método' }).click()
+
+  await page.getByRole('button', { name: 'Ejecutar' }).click()
+  await expect(page.getByText('Listo.')).toBeVisible()
+  await expect(page.locator('[data-state-panel]')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Volver a editar' }).click()
+
+  await expect(page.locator('[data-state-panel]')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Volver a editar' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Ejecutar' })).toBeVisible()
+})
