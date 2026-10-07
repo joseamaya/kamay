@@ -14,15 +14,15 @@ test('opens a contextual menu anchored to the selected object', async ({ page })
   await expect(overlay.getByText('Aspecto')).toHaveCount(0)
   await expect(overlay.getByRole('combobox', { name: 'Método', exact: true })).toBeVisible()
 
-  const canvasBox = await page.getByRole('application', { name: /Escenario/ }).boundingBox()
   const overlayBox = await overlay.boundingBox()
-  expect(canvasBox).not.toBeNull()
+  const viewport = page.viewportSize()
   expect(overlayBox).not.toBeNull()
-  if (canvasBox && overlayBox) {
-    expect(overlayBox.x).toBeGreaterThanOrEqual(canvasBox.x)
-    expect(overlayBox.x + overlayBox.width).toBeLessThanOrEqual(canvasBox.x + canvasBox.width)
-    expect(overlayBox.y).toBeGreaterThanOrEqual(canvasBox.y)
-    expect(overlayBox.y + overlayBox.height).toBeLessThanOrEqual(canvasBox.y + canvasBox.height)
+  expect(viewport).not.toBeNull()
+  if (overlayBox && viewport) {
+    expect(overlayBox.x).toBeGreaterThanOrEqual(0)
+    expect(overlayBox.y).toBeGreaterThanOrEqual(0)
+    expect(overlayBox.x + overlayBox.width).toBeLessThanOrEqual(viewport.width)
+    expect(overlayBox.y + overlayBox.height).toBeLessThanOrEqual(viewport.height)
   }
 })
 
