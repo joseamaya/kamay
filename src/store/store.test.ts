@@ -127,20 +127,20 @@ describe('useProjectStore', () => {
     expect(useProjectStore.getState().project.scenes[0]?.classes).toHaveLength(1)
   })
 
-  it('adds and removes scene actions', () => {
+  it('adds and removes scene orders', () => {
     const sceneId = useProjectStore.getState().project.scenes[0]!.id
-    useProjectStore.getState().addAction(sceneId, 'on_start', null, null, {
+    useProjectStore.getState().addOrder(sceneId, {
       target: 'carro1',
       method: 'decir',
       args: { mensaje: 'hola' },
     })
 
-    const events = useProjectStore.getState().project.scenes[0]!.events
-    expect(events[0]?.actions).toHaveLength(1)
-    expect(events[0]?.actions[0]?.method).toBe('decir')
+    const orders = useProjectStore.getState().project.scenes[0]!.orders
+    expect(orders).toHaveLength(1)
+    expect(orders[0]?.method).toBe('decir')
 
-    useProjectStore.getState().removeAction(sceneId, 'on_start', null, null, 0)
-    expect(useProjectStore.getState().project.scenes[0]!.events[0]?.actions).toHaveLength(0)
+    useProjectStore.getState().removeOrder(sceneId, 0)
+    expect(useProjectStore.getState().project.scenes[0]!.orders).toHaveLength(0)
   })
 
   it('adds a scene and returns its id', () => {

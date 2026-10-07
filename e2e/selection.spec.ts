@@ -11,7 +11,7 @@ test('opens a contextual menu anchored to the selected object', async ({ page })
   await expect(overlay).toContainText('carro1')
   await expect(overlay).toContainText('Instancia de Carro')
   await expect(overlay.getByText('Aspecto')).toBeVisible()
-  await expect(overlay.getByLabel('Cuándo')).toBeVisible()
+  await expect(overlay.getByRole('combobox', { name: 'Orden' })).toBeVisible()
 
   const canvasBox = await page.getByRole('application', { name: /Escenario/ }).boundingBox()
   const overlayBox = await overlay.boundingBox()

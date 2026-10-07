@@ -23,7 +23,7 @@ export function createScene(name: string): Scene {
     physics: { enabled: false, gravityY: -9.8 },
     classes: [],
     objects: [],
-    events: [],
+    orders: [],
   }
 }
 

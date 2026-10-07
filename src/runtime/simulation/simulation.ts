@@ -1,12 +1,11 @@
 import {
-  collisionKey,
   objectsOfClass,
   resolveAttributeDefaults,
   resolveMethods,
   withDomainBases,
 } from '../../model'
-import type { Action, AttributeValue, Operation, Project, Scene, SceneEvent } from '../../model'
-import type { RuntimeError, RuntimeMessage, RuntimeStatus, TriggerKind } from '../types'
+import type { Action, AttributeValue, Operation, Project, Scene } from '../../model'
+import type { RuntimeError, RuntimeMessage, RuntimeStatus } from '../types'
 
 interface RuntimeObject {
   id: string
@@ -70,34 +69,12 @@ export class Simulation {
       }
     }
     this.options.onInitialized?.()
-    for (const event of this.scene.events) {
-      if (event.type === 'on_start') this.runActions(event)
-    }
+    for (const action of this.scene.orders) this.runAction(action)
     this.options.onStatus('ready')
-  }
-
-  trigger(kind: TriggerKind, source: string): void {
-    for (const event of this.scene.events) {
-      if (this.matchesTrigger(event, kind, source)) this.runActions(event)
-    }
   }
 
   stop(): void {
     this.objects.clear()
-  }
-
-  private matchesTrigger(event: SceneEvent, kind: TriggerKind, source: string): boolean {
-    if (kind === 'click') return event.type === 'on_click' && event.source === source
-    if (kind === 'key') return event.type === 'on_key' && event.key === source
-    if (kind === 'collision') {
-      if (event.type !== 'on_collision' || !event.source || !event.other) return false
-      return collisionKey(event.source, event.other) === source
-    }
-    return false
-  }
-
-  private runActions(event: SceneEvent): void {
-    for (const action of event.actions) this.runAction(action)
   }
 
   private runAction(action: Action): void {

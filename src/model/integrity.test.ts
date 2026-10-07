@@ -68,36 +68,27 @@ describe('validateProjectIntegrity', () => {
     )
   })
 
-  it('reports dangling event sources and action targets', () => {
+  it('reports dangling order targets', () => {
     const value = project({
       classes: [{ id: 'c', name: 'Heroe', methods: [method] }],
-      events: [
-        { type: 'on_click', source: 'fantasma', actions: [] },
-        { type: 'on_start', actions: [{ target: 'nadie', method: 'saludar', args: {} }] },
-      ],
+      orders: [{ target: 'nadie', method: 'saludar', args: {} }],
     })
     const codes = validateProjectIntegrity(value).map((issue) => issue.code)
-    expect(codes).toContain('event_source_missing')
     expect(codes).toContain('action_target_missing')
   })
 
-  it('reports a for-each action over a missing class', () => {
+  it('reports a for-each order over a missing class', () => {
     const value = project({
       classes: [{ id: 'c', name: 'Heroe', methods: [method] }],
       objects: [{ id: 'o', name: 'h1', class: 'Heroe' }],
-      events: [
+      orders: [
         {
-          type: 'on_start',
-          actions: [
-            {
-              kind: 'for_each',
-              target: '',
-              class: 'Fantasma',
-              variable: 'x',
-              method: 'saludar',
-              args: {},
-            },
-          ],
+          kind: 'for_each',
+          target: '',
+          class: 'Fantasma',
+          variable: 'x',
+          method: 'saludar',
+          args: {},
         },
       ],
     })

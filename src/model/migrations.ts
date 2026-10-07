@@ -326,6 +326,21 @@ export const migrations: Record<number, SchemaMigration> = {
         }),
       }
     }),
+  // v11 -> v12: events are gone; the scene keeps a flat, ordered list of orders.
+  11: (data) =>
+    mapScenes(data, 12, (scene) => {
+      const events = Array.isArray(scene.events) ? (scene.events as Record<string, unknown>[]) : []
+      const orders: Record<string, unknown>[] = []
+      for (const event of events) {
+        const actions = Array.isArray(event.actions)
+          ? (event.actions as Record<string, unknown>[])
+          : []
+        orders.push(...actions)
+      }
+      const rest = { ...scene }
+      delete rest.events
+      return { ...rest, orders }
+    }),
 }
 
 export class MigrationError extends Error {

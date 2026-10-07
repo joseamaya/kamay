@@ -271,16 +271,17 @@ test('converts code into blocks and keeps advanced code', async ({ page }) => {
   await expect(dialog.getByText('Código avanzado')).toBeVisible()
 })
 
-test('adds a keyboard action', async ({ page }) => {
+test('adds orders that run in order', async ({ page }) => {
   await page.goto('/')
 
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   await page.getByRole('button', { name: 'carro1', exact: true }).click()
-  await page.getByLabel('Cuándo').selectOption('on_key')
-  await page.getByLabel(/^Tecla/).selectOption('ArrowUp')
+  await page.getByRole('button', { name: 'Agregar orden' }).click()
+  await page.getByRole('combobox', { name: 'Orden' }).selectOption('moverse')
   await page.getByRole('button', { name: 'Agregar orden' }).click()
 
-  await expect(codeContent(page)).toContainText('registrar("key", "ArrowUp", al_pulsar_ArrowUp)')
+  await expect(codeContent(page)).toContainText('carro1.tocar_bocina()')
+  await expect(codeContent(page)).toContainText('carro1.moverse()')
 })
 
 test('toggles physics for a scene', async ({ page }) => {

@@ -1,13 +1,7 @@
 import { useState } from 'react'
 
 import { format, getMessages } from '../../i18n'
-import {
-  findEvent,
-  identifierPattern,
-  iterableClasses,
-  resolveMethods,
-  withDomainBases,
-} from '../../model'
+import { identifierPattern, iterableClasses, resolveMethods, withDomainBases } from '../../model'
 import type {
   Action,
   AttributeType,
@@ -22,18 +16,7 @@ import { NumberField } from '../../ui/NumberField'
 import { Select } from '../../ui/Select'
 import { TextField } from '../../ui/TextField'
 
-type Trigger = 'on_start' | 'on_click' | 'on_collision' | 'on_key'
 type OrderKind = 'call' | 'for_each'
-
-const KEYS = [
-  'ArrowUp',
-  'ArrowDown',
-  'ArrowLeft',
-  'ArrowRight',
-  ' ',
-  'Enter',
-  ...'abcdefghijklmnopqrstuvwxyz'.split(''),
-]
 
 function defaultValue(type: AttributeType): string {
   return type === 'number' ? '0' : ''
@@ -64,23 +47,17 @@ export interface OrderComposerProps {
 export function OrderComposer({ scene, object }: OrderComposerProps) {
   const messages = getMessages()
   const capabilities = useCapabilities()
-  const addAction = useProjectStore((state) => state.addAction)
-  const removeAction = useProjectStore((state) => state.removeAction)
+  const addOrder = useProjectStore((state) => state.addOrder)
+  const removeOrder = useProjectStore((state) => state.removeOrder)
   const pushLog = useEditorStore((state) => state.pushLog)
 
-  const [triggerChoice, setTriggerChoice] = useState<Trigger>('on_start')
   const [kind, setKind] = useState<OrderKind>('call')
-  const [otherName, setOtherName] = useState('')
-  const [keyName, setKeyName] = useState(KEYS[0]!)
   const [methodName, setMethodName] = useState('')
   const [values, setValues] = useState<Record<string, string>>({})
   const [forEachClass, setForEachClass] = useState('')
   const [forEachVariable, setForEachVariable] = useState('elemento')
   const [forEachMethodName, setForEachMethodName] = useState('')
   const [forEachValues, setForEachValues] = useState<Record<string, string>>({})
-
-  // Before events unlock, orders always run on start.
-  const trigger: Trigger = capabilities.events ? triggerChoice : 'on_start'
 
   const resolvedScene = withDomainBases(scene)
 
@@ -91,22 +68,6 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
     y: messages.params.y,
     nombre: messages.params.nombre,
   }
-  const keyLabels: Record<string, string> = {
-    ArrowUp: messages.keys.up,
-    ArrowDown: messages.keys.down,
-    ArrowLeft: messages.keys.left,
-    ArrowRight: messages.keys.right,
-    ' ': messages.keys.space,
-    Enter: messages.keys.enter,
-  }
-  const keyLabel = (key: string) => keyLabels[key] ?? key.toUpperCase()
-
-  const triggerOptions = [
-    { value: 'on_start', label: messages.triggers.onStart },
-    { value: 'on_click', label: messages.triggers.onClick },
-    { value: 'on_collision', label: messages.triggers.onCollision },
-    { value: 'on_key', label: messages.triggers.onKey },
-  ]
 
   const availableMethods: MethodSignature[] = resolveMethods(scene, object.class).map((method) => ({
     name: method.name,
@@ -131,17 +92,7 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
     label: methodLabels[candidate.name] ?? candidate.name,
   }))
 
-  const otherObjects = scene.objects.filter((candidate) => candidate.id !== object.id)
-  const selectedOther =
-    otherObjects.find((candidate) => candidate.name === otherName)?.name ??
-    otherObjects[0]?.name ??
-    null
-
-  const source = trigger === 'on_start' ? null : object.name
-  const other = trigger === 'on_collision' ? selectedOther : null
-  const key = trigger === 'on_key' ? keyName : null
-  const event = findEvent(scene, trigger, source, other, key)
-  const actions = (event?.actions ?? [])
+  const orders = scene.orders
     .map((action, index) => ({ action, index }))
     .filter(
       ({ action }) =>
@@ -150,14 +101,13 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
 
   const handleAdd = () => {
     if (!method) return
-    if (trigger === 'on_collision' && !selectedOther) return
     const action: Action = {
       kind: 'call',
       target: object.name,
       method: method.name,
       args: buildArgs(method.parameters, values),
     }
-    addAction(scene.id, trigger, source, other, action, key)
+    addOrder(scene.id, action)
     pushLog(messages.activity.actionAdded)
   }
 
@@ -171,7 +121,7 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
       method: forEachMethod.name,
       args: buildArgs(forEachMethod.parameters, forEachValues),
     }
-    addAction(scene.id, trigger, source, other, action, key)
+    addOrder(scene.id, action)
     pushLog(messages.activity.actionAdded)
   }
 
@@ -200,11 +150,11 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      {actions.length === 0 ? (
+      {orders.length === 0 ? (
         <p className="text-muted-foreground text-sm">{messages.actions.noActions}</p>
       ) : (
         <ul className="flex flex-col gap-1">
-          {actions.map(({ action, index }) => (
+          {orders.map(({ action, index }) => (
             <li key={index} className="flex items-center gap-2">
               <code className="bg-muted/50 border-border flex-1 overflow-hidden rounded-md border px-2 py-1 font-mono text-xs text-ellipsis whitespace-nowrap">
                 {action.kind === 'for_each'
@@ -215,7 +165,7 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
                 type="button"
                 aria-label={messages.actions.remove}
                 onClick={() => {
-                  removeAction(scene.id, trigger, source, other, index, key)
+                  removeOrder(scene.id, index)
                   pushLog(messages.activity.actionRemoved)
                 }}
                 className="text-muted-foreground hover:text-destructive rounded-md px-2 py-1 text-lg leading-none"
@@ -228,46 +178,6 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
       )}
 
       <div className="border-border flex flex-col gap-2 border-t pt-3">
-        {capabilities.events ? (
-          <>
-            <Select
-              label={messages.actions.trigger}
-              value={triggerChoice}
-              options={triggerOptions}
-              onChange={(value) => setTriggerChoice(value as Trigger)}
-            />
-            {trigger === 'on_key' ? (
-              <Select
-                label={messages.actions.key}
-                value={keyName}
-                options={KEYS.map((key) => ({ value: key, label: keyLabel(key) }))}
-                onChange={setKeyName}
-              />
-            ) : null}
-            {trigger === 'on_collision' ? (
-              otherObjects.length > 0 ? (
-                <Select
-                  label={messages.actions.other}
-                  value={selectedOther ?? ''}
-                  options={otherObjects.map((candidate) => ({
-                    value: candidate.name,
-                    label: candidate.name,
-                  }))}
-                  onChange={setOtherName}
-                />
-              ) : (
-                <p className="text-muted-foreground text-xs">{messages.actions.noOtherObjects}</p>
-              )
-            ) : null}
-          </>
-        ) : (
-          <>
-            <p className="text-muted-foreground text-xs">{messages.actions.runOnStart}</p>
-            <p className="text-muted-foreground text-xs">
-              {format(messages.actions.unlockEvents, { level: 4 })}
-            </p>
-          </>
-        )}
         {capabilities.inheritance ? (
           <Select
             label={messages.actions.kind}

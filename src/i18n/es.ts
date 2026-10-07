@@ -335,13 +335,13 @@ export const es = {
           'Por ejemplo: «Perro» hereda de «Animal».',
         ],
       },
-      collision: {
-        title: 'Provoca un choque',
-        description: 'Crea una acción «Al chocar con».',
+      own_code: {
+        title: 'Escribe tu método',
+        description: 'Escribe el cuerpo de un método como código Python.',
         hints: [
-          'Haz que algo ocurra cuando dos objetos chocan.',
-          'Selecciona un objeto y usa «Al chocar con».',
-          'Elige el otro objeto y una orden, por ejemplo «Tocar bocina».',
+          'Los métodos también se pueden escribir como código.',
+          'En el editor de clase, abre un método y elige «Código avanzado».',
+          'Por ejemplo: dentro del método escribe self.distancia = self.distancia + 10.',
         ],
       },
       compose: {
@@ -404,7 +404,7 @@ export const es = {
       orders: { title: 'Órdenes', description: 'Les das órdenes a los objetos.' },
       classes: { title: 'Mi clase', description: 'Creas tus propias clases.' },
       inheritance: { title: 'Herencia', description: 'Reutilizas una clase como base.' },
-      events: { title: 'Eventos', description: 'Reaccionas a choques y teclas.' },
+      code: { title: 'Código', description: 'Escribes el cuerpo de un método a mano.' },
       composition: { title: 'Composición', description: 'Una clase contiene a otra.' },
     },
   },
@@ -426,8 +426,8 @@ export const es = {
         description: 'Crea clases propias con atributos y métodos.',
       },
       4: {
-        title: 'Muchos objetos e identidad',
-        description: 'Eventos de colisión y tecla.',
+        title: 'Escribe código',
+        description: 'Escribe el cuerpo de un método como código Python.',
       },
       5: { title: 'Familia de clases', description: 'Hereda y reutiliza.' },
       6: {
@@ -451,11 +451,6 @@ export const es = {
     title: 'Acciones',
     empty: 'Selecciona un objeto para darle órdenes.',
     noActions: 'Este objeto todavía no tiene órdenes.',
-    runOnStart: 'Estas órdenes se ejecutan al iniciar.',
-    trigger: 'Cuándo',
-    other: 'Con',
-    key: 'Tecla',
-    noOtherObjects: 'Agrega otro objeto para poder chocar.',
     method: 'Orden',
     add: 'Agregar orden',
     remove: 'Quitar orden',
@@ -466,8 +461,6 @@ export const es = {
     forEachVariable: 'Variable',
     forEachTag: 'Para cada {class}',
     addForEach: 'Agregar «para cada»',
-    unlockEvents:
-      'En el Nivel {level} podrás elegir cuándo: al tocar, al chocar o al pulsar una tecla.',
   },
   selection: {
     menu: 'Menú del objeto',
@@ -519,7 +512,7 @@ export const es = {
         description: 'El mismo mensaje con comportamientos distintos.',
       },
       composition: { title: 'Composición', description: 'Una clase contiene a otra como parte.' },
-      events: { title: 'Eventos', description: 'Reacciona a clics, teclas o choques.' },
+      code: { title: 'Código', description: 'Escribe el cuerpo de un método a mano.' },
     },
   },
   pedagogy: {
@@ -541,7 +534,6 @@ export const es = {
         title: 'Parámetro',
         description: 'El dato que le das a un método para hacer su trabajo.',
       },
-      event: { title: 'Evento', description: 'Un momento que dispara órdenes.' },
       inheritance: { title: 'Herencia', description: 'Una clase que reutiliza otra: «es un».' },
       composition: {
         title: 'Composición',
@@ -608,20 +600,6 @@ export const es = {
       '{missions} misiones · {demonstrated} conceptos demostrados · {correct}/{total} predicciones',
     remove: 'Quitar',
     clear: 'Vaciar',
-  },
-  triggers: {
-    onStart: 'Al iniciar el programa',
-    onClick: 'Cuando toco este objeto',
-    onCollision: 'Cuando choca con',
-    onKey: 'Cuando pulso una tecla',
-  },
-  keys: {
-    up: 'Arriba',
-    down: 'Abajo',
-    left: 'Izquierda',
-    right: 'Derecha',
-    space: 'Espacio',
-    enter: 'Enter',
   },
   methods: {
     prender: 'Prender',

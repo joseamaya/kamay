@@ -1,7 +1,7 @@
 import {
   ACTOR_CATALOG,
   addCatalogObject,
-  addEventAction,
+  addOrder,
   createEmptyProject,
   createId,
   createObject,
@@ -67,48 +67,39 @@ function instance(
 function hello(): Project {
   let scene = addCatalogObject(createScene('Principal'), CARRO)
   const name = scene.objects[0]!.name
-  scene = addEventAction(scene, 'on_start', null, null, {
-    target: name,
-    method: 'tocar_bocina',
-    args: {},
-  })
+  scene = addOrder(scene, { target: name, method: 'tocar_bocina', args: {} })
   return projectWith('Saludo', scene)
 }
 
 function chase(): Project {
   let scene = addCatalogObject(createScene('Principal'), CARRO)
   scene = addCatalogObject(scene, BICICLETA)
-  const [first, second] = scene.objects
-  scene = addEventAction(scene, 'on_collision', first!.name, second!.name, {
-    target: first!.name,
-    method: 'tocar_bocina',
-    args: {},
-  })
-  return projectWith('Choque', scene)
+  const [first] = scene.objects
+  scene = addOrder(scene, { target: first!.name, method: 'tocar_bocina', args: {} })
+  return projectWith('Dos objetos', scene)
 }
 
 function ownClass(): Project {
   const heroe = klass('Heroe', {
-    attributes: [{ name: 'vida', type: 'number', initial: 100 }],
+    attributes: [
+      { name: 'vida', type: 'number', initial: 100 },
+      { name: 'sonido', type: 'string', initial: '' },
+    ],
     methods: [
       {
         name: 'saludar',
         parameters: [],
-        body: { kind: 'blocks', ops: [createSetBlock('mensaje', '¡Hola!')] },
+        body: { kind: 'blocks', ops: [createSetBlock('sonido', '¡Hola!')] },
       },
     ],
   })
   const base: Scene = { ...createScene('Principal'), classes: [heroe] }
   let scene: Scene = {
     ...base,
-    objects: [instance(base, 'Heroe', { color: '#e2603a', shape: 'circle', vida: 100 })],
+    objects: [instance(base, 'Heroe', { vida: 100 })],
   }
   const name = scene.objects[0]!.name
-  scene = addEventAction(scene, 'on_start', null, null, {
-    target: name,
-    method: 'saludar',
-    args: {},
-  })
+  scene = addOrder(scene, { target: name, method: 'saludar', args: {} })
   return projectWith('Mi clase', scene)
 }
 
@@ -123,20 +114,19 @@ function inheritance(): Project {
   const base: Scene = { ...createScene('Principal'), classes: [personaje, heroe] }
   const scene: Scene = {
     ...base,
-    objects: [
-      instance(base, 'Heroe', { color: '#e2603a', shape: 'circle', vida: 100, fuerza: 10 }),
-    ],
+    objects: [instance(base, 'Heroe', { vida: 100, fuerza: 10 })],
   }
   return projectWith('Herencia', scene)
 }
 
 function polymorphism(): Project {
   const animal = klass('SerVivo', {
+    attributes: [{ name: 'sonido', type: 'string', initial: '' }],
     methods: [
       {
         name: 'hablar',
         parameters: [],
-        body: { kind: 'blocks', ops: [createSetBlock('mensaje', '...')] },
+        body: { kind: 'blocks', ops: [createSetBlock('sonido', '...')] },
       },
     ],
   })
@@ -146,7 +136,7 @@ function polymorphism(): Project {
       {
         name: 'hablar',
         parameters: [],
-        body: { kind: 'blocks', ops: [createSetBlock('mensaje', '¡Guau!')] },
+        body: { kind: 'blocks', ops: [createSetBlock('sonido', '¡Guau!')] },
       },
     ],
   })
@@ -156,19 +146,16 @@ function polymorphism(): Project {
       {
         name: 'hablar',
         parameters: [],
-        body: { kind: 'blocks', ops: [createSetBlock('mensaje', '¡Miau!')] },
+        body: { kind: 'blocks', ops: [createSetBlock('sonido', '¡Miau!')] },
       },
     ],
   })
   const base: Scene = { ...createScene('Principal'), classes: [animal, perro, gato] }
   let scene: Scene = {
     ...base,
-    objects: [
-      instance(base, 'Canino', { color: '#e2603a', shape: 'circle' }),
-      instance(base, 'Felino', { color: '#8f9aa8', shape: 'circle' }),
-    ],
+    objects: [instance(base, 'Canino', {}), instance(base, 'Felino', {})],
   }
-  scene = addEventAction(scene, 'on_start', null, null, {
+  scene = addOrder(scene, {
     kind: 'for_each',
     target: '',
     class: 'SerVivo',
@@ -187,7 +174,7 @@ function physics(): Project {
     physics: { enabled: true, gravityY: -9.8 },
     objects: scene.objects.map((object) => ({
       ...object,
-      attributes: { ...object.attributes, y: 120 },
+      attributes: { ...object.attributes, altura: 120 },
     })),
   })
 }
@@ -205,25 +192,22 @@ function composition(): Project {
   })
   const robot = klass('Maquina', {
     components: [{ name: 'bateria', class: 'Bateria' }],
+    attributes: [{ name: 'sonido', type: 'string', initial: '' }],
     methods: [
       {
         name: 'saludar',
         parameters: [],
-        body: { kind: 'blocks', ops: [createSetBlock('mensaje', '¡Hola!')] },
+        body: { kind: 'blocks', ops: [createSetBlock('sonido', '¡Hola!')] },
       },
     ],
   })
   const base: Scene = { ...createScene('Principal'), classes: [bateria, robot] }
   let scene: Scene = {
     ...base,
-    objects: [instance(base, 'Maquina', { color: '#8f9aa8', shape: 'circle' })],
+    objects: [instance(base, 'Maquina', {})],
   }
   const name = scene.objects[0]!.name
-  scene = addEventAction(scene, 'on_start', null, null, {
-    target: name,
-    method: 'saludar',
-    args: {},
-  })
+  scene = addOrder(scene, { target: name, method: 'saludar', args: {} })
   return projectWith('Composición', scene)
 }
 

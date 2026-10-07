@@ -5,7 +5,6 @@ import type {
   Appearance,
   Attribute,
   ClassDefinition,
-  EventType,
   Method,
   ObjectInstance,
   Operation,
@@ -401,16 +400,7 @@ export function removeObject(scene: Scene, objectId: string): Scene {
   return {
     ...scene,
     objects: scene.objects.filter((object) => object.id !== objectId),
-    events: scene.events
-      .map((event) => ({
-        ...event,
-        actions: event.actions.filter((action) => !identifiers.has(action.target)),
-      }))
-      .filter(
-        (event) =>
-          !(event.source && identifiers.has(event.source)) &&
-          !(event.other && identifiers.has(event.other)),
-      ),
+    orders: scene.orders.filter((action) => !identifiers.has(action.target)),
   }
 }
 
@@ -471,101 +461,26 @@ export function renameProject(project: Project, name: string): Project {
   return { ...project, meta: { ...project.meta, name } }
 }
 
-interface EventIdentity {
-  eventType: EventType
-  source: string | null
-  other: string | null
-  key: string | null
+/** Appends an order; the scene runs its orders in the order they were added. */
+export function addOrder(scene: Scene, action: Action): Scene {
+  return { ...scene, orders: [...scene.orders, action] }
 }
 
-function sameTrigger(event: Scene['events'][number], identity: EventIdentity) {
-  return (
-    event.type === identity.eventType &&
-    (event.source ?? null) === (identity.source ?? null) &&
-    (event.other ?? null) === (identity.other ?? null) &&
-    (event.key ?? null) === (identity.key ?? null)
-  )
+export function removeOrder(scene: Scene, index: number): Scene {
+  return { ...scene, orders: scene.orders.filter((_, current) => current !== index) }
 }
 
-export function findEvent(
+/** Updates a single argument of an existing order. */
+export function setOrderArg(
   scene: Scene,
-  eventType: EventType,
-  source: string | null,
-  other: string | null = null,
-  key: string | null = null,
-): Scene['events'][number] | undefined {
-  return scene.events.find((event) => sameTrigger(event, { eventType, source, other, key }))
-}
-
-export function addEventAction(
-  scene: Scene,
-  eventType: EventType,
-  source: string | null,
-  other: string | null,
-  action: Action,
-  key: string | null = null,
-): Scene {
-  const identity = { eventType, source, other, key }
-  const events = [...scene.events]
-  const index = events.findIndex((event) => sameTrigger(event, identity))
-  if (index >= 0) {
-    const event = events[index]!
-    events[index] = { ...event, actions: [...event.actions, action] }
-  } else {
-    events.push({
-      type: eventType,
-      source: source ?? null,
-      other: other ?? null,
-      key: key ?? null,
-      actions: [action],
-    })
-  }
-  return { ...scene, events }
-}
-
-/** Updates a single argument of an existing action, keyed by its trigger. */
-export function setActionArg(
-  scene: Scene,
-  eventType: EventType,
-  source: string | null,
-  other: string | null,
-  actionIndex: number,
+  index: number,
   parameter: string,
   value: number | string | boolean,
-  key: string | null = null,
 ): Scene {
-  const event = findEvent(scene, eventType, source, other, key)
-  if (!event) return scene
-  const events = scene.events.map((candidate) =>
-    candidate === event
-      ? {
-          ...candidate,
-          actions: candidate.actions.map((action, index) =>
-            index === actionIndex
-              ? { ...action, args: { ...action.args, [parameter]: value } }
-              : action,
-          ),
-        }
-      : candidate,
-  )
-  return { ...scene, events }
-}
-
-export function removeEventAction(
-  scene: Scene,
-  eventType: EventType,
-  source: string | null,
-  other: string | null,
-  actionIndex: number,
-  key: string | null = null,
-): Scene {
-  const identity = { eventType, source, other, key }
   return {
     ...scene,
-    events: scene.events.map((event) =>
-      sameTrigger(event, identity)
-        ? { ...event, actions: event.actions.filter((_, index) => index !== actionIndex) }
-        : event,
+    orders: scene.orders.map((action, current) =>
+      current === index ? { ...action, args: { ...action.args, [parameter]: value } } : action,
     ),
   }
 }

@@ -31,12 +31,11 @@ describe('migrateProject', () => {
 
     const result = migrateProject(input) as {
       version: number
-      scenes: { events: { source: unknown; other: unknown }[] }[]
+      scenes: { orders: unknown[] }[]
     }
 
     expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
-    expect(result.scenes[0]?.events[0]?.source).toBeNull()
-    expect(result.scenes[0]?.events[0]?.other).toBeNull()
+    expect(result.scenes[0]?.orders).toEqual([])
   })
 
   it('upgrades a v5 project by adding class components', () => {
@@ -122,7 +121,7 @@ describe('migrateProject', () => {
           inherits: unknown
           methods: { body: { ops: { op: string; args: Record<string, unknown> }[] } }[]
         }[]
-        events: { type: string; signal?: unknown }[]
+        orders: unknown[]
       }[]
     }
 
@@ -135,8 +134,7 @@ describe('migrateProject', () => {
     expect(ops[1]?.args).toEqual({ name: 'distancia', value: 1 })
     expect(ops[2]?.args).toEqual({ name: 'altura', value: 2 })
 
-    expect(result.scenes[0]?.events).toHaveLength(1)
-    expect(result.scenes[0]?.events[0]?.signal).toBeUndefined()
+    expect(result.scenes[0]?.orders).toEqual([])
   })
 
   it('upgrades a v8 project by tagging actions as call', () => {
@@ -154,11 +152,11 @@ describe('migrateProject', () => {
 
     const result = migrateProject(input) as {
       version: number
-      scenes: { events: { actions: { kind: unknown }[] }[] }[]
+      scenes: { orders: { kind: unknown }[] }[]
     }
 
     expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
-    expect(result.scenes[0]?.events[0]?.actions[0]?.kind).toBe('call')
+    expect(result.scenes[0]?.orders[0]?.kind).toBe('call')
   })
 
   it('upgrades a v9 project: appearance leaves the attributes', () => {
@@ -280,6 +278,44 @@ describe('migrateProject', () => {
     expect(object.attributes).toEqual({ vida: 100 })
   })
 
+  it('upgrades a v11 project: events become a flat list of orders', () => {
+    const input = {
+      version: 11,
+      meta: { name: 'Demo' },
+      scenes: [
+        {
+          id: 's',
+          name: 'Principal',
+          events: [
+            {
+              type: 'on_start',
+              source: null,
+              other: null,
+              key: null,
+              actions: [{ target: 'a', method: 'saludar', args: {} }],
+            },
+            {
+              type: 'on_click',
+              source: 'a',
+              other: null,
+              key: null,
+              actions: [{ target: 'a', method: 'curar', args: {} }],
+            },
+          ],
+        },
+      ],
+    }
+
+    const result = migrateProject(input) as {
+      version: number
+      scenes: { orders: { method: string }[]; events?: unknown }[]
+    }
+
+    expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
+    expect(result.scenes[0]?.orders.map((order) => order.method)).toEqual(['saludar', 'curar'])
+    expect(result.scenes[0]?.events).toBeUndefined()
+  })
+
   it('upgrades a v4 project by adding physics settings', () => {
     const input = {
       version: 4,
@@ -305,11 +341,11 @@ describe('migrateProject', () => {
 
     const result = migrateProject(input) as {
       version: number
-      scenes: { events: { key: unknown }[] }[]
+      scenes: { orders: unknown[] }[]
     }
 
     expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
-    expect(result.scenes[0]?.events[0]?.key).toBeNull()
+    expect(result.scenes[0]?.orders).toEqual([])
   })
 
   it('upgrades a v2 project by adding the collision other', () => {
@@ -323,10 +359,10 @@ describe('migrateProject', () => {
 
     const result = migrateProject(input) as {
       version: number
-      scenes: { events: { other: unknown }[] }[]
+      scenes: { orders: unknown[] }[]
     }
 
     expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
-    expect(result.scenes[0]?.events[0]?.other).toBeNull()
+    expect(result.scenes[0]?.orders).toEqual([])
   })
 })

@@ -37,7 +37,7 @@ describe('GuideBanner', () => {
     render(<GuideBanner />)
 
     expect(screen.getByText('Nivel 4')).toBeInTheDocument()
-    expect(screen.getByText('Siguiente misión: Provoca un choque')).toBeInTheDocument()
+    expect(screen.getByText('Siguiente misión: Escribe tu método')).toBeInTheDocument()
     expect(screen.queryByText(/Hereda/)).not.toBeInTheDocument()
   })
 

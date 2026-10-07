@@ -3,13 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { createClassDraft, createEmptyProject } from '../../model'
-import {
-  useActiveScene,
-  useEditorStore,
-  useProgressStore,
-  useProjectStore,
-  useSelectedObject,
-} from '../../store'
+import { useActiveScene, useEditorStore, useProjectStore, useSelectedObject } from '../../store'
 import { OrderComposer } from './OrderComposer'
 
 function Harness() {
@@ -48,14 +42,14 @@ describe('OrderComposer', () => {
     await user.type(screen.getByLabelText('Mensaje'), 'hola')
     await user.click(screen.getByRole('button', { name: 'Agregar orden' }))
 
-    expect(currentScene().events[0]?.actions[0]).toMatchObject({
+    expect(currentScene().orders[0]).toMatchObject({
       target: 'heroe1',
       method: 'saludar',
       args: { mensaje: 'hola' },
     })
   })
 
-  it('adds a for-each action over a class', async () => {
+  it('adds a for-each order over a class', async () => {
     const user = userEvent.setup()
     useProjectStore.getState().addObject(currentScene().id, 'perro')
     useProjectStore.getState().addObject(currentScene().id, 'gato')
@@ -67,7 +61,7 @@ describe('OrderComposer', () => {
     await user.selectOptions(screen.getByLabelText('Orden'), 'comer')
     await user.click(screen.getByRole('button', { name: 'Agregar «para cada»' }))
 
-    expect(currentScene().events[0]?.actions[0]).toMatchObject({
+    expect(currentScene().orders[0]).toMatchObject({
       kind: 'for_each',
       class: 'Animal',
       variable: 'elemento',
@@ -76,74 +70,16 @@ describe('OrderComposer', () => {
     })
   })
 
-  it('adds a click action whose source is the object', async () => {
-    const user = userEvent.setup()
-    useProjectStore.getState().addObject(currentScene().id, 'carro')
-    useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
-
-    render(<Harness />)
-    await user.selectOptions(screen.getByLabelText('Cuándo'), 'on_click')
-    await user.selectOptions(screen.getByLabelText('Orden'), 'tocar_bocina')
-    await user.click(screen.getByRole('button', { name: 'Agregar orden' }))
-
-    const clickEvent = currentScene().events.find((event) => event.type === 'on_click')
-    expect(clickEvent?.source).toBe('carro1')
-    expect(clickEvent?.actions[0]).toMatchObject({ method: 'tocar_bocina', args: {} })
-  })
-
-  it('adds a collision action with the other object', async () => {
-    const user = userEvent.setup()
-    useProjectStore.getState().addObject(currentScene().id, 'carro')
-    useProjectStore.getState().addObject(currentScene().id, 'carro')
-    useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
-
-    render(<Harness />)
-    await user.selectOptions(screen.getByLabelText('Cuándo'), 'on_collision')
-    await user.click(screen.getByRole('button', { name: 'Agregar orden' }))
-
-    const event = currentScene().events.find((candidate) => candidate.type === 'on_collision')
-    expect(event?.source).toBe('carro1')
-    expect(event?.other).toBe('carro2')
-  })
-
-  it('hides the trigger selector until events unlock', () => {
-    useProgressStore.setState({ freeMode: false, unlockedLevel: 2 })
-    useProjectStore.getState().addObject(currentScene().id, 'carro')
-    useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
-
-    render(<Harness />)
-
-    expect(screen.getByText('Estas órdenes se ejecutan al iniciar.')).toBeInTheDocument()
-    expect(screen.queryByLabelText('Cuándo')).not.toBeInTheDocument()
-  })
-
-  it('adds orders to the start event before events unlock', async () => {
-    const user = userEvent.setup()
-    useProgressStore.setState({ freeMode: false, unlockedLevel: 2 })
-    useProjectStore.getState().addObject(currentScene().id, 'carro')
-    useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
-
-    render(<Harness />)
-    await user.click(screen.getByRole('button', { name: 'Agregar orden' }))
-
-    const event = currentScene().events[0]
-    expect(event?.type).toBe('on_start')
-    expect(event?.source).toBeNull()
-    expect(event?.actions[0]).toMatchObject({ method: 'tocar_bocina' })
-  })
-
-  it('adds an action for the object', async () => {
+  it('adds orders for the object in order', async () => {
     const user = userEvent.setup()
     useProjectStore.getState().addObject(currentScene().id, 'carro')
     useEditorStore.setState({ selectedObjectId: currentScene().objects[0]!.id })
 
     render(<Harness />)
     await user.click(screen.getByRole('button', { name: 'Agregar orden' }))
+    await user.selectOptions(screen.getByLabelText('Orden'), 'moverse')
+    await user.click(screen.getByRole('button', { name: 'Agregar orden' }))
 
-    expect(currentScene().events[0]?.actions[0]).toMatchObject({
-      target: 'carro1',
-      method: 'tocar_bocina',
-      args: {},
-    })
+    expect(currentScene().orders.map((order) => order.method)).toEqual(['tocar_bocina', 'moverse'])
   })
 })

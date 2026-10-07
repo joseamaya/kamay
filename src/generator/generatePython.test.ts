@@ -1,18 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  ACTOR_CATALOG,
-  addCatalogObject,
-  createEmptyProject,
-  createScene,
-  projectSchema,
-} from '../model'
+import { ACTOR_CATALOG, addCatalogObject, createEmptyProject, createScene } from '../model'
 import type { Project } from '../model'
+import { projectSchema } from '../model'
 import { generatePython } from './generatePython'
 
 function buildFixture(): Project {
   return projectSchema.parse({
-    version: 1,
+    version: 12,
     meta: { name: 'Mi primer juego', author: 'Ada', created: '2026-01-01T00:00:00.000Z' },
     scenes: [
       {
@@ -33,13 +28,8 @@ function buildFixture(): Project {
             ],
           },
         ],
-        objects: [{ id: 'h1', name: 'h1', class: 'Heroe', attributes: { x: 0, y: 0 } }],
-        events: [
-          {
-            type: 'on_start',
-            actions: [{ target: 'h1', method: 'saltar', args: { mensaje: '¡Hola!' } }],
-          },
-        ],
+        objects: [{ id: 'h1', name: 'h1', class: 'Heroe', attributes: { vida: 50 } }],
+        orders: [{ target: 'h1', method: 'saltar', args: { mensaje: '¡Hola!' } }],
       },
     ],
   })
@@ -148,22 +138,17 @@ describe('generatePython', () => {
             },
           ],
           objects: [
-            { id: 'o1', name: 'perro1', class: 'Perro', attributes: { x: 0, y: 0 } },
-            { id: 'o2', name: 'gato1', class: 'Gato', attributes: { x: 0, y: 0 } },
+            { id: 'o1', name: 'perro1', class: 'Perro' },
+            { id: 'o2', name: 'gato1', class: 'Gato' },
           ],
-          events: [
+          orders: [
             {
-              type: 'on_start',
-              actions: [
-                {
-                  kind: 'for_each',
-                  target: '',
-                  class: 'Animal',
-                  variable: 'animal',
-                  method: 'hablar',
-                  args: {},
-                },
-              ],
+              kind: 'for_each',
+              target: '',
+              class: 'Animal',
+              variable: 'animal',
+              method: 'hablar',
+              args: {},
             },
           ],
         },
@@ -207,8 +192,7 @@ from Heroe import Heroe
 def main():
     # Escena: Principal
     h1 = Heroe("h1")
-    h1.x = 0
-    h1.y = 0
+    h1.vida = 50
     h1.saltar("¡Hola!")
 
 
@@ -241,12 +225,7 @@ if __name__ == "__main__":
             },
           ],
           objects: [{ id: 'h1', name: 'h1', class: 'Heroe' }],
-          events: [
-            {
-              type: 'on_start',
-              actions: [{ target: 'h1', method: 'mover', args: { y: 2, x: 1 } }],
-            },
-          ],
+          orders: [{ target: 'h1', method: 'mover', args: { y: 2, x: 1 } }],
         },
       ],
     })
@@ -278,12 +257,7 @@ if __name__ == "__main__":
             },
           ],
           objects: [{ id: 'o1', name: 'heroe1', class: 'Heroe' }],
-          events: [
-            {
-              type: 'on_start',
-              actions: [{ target: 'heroe1', method: 'saludar', args: { mensaje: 'hola' } }],
-            },
-          ],
+          orders: [{ target: 'heroe1', method: 'saludar', args: { mensaje: 'hola' } }],
         },
       ],
     })
@@ -323,66 +297,6 @@ if __name__ == "__main__":
     const main = generatePython(project).files.find((file) => file.path === 'principal.py')
     expect(main?.content).toContain('heroe1.vida = 50')
     expect(main?.content).toContain('heroe2.vida = 100')
-  })
-
-  it('generates a click handler and registers it', () => {
-    const project = projectSchema.parse({
-      version: 2,
-      meta: { name: 'Demo' },
-      scenes: [
-        {
-          id: 'scene-1',
-          name: 'Principal',
-          classes: [{ id: 'class-heroe', name: 'Heroe' }],
-          objects: [{ id: 'o1', name: 'heroe1', class: 'Heroe' }],
-          events: [
-            {
-              type: 'on_click',
-              source: 'heroe1',
-              actions: [{ target: 'heroe1', method: 'decir', args: { mensaje: 'hola' } }],
-            },
-          ],
-        },
-      ],
-    })
-
-    const main = generatePython(project).files.find((file) => file.path === 'principal.py')!
-    expect(main.content).toContain('from kamay_runtime import registrar')
-    expect(main.content).toContain('def al_hacer_clic_heroe1():')
-    expect(main.content).toContain('heroe1.decir("hola")')
-    expect(main.content).toContain('registrar("click", "heroe1", al_hacer_clic_heroe1)')
-  })
-
-  it('generates a collision handler with a sorted pair key', () => {
-    const project = projectSchema.parse({
-      version: 3,
-      meta: { name: 'Demo' },
-      scenes: [
-        {
-          id: 'scene-1',
-          name: 'Principal',
-          classes: [{ id: 'class-circle', name: 'Circle' }],
-          objects: [
-            { id: 'o1', name: 'circle1', class: 'Circle' },
-            { id: 'o2', name: 'circle2', class: 'Circle' },
-          ],
-          events: [
-            {
-              type: 'on_collision',
-              source: 'circle2',
-              other: 'circle1',
-              actions: [{ target: 'circle1', method: 'decir', args: { mensaje: 'choque' } }],
-            },
-          ],
-        },
-      ],
-    })
-
-    const main = generatePython(project).files.find((file) => file.path === 'principal.py')!
-    expect(main.content).toContain('def al_colisionar_circle1_circle2():')
-    expect(main.content).toContain(
-      'registrar("collision", "circle1|circle2", al_colisionar_circle1_circle2)',
-    )
   })
 
   it('imports the base class when inheriting from another class', () => {
@@ -533,63 +447,6 @@ if __name__ == "__main__":
     expect(heroe?.content).toContain('            pass')
   })
 
-  it('generates a wait call from an action', () => {
-    const project = projectSchema.parse({
-      version: 1,
-      meta: { name: 'Demo' },
-      scenes: [
-        {
-          id: 'scene-1',
-          name: 'Principal',
-          objects: [{ id: 'h1', name: 'h1', class: 'Heroe' }],
-          events: [
-            {
-              type: 'on_start',
-              actions: [{ target: 'h1', method: 'esperar', args: { segundos: 1 } }],
-            },
-          ],
-        },
-      ],
-    })
-
-    const main = generatePython(project).files.find((file) => file.path === 'principal.py')
-    expect(main?.content).toContain('h1.esperar(1)')
-  })
-
-  it('groups keyboard handlers by key', () => {
-    const project = projectSchema.parse({
-      version: 1,
-      meta: { name: 'Demo' },
-      scenes: [
-        {
-          id: 'scene-1',
-          name: 'Principal',
-          objects: [{ id: 'h1', name: 'h1', class: 'Heroe' }],
-          events: [
-            {
-              type: 'on_key',
-              source: 'h1',
-              key: 'ArrowUp',
-              actions: [{ target: 'h1', method: 'decir', args: { mensaje: 'arriba' } }],
-            },
-            {
-              type: 'on_key',
-              source: 'h2',
-              key: 'ArrowUp',
-              actions: [{ target: 'h1', method: 'decir', args: { mensaje: 'otro' } }],
-            },
-          ],
-        },
-      ],
-    })
-
-    const main = generatePython(project).files.find((file) => file.path === 'principal.py')
-    expect(main?.content).toContain('registrar("key", "ArrowUp", al_pulsar_ArrowUp)')
-    expect((main?.content.match(/def al_pulsar_ArrowUp\(/g) ?? []).length).toBe(1)
-    expect(main?.content).toContain('h1.decir("arriba")')
-    expect(main?.content).toContain('h1.decir("otro")')
-  })
-
   it('is deterministic for the same model', () => {
     const first = generatePython(buildFixture())
     const second = generatePython(buildFixture())
@@ -598,20 +455,20 @@ if __name__ == "__main__":
 })
 
 describe('editableValues', () => {
-  it('locates object attributes and action arguments', () => {
+  it('locates object attributes and order arguments', () => {
     const { files, editableValues } = generatePython(buildFixture())
     const main = files.find((file) => file.path === 'principal.py')!.content
 
     const attribute = editableValues.find(
-      (value) => value.kind === 'attribute' && value.key === 'x',
+      (value) => value.kind === 'attribute' && value.key === 'vida',
     )!
     expect(attribute.objectName).toBe('h1')
-    expect(attribute.value).toBe(0)
-    expect(main.slice(attribute.from, attribute.to)).toBe('0')
+    expect(attribute.value).toBe(50)
+    expect(main.slice(attribute.from, attribute.to)).toBe('50')
 
     const argument = editableValues.find((value) => value.kind === 'action-arg')!
     expect(argument.key).toBe('mensaje')
-    expect(argument.eventType).toBe('on_start')
+    expect(argument.orderIndex).toBe(0)
     expect(argument.value).toBe('¡Hola!')
     expect(main.slice(argument.from, argument.to)).toBe('"¡Hola!"')
   })
@@ -645,7 +502,7 @@ describe('composition', () => {
             components: [{ name: 'bateria', class: 'Bateria' }],
           },
         ],
-        objects: [{ id: 'r1', name: 'r1', class: 'Robot', attributes: { x: 0, y: 0 } }],
+        objects: [{ id: 'r1', name: 'r1', class: 'Robot' }],
       },
     ],
   })

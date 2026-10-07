@@ -1,7 +1,6 @@
 import json
 
-from js import __kamay_emit, __kamay_registrar
-from pyodide.ffi import create_proxy
+from js import __kamay_emit
 
 
 def _emit(command):
@@ -15,11 +14,6 @@ def _report_state(self, name, value):
         return
     if isinstance(value, (bool, int, float, str)):
         _emit({"type": "state", "target": self._kamay_name, "name": name, "value": value})
-
-
-def registrar(kind, source, handler):
-    # Keep the handler alive beyond the call (borrowed proxies are auto-destroyed).
-    __kamay_registrar(kind, source, create_proxy(handler))
 
 
 def preparar(cls):

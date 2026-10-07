@@ -11,8 +11,7 @@ import {
 } from '../../engine'
 import type { Actor } from '../../engine'
 import { getMessages } from '../../i18n'
-import { collisionKey } from '../../model'
-import { emitRuntimeTrigger, onRuntimeCommand, onRuntimeReset } from '../../runtime'
+import { onRuntimeCommand, onRuntimeReset } from '../../runtime'
 import {
   useActiveScene,
   useEditorStore,
@@ -26,7 +25,6 @@ import type { Point } from './handles'
 
 interface DragState {
   objectId: string
-  name: string
   pointerStart: Point
   origin: Point
   offset: Point
@@ -56,25 +54,6 @@ function distanceSquared(a: Point, b: Point): number {
   const dx = a.x - b.x
   const dy = a.y - b.y
   return dx * dx + dy * dy
-}
-
-function distanceCollisions(actors: Actor[]): Set<string> {
-  const colliding = new Set<string>()
-  for (let i = 0; i < actors.length; i += 1) {
-    for (let j = i + 1; j < actors.length; j += 1) {
-      const first = actors[i]!
-      const second = actors[j]!
-      const radius =
-        (ACTOR_SIZE / 2) * Math.max(first.transform.scale, 0.2) +
-        (ACTOR_SIZE / 2) * Math.max(second.transform.scale, 0.2)
-      const dx = first.transform.position.x - second.transform.position.x
-      const dy = first.transform.position.y - second.transform.position.y
-      if (dx * dx + dy * dy <= radius * radius) {
-        colliding.add(collisionKey(first.name, second.name))
-      }
-    }
-  }
-  return colliding
 }
 
 function hitTest(actors: Actor[], point: Point): Actor | null {
@@ -125,9 +104,6 @@ export function ScenarioCanvas() {
   const selectedRef = useRef(selectedObjectId)
   const sizeRef = useRef(size)
   const lastSizeRef = useRef<Point>({ x: 0, y: 0 })
-  const runtimeStatusRef = useRef(runtimeStatus)
-  const stepModeRef = useRef(stepMode)
-  const collisionsRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     sceneRef.current = scene
@@ -155,11 +131,6 @@ export function ScenarioCanvas() {
   }, [size])
 
   useEffect(() => {
-    runtimeStatusRef.current = runtimeStatus
-  }, [runtimeStatus])
-
-  useEffect(() => {
-    stepModeRef.current = stepMode
     controllerRef.current.setInstant(stepMode)
   }, [stepMode])
 
@@ -179,7 +150,6 @@ export function ScenarioCanvas() {
   useEffect(() => {
     if (!scene) return
     controllerRef.current.reset(toSceneState(scene))
-    collisionsRef.current.clear()
   }, [scene])
 
   useEffect(() => {
@@ -193,25 +163,6 @@ export function ScenarioCanvas() {
     )
   }, [runtimeStatus, stepMode])
 
-  useEffect(() => {
-    if (runtimeStatus !== 'ready' && runtimeStatus !== 'running') return
-    const handleKey = (event: KeyboardEvent) => {
-      if (stepModeRef.current) return
-      const target = event.target as HTMLElement | null
-      if (
-        target &&
-        (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-      ) {
-        return
-      }
-      if (target?.closest('[data-selection-overlay]')) return
-      const source = event.key.length === 1 ? event.key.toLowerCase() : event.key
-      emitRuntimeTrigger({ kind: 'key', source })
-    }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [runtimeStatus])
-
   useEffect(() => onRuntimeCommand((command) => controllerRef.current.apply(command)), [])
 
   useEffect(
@@ -219,32 +170,9 @@ export function ScenarioCanvas() {
       onRuntimeReset(() => {
         const current = sceneRef.current
         if (current) controllerRef.current.reset(toSceneState(current))
-        collisionsRef.current.clear()
       }),
     [],
   )
-
-  const detectCollisions = useCallback(() => {
-    if (stepModeRef.current) {
-      collisionsRef.current.clear()
-      return
-    }
-    // Only detect once the program finished registering its handlers.
-    if (runtimeStatusRef.current !== 'ready') {
-      collisionsRef.current.clear()
-      return
-    }
-
-    const physicsCollisions = controllerRef.current.getCollisions()
-    const colliding = physicsCollisions ?? distanceCollisions(controllerRef.current.getActors())
-
-    for (const key of colliding) {
-      if (!collisionsRef.current.has(key)) {
-        emitRuntimeTrigger({ kind: 'collision', source: key })
-      }
-    }
-    collisionsRef.current = new Set(colliding)
-  }, [])
 
   const render = useCallback(() => {
     const canvas = canvasRef.current
@@ -352,13 +280,12 @@ export function ScenarioCanvas() {
     const loop = createLoop({
       update: (delta) => {
         controllerRef.current.update(delta)
-        detectCollisions()
       },
       render,
     })
     loop.start()
     return () => loop.stop()
-  }, [render, detectCollisions])
+  }, [render])
 
   const toScenePoint = (event: ReactPointerEvent<HTMLCanvasElement>): Point | null => {
     const canvas = canvasRef.current
@@ -384,7 +311,6 @@ export function ScenarioCanvas() {
     selectObject(actor.id)
     dragRef.current = {
       objectId: actor.id,
-      name: actor.name,
       pointerStart: point,
       origin: { ...actor.transform.position },
       offset: { x: 0, y: 0 },
@@ -414,14 +340,6 @@ export function ScenarioCanvas() {
         x: Math.round(drag.origin.x + drag.offset.x),
         y: Math.round(drag.origin.y + drag.offset.y),
       })
-    }
-
-    if (
-      !moved &&
-      !stepModeRef.current &&
-      (runtimeStatus === 'ready' || runtimeStatus === 'running')
-    ) {
-      emitRuntimeTrigger({ kind: 'click', source: drag.name })
     }
   }
 
@@ -486,20 +404,8 @@ export function ScenarioCanvas() {
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLCanvasElement>) => {
     if (!scene) return
 
-    const running = runtimeStatus === 'ready' || runtimeStatus === 'running'
-
-    // Enter/Space emulate a click on the selected object, even while running.
-    if (running && !stepModeRef.current && (event.key === 'Enter' || event.key === ' ')) {
-      const selected = scene.objects.find((candidate) => candidate.id === selectedObjectId)
-      if (selected) {
-        event.preventDefault()
-        emitRuntimeTrigger({ kind: 'click', source: selected.name })
-        return
-      }
-    }
-
-    // While the program runs, the other keys go to its event handlers.
-    if (running) return
+    // While the program runs, the keys do not edit the scene.
+    if (runtimeStatus === 'ready' || runtimeStatus === 'running') return
 
     if (event.key === 'Escape') {
       selectObject(null)

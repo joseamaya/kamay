@@ -1,20 +1,5 @@
-import {
-  collisionKey,
-  DOMAIN_BASES,
-  objectsOfClass,
-  resolveMethods,
-  withDomainBases,
-} from '../model'
-import type {
-  Action,
-  ClassDefinition,
-  EventType,
-  Method,
-  ObjectInstance,
-  Project,
-  Scene,
-  SceneEvent,
-} from '../model'
+import { DOMAIN_BASES, objectsOfClass, resolveMethods, withDomainBases } from '../model'
+import type { Action, ClassDefinition, Method, ObjectInstance, Project, Scene } from '../model'
 import { blocksToLines } from './blocks'
 import { indent, pyLiteral, TYPE_HINTS } from './python'
 
@@ -29,11 +14,7 @@ export interface ValueTarget {
   objectName: string
   /** Attribute key or parameter name. */
   key: string
-  eventType: EventType | null
-  source: string | null
-  other: string | null
-  eventKey: string | null
-  actionIndex: number
+  orderIndex: number
 }
 
 export interface EditableValue extends ValueTarget {
@@ -67,17 +48,6 @@ function mark(
 ): string {
   collected.push({ target, value: value as number | string | boolean, raw })
   return `${VALUE_OPEN}${raw}${VALUE_CLOSE}`
-}
-
-function eventRef(
-  event: SceneEvent,
-): Omit<ValueTarget, 'kind' | 'objectName' | 'key' | 'actionIndex'> {
-  return {
-    eventType: event.type,
-    source: event.source,
-    other: event.other,
-    eventKey: event.key,
-  }
 }
 
 function collectClasses(project: Project): ClassDefinition[] {
@@ -202,8 +172,7 @@ function orderedArgs(scene: Scene, action: Action): OrderedArg[] {
 function generateAction(
   scene: Scene,
   action: Action,
-  event: SceneEvent,
-  actionIndex: number,
+  orderIndex: number,
   collected: CollectedValue[],
 ): string {
   const variable =
@@ -213,13 +182,7 @@ function generateAction(
   const args = orderedArgs(scene, action).map(({ name, value }) =>
     mark(
       pyLiteral(value),
-      {
-        kind: 'action-arg',
-        objectName: variable,
-        key: name,
-        actionIndex,
-        ...eventRef(event),
-      },
+      { kind: 'action-arg', objectName: variable, key: name, orderIndex },
       value,
       collected,
     ),
@@ -242,32 +205,13 @@ function generateObjectStatements(object: ObjectInstance, collected: CollectedVa
     lines.push(
       `${object.name}.${key} = ${mark(
         pyLiteral(value),
-        {
-          kind: 'attribute',
-          objectName: object.name,
-          key,
-          eventType: null,
-          source: null,
-          other: null,
-          eventKey: null,
-          actionIndex: -1,
-        },
+        { kind: 'attribute', objectName: object.name, key, orderIndex: -1 },
         value,
         collected,
       )}`,
     )
   }
   return lines
-}
-
-function pushHandler(lines: string[], name: string, actions: string[]): void {
-  lines.push(`def ${name}():`)
-  lines.push(actions.length > 0 ? indent(actions.join('\n')) : '    pass')
-}
-
-function pyIdentifier(value: string): string {
-  const base = value === ' ' ? 'space' : value.replace(/[^A-Za-z0-9_]/g, '_')
-  return /^[A-Za-z_]/.test(base) ? base : `_${base}`
 }
 
 function generateSceneBody(scene: Scene, collected: CollectedValue[]): string[] {
@@ -277,76 +221,12 @@ function generateSceneBody(scene: Scene, collected: CollectedValue[]): string[] 
     lines.push(...generateObjectStatements(object, collected))
   }
 
-  for (const event of scene.events) {
-    if (event.type !== 'on_click' || !event.source) continue
-    const name = `al_hacer_clic_${event.source}`
-    pushHandler(
-      lines,
-      name,
-      event.actions.map((action, index) => generateAction(scene, action, event, index, collected)),
-    )
-    lines.push(`registrar("click", ${pyLiteral(event.source)}, ${name})`)
-  }
-
-  for (const event of scene.events) {
-    if (event.type !== 'on_collision' || !event.source || !event.other) continue
-    const [first, second] = [event.source, event.other].sort()
-    const name = `al_colisionar_${first}_${second}`
-    pushHandler(
-      lines,
-      name,
-      event.actions.map((action, index) => generateAction(scene, action, event, index, collected)),
-    )
-    lines.push(
-      `registrar("collision", ${pyLiteral(collisionKey(event.source, event.other))}, ${name})`,
-    )
-  }
-
-  const keyGroups = groupActionsBy(scene, 'on_key', (event) => event.key)
-  for (const [key, refs] of keyGroups) {
-    const name = `al_pulsar_${pyIdentifier(key)}`
-    pushHandler(
-      lines,
-      name,
-      refs.map(({ event, actionIndex }) =>
-        generateAction(scene, event.actions[actionIndex]!, event, actionIndex, collected),
-      ),
-    )
-    lines.push(`registrar("key", ${pyLiteral(key)}, ${name})`)
-  }
-
-  // Run start actions last so every handler is registered before they fire.
-  for (const event of scene.events) {
-    if (event.type !== 'on_start') continue
-    event.actions.forEach((action, index) => {
-      lines.push(generateAction(scene, action, event, index, collected))
-    })
-  }
+  // The scene runs its orders in the order they were added.
+  scene.orders.forEach((action, index) => {
+    lines.push(generateAction(scene, action, index, collected))
+  })
 
   return lines
-}
-
-interface ActionRef {
-  event: SceneEvent
-  actionIndex: number
-}
-
-/** Groups the generated actions of an event type by a discriminating field. */
-function groupActionsBy(
-  scene: Scene,
-  type: 'on_key',
-  pick: (event: SceneEvent) => string | null,
-): Map<string, ActionRef[]> {
-  const groups = new Map<string, ActionRef[]>()
-  for (const event of scene.events) {
-    if (event.type !== type) continue
-    const value = pick(event)
-    if (!value) continue
-    const refs = groups.get(value) ?? []
-    event.actions.forEach((_, actionIndex) => refs.push({ event, actionIndex }))
-    groups.set(value, refs)
-  }
-  return groups
 }
 
 function generateBootstrap(
@@ -368,14 +248,6 @@ function generateBootstrap(
     rawCode ? classes : classes.filter((definition) => usedClassNames.has(definition.name))
   ).map((definition) => `from ${definition.name} import ${definition.name}`)
 
-  const needsRegistrar = project.scenes.some((scene) =>
-    scene.events.some(
-      (event) =>
-        ((event.type === 'on_click' || event.type === 'on_collision') && event.source) ||
-        (event.type === 'on_key' && event.key),
-    ),
-  )
-  if (needsRegistrar) imports.push('from kamay_runtime import registrar')
   if (rawCode) imports.push('from kamay_runtime import preparar')
 
   const header = [ENCODING_HEADER, `# Proyecto: ${project.meta.name}`]

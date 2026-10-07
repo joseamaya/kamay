@@ -74,19 +74,6 @@ describe('createRuntimeBridge', () => {
     expect(errors).toEqual(['NameError'])
   })
 
-  it('posts triggers to the worker', async () => {
-    const bridge = createRuntimeBridge()
-    await bridge.run({}, 'principal.py')
-
-    bridge.trigger('click', 'a')
-
-    expect(FakeWorker.instances[0]!.posted).toContainEqual({
-      type: 'trigger',
-      kind: 'click',
-      source: 'a',
-    })
-  })
-
   it('terminates the worker on stop', async () => {
     const bridge = createRuntimeBridge()
     await bridge.run({}, 'principal.py')

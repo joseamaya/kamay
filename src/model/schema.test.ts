@@ -18,7 +18,7 @@ describe('projectSchema', () => {
     expect(result.data.meta.author).toBe('')
     expect(result.data.scenes[0]?.classes).toEqual([])
     expect(result.data.scenes[0]?.objects).toEqual([])
-    expect(result.data.scenes[0]?.events).toEqual([])
+    expect(result.data.scenes[0]?.orders).toEqual([])
     expect(result.data.scenes[0]?.background).toBe('grass')
     expect(result.data.scenes[0]?.physics).toEqual({ enabled: false, gravityY: -9.8 })
   })
@@ -49,35 +49,22 @@ describe('projectSchema', () => {
     expect(result.success).toBe(false)
   })
 
-  it('defaults the event source to null', () => {
-    const result = projectSchema.safeParse({
-      ...minimalProject,
-      scenes: [{ id: 's', name: 'Principal', events: [{ type: 'on_start', actions: [] }] }],
-    })
-
-    expect(result.success).toBe(true)
-    if (result.success) {
-      expect(result.data.scenes[0]?.events[0]?.source).toBeNull()
-      expect(result.data.scenes[0]?.events[0]?.other).toBeNull()
-      expect(result.data.scenes[0]?.events[0]?.key).toBeNull()
-    }
-  })
-
-  it('accepts keyboard events', () => {
+  it('accepts orders with a method and args', () => {
     const result = projectSchema.safeParse({
       ...minimalProject,
       scenes: [
         {
           id: 's',
           name: 'Principal',
-          events: [{ type: 'on_key', source: 'h1', key: 'ArrowUp', actions: [] }],
+          orders: [{ target: 'h1', method: 'saludar', args: { mensaje: 'hola' } }],
         },
       ],
     })
 
     expect(result.success).toBe(true)
     if (result.success) {
-      expect(result.data.scenes[0]?.events[0]?.key).toBe('ArrowUp')
+      expect(result.data.scenes[0]?.orders[0]?.method).toBe('saludar')
+      expect(result.data.scenes[0]?.orders[0]?.args.mensaje).toBe('hola')
     }
   })
 

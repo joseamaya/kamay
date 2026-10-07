@@ -28,7 +28,7 @@ describe('SelectionOverlay', () => {
     expect(screen.getByText('Instancia de Carro')).toBeInTheDocument()
     expect(screen.getByText('Aspecto')).toBeInTheDocument()
     expect(screen.getByText('Órdenes')).toBeInTheDocument()
-    expect(screen.getByLabelText('Cuándo')).toBeInTheDocument()
+    expect(screen.getByLabelText('Orden')).toBeInTheDocument()
   })
 
   it('hides orders until level 2', () => {
@@ -39,7 +39,6 @@ describe('SelectionOverlay', () => {
 
     expect(screen.getByText('Aspecto')).toBeInTheDocument()
     expect(screen.queryByText('Órdenes')).not.toBeInTheDocument()
-    expect(screen.queryByLabelText('Cuándo')).not.toBeInTheDocument()
   })
 
   it('deletes the selected object after confirmation', async () => {

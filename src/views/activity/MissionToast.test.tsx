@@ -35,6 +35,6 @@ describe('MissionToast', () => {
     render(<MissionToast />)
 
     expect(screen.getByText('¡Nivel 4 desbloqueado!')).toBeInTheDocument()
-    expect(screen.getByText('Muchos objetos e identidad')).toBeInTheDocument()
+    expect(screen.getByText('Escribe código')).toBeInTheDocument()
   })
 })

@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  addEventAction,
-  collisionKey,
+  addOrder,
   createChangeBlock,
   createClassDraft,
   createEmptyProject,
@@ -19,12 +18,16 @@ function heroe(): ClassDefinition {
   const draft = createClassDraft('Heroe')
   return {
     ...draft,
-    attributes: [...draft.attributes, { name: 'vida', type: 'number', initial: 100 }],
+    attributes: [
+      ...draft.attributes,
+      { name: 'vida', type: 'number', initial: 100 },
+      { name: 'sonido', type: 'string', initial: '' },
+    ],
     methods: [
       {
         name: 'saludar',
         parameters: [],
-        body: { kind: 'blocks', ops: [createSetBlock('mensaje', 'hola')] },
+        body: { kind: 'blocks', ops: [createSetBlock('sonido', 'hola')] },
       },
       {
         name: 'curar',
@@ -37,7 +40,7 @@ function heroe(): ClassDefinition {
 
 function baseScene(): Scene {
   let scene = upsertClass(createScene('Principal'), heroe())
-  scene = { ...scene, objects: [createObject(scene, 'Heroe', { x: 0, y: 0 })] }
+  scene = { ...scene, objects: [createObject(scene, 'Heroe')] }
   return scene
 }
 
@@ -87,28 +90,20 @@ describe('hasRawCode', () => {
 })
 
 describe('Simulation', () => {
-  it('emits initial state and runs on_start actions', () => {
+  it('emits initial state and runs orders', () => {
     let scene = baseScene()
-    scene = addEventAction(scene, 'on_start', null, null, {
-      target: 'heroe1',
-      method: 'saludar',
-      args: {},
-    })
+    scene = addOrder(scene, { target: 'heroe1', method: 'saludar', args: {} })
 
     const { messages, errors } = run(scene)
 
     expect(stateValue(messages, 'vida')).toBe(100)
-    expect(stateValue(messages, 'mensaje')).toBe('hola')
+    expect(stateValue(messages, 'sonido')).toBe('hola')
     expect(errors).toEqual([])
   })
 
   it('runs a custom block method and updates state', () => {
     let scene = baseScene()
-    scene = addEventAction(scene, 'on_start', null, null, {
-      target: 'heroe1',
-      method: 'curar',
-      args: {},
-    })
+    scene = addOrder(scene, { target: 'heroe1', method: 'curar', args: {} })
 
     expect(stateValue(run(scene).messages, 'vida')).toBe(120)
   })
@@ -116,12 +111,8 @@ describe('Simulation', () => {
   it('resolves a domain base inherited but not placed in the scene', () => {
     const heroe: ClassDefinition = { ...createClassDraft('Heroe'), inherits: 'Vehiculo' }
     let scene = upsertClass(createScene('Principal'), heroe)
-    scene = { ...scene, objects: [createObject(scene, 'Heroe', {})] }
-    scene = addEventAction(scene, 'on_start', null, null, {
-      target: 'heroe1',
-      method: 'prender',
-      args: {},
-    })
+    scene = { ...scene, objects: [createObject(scene, 'Heroe')] }
+    scene = addOrder(scene, { target: 'heroe1', method: 'prender', args: {} })
 
     const { messages, errors } = run(scene)
 
@@ -129,7 +120,7 @@ describe('Simulation', () => {
     expect(errors).toEqual([])
   })
 
-  it('runs a for-each action over a class and its subclasses', () => {
+  it('runs a for-each order over a class and its subclasses', () => {
     const animal: ClassDefinition = {
       ...createClassDraft('Animal'),
       methods: [{ name: 'hablar', parameters: [], body: { kind: 'blocks', ops: [] } }],
@@ -141,7 +132,7 @@ describe('Simulation', () => {
         {
           name: 'hablar',
           parameters: [],
-          body: { kind: 'blocks', ops: [createSetBlock('mensaje', 'guau')] },
+          body: { kind: 'blocks', ops: [createSetBlock('sonido', 'guau')] },
         },
       ],
     }
@@ -152,7 +143,7 @@ describe('Simulation', () => {
         {
           name: 'hablar',
           parameters: [],
-          body: { kind: 'blocks', ops: [createSetBlock('mensaje', 'miau')] },
+          body: { kind: 'blocks', ops: [createSetBlock('sonido', 'miau')] },
         },
       ],
     }
@@ -163,7 +154,7 @@ describe('Simulation', () => {
       ...scene,
       objects: [createObject(scene, 'Perro'), createObject(scene, 'Gato')],
     }
-    scene = addEventAction(scene, 'on_start', null, null, {
+    scene = addOrder(scene, {
       kind: 'for_each',
       target: '',
       class: 'Animal',
@@ -175,36 +166,7 @@ describe('Simulation', () => {
     const { messages, errors } = run(scene)
 
     expect(errors).toEqual([])
-    expect(targetState(messages, 'perro1', 'mensaje')).toBe('guau')
-    expect(targetState(messages, 'gato1', 'mensaje')).toBe('miau')
-  })
-
-  it('runs a click handler for the matching object', () => {
-    let scene = baseScene()
-    scene = addEventAction(scene, 'on_click', 'heroe1', null, {
-      target: 'heroe1',
-      method: 'curar',
-      args: {},
-    })
-
-    const { simulation, messages } = run(scene)
-    simulation.trigger('click', 'heroe1')
-
-    expect(stateValue(messages, 'vida')).toBe(120)
-  })
-
-  it('runs a collision handler by its collision key', () => {
-    let scene = baseScene()
-    scene = { ...scene, objects: [...scene.objects, createObject(scene, 'Heroe')] }
-    scene = addEventAction(scene, 'on_collision', 'heroe1', 'heroe2', {
-      target: 'heroe1',
-      method: 'curar',
-      args: {},
-    })
-
-    const { simulation, messages } = run(scene)
-    simulation.trigger('collision', collisionKey('heroe1', 'heroe2'))
-
-    expect(stateValue(messages, 'vida')).toBe(120)
+    expect(targetState(messages, 'perro1', 'sonido')).toBe('guau')
+    expect(targetState(messages, 'gato1', 'sonido')).toBe('miau')
   })
 })

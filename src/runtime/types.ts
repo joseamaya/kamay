@@ -47,13 +47,9 @@ export interface RuntimeError {
 
 export type RuntimeStatus = 'idle' | 'loading' | 'ready' | 'running' | 'error'
 
-export type TriggerKind = 'click' | 'collision' | 'key'
-
 export interface RuntimeBridge {
   /** Runs generated Python files and streams engine commands back. */
   run: (files: Record<string, string>, entry: string) => Promise<void>
-  /** Fires a modeled event (click/collision) so the registered handler runs. */
-  trigger: (kind: TriggerKind, source: string) => void
   /** Stops the current run by terminating and dropping the worker. */
   stop: () => void
   onCommand: (listener: (message: RuntimeMessage) => void) => () => void

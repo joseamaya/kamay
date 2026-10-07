@@ -10,7 +10,7 @@ export const CRITERION_ORDER: RubricCriterionId[] = [
   'inheritance',
   'polymorphism',
   'composition',
-  'events',
+  'code',
 ]
 
 export interface ConceptTally {
