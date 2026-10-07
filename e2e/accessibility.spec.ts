@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures'
 
-import { openMore } from './helpers'
+import { openMenu } from './helpers'
 
 test.use({ colorScheme: 'light' })
 
@@ -8,7 +8,8 @@ test('toggles between light and dark themes and remembers it', async ({ page }) 
   await page.goto('/')
   await expect(page.locator('html')).not.toHaveClass(/dark/)
 
-  await page.getByRole('button', { name: 'Cambiar tema' }).click()
+  await openMenu(page, 'Ver')
+  await page.getByRole('menuitem', { name: 'Tema: Oscuro' }).click()
   await expect(page.locator('html')).toHaveClass(/dark/)
 
   await page.reload()
@@ -18,7 +19,8 @@ test('toggles between light and dark themes and remembers it', async ({ page }) 
 test('changes the text size', async ({ page }) => {
   await page.goto('/')
 
-  await page.getByLabel('Tamaño de texto').selectOption('large')
+  await openMenu(page, 'Ver')
+  await page.getByRole('menuitem', { name: 'Texto: Grande' }).click()
 
   await expect(page.locator('html')).toHaveAttribute('style', /font-size: 112\.5%/)
 })
@@ -26,7 +28,7 @@ test('changes the text size', async ({ page }) => {
 test('toggles projector mode with larger, high-contrast text', async ({ page }) => {
   await page.goto('/')
 
-  await openMore(page)
+  await openMenu(page, 'Ver')
   const toggle = page.getByRole('menuitem', { name: 'Proyector' })
   await expect(toggle).toHaveAttribute('aria-pressed', 'false')
 
@@ -35,7 +37,7 @@ test('toggles projector mode with larger, high-contrast text', async ({ page }) 
   await expect(page.locator('html')).toHaveClass(/projector/)
   await expect(page.locator('html')).toHaveAttribute('style', /font-size: 150%/)
 
-  await openMore(page)
+  await openMenu(page, 'Ver')
   await expect(page.getByRole('menuitem', { name: 'Proyector' })).toHaveAttribute(
     'aria-pressed',
     'true',

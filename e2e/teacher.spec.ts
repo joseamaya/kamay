@@ -1,11 +1,11 @@
 import { expect, test } from './fixtures'
 
-import { openMore } from './helpers'
+import { openMenu } from './helpers'
 
 test('imports deliveries and shows an aggregate report', async ({ page }) => {
   await page.goto('/')
 
-  await openMore(page)
+  await openMenu(page, 'Curso')
   await page.getByRole('menuitem', { name: 'Modo docente' }).click()
 
   const dialog = page.getByRole('dialog', { name: 'Modo docente' })

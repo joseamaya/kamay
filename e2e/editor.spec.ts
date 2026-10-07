@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures'
 
-import { codeContent, methodBody, openMore, convertToCode } from './helpers'
+import { codeContent, methodBody, openMenu, convertToCode } from './helpers'
 
 test('renders the code dock with a syntax-highlighted editor', async ({ page }) => {
   await page.goto('/')
@@ -143,7 +143,7 @@ test('warns before discarding unsaved changes', async ({ page }) => {
   await page.goto('/')
 
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
-  await openMore(page)
+  await openMenu(page, 'Archivo')
   await page.getByRole('menuitem', { name: 'Nuevo' }).click()
 
   await expect(page.getByRole('dialog', { name: 'Cambios sin guardar' })).toBeVisible()
@@ -160,11 +160,11 @@ test('saves and reopens a project from local storage', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Proyecto guardado.')).toBeVisible()
-  await openMore(page)
+  await openMenu(page, 'Archivo')
   await page.getByRole('menuitem', { name: 'Nuevo' }).click()
   await expect(page.getByRole('button', { name: 'bicicleta1', exact: true })).toHaveCount(0)
 
-  await openMore(page)
+  await openMenu(page, 'Archivo')
   await page.getByRole('menuitem', { name: 'Portafolio' }).click()
   await page
     .getByRole('dialog', { name: 'Portafolio' })

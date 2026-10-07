@@ -15,6 +15,8 @@ import { useActiveScene, useCapabilities, useEditorStore, useProjectStore } from
 import { Button } from '../../ui/Button'
 import { cn } from '../../ui/cn'
 import { Dialog } from '../../ui/Dialog'
+import { CopyIcon, EditIcon, PlusIcon, TrashIcon } from '../../ui/icons'
+import { IconButton } from '../../ui/IconButton'
 import { Panel } from '../../ui/Panel'
 import { ClassEditorDialog } from '../classes/ClassEditorDialog'
 
@@ -217,33 +219,26 @@ export function FactoryView() {
                       {format(messages.factory.extendsFrom, { name: definition.inherits })}
                     </span>
                   ) : null}
-                  <button
-                    type="button"
-                    aria-label={format(messages.factory.newObjectOfClass, {
-                      name: definition.name,
-                    })}
+                  <IconButton
+                    label={format(messages.factory.newObjectOfClass, { name: definition.name })}
                     onClick={() => handleInstantiate(definition)}
-                    className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md px-1.5 text-base leading-none"
                   >
-                    +
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={format(messages.factory.editClass, { name: definition.name })}
+                    <PlusIcon />
+                  </IconButton>
+                  <IconButton
+                    label={format(messages.factory.editClass, { name: definition.name })}
                     onClick={() => openEditClass(definition)}
-                    className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md px-1.5 text-sm leading-none"
                   >
-                    ✎
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={format(messages.factory.deleteClass, { name: definition.name })}
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton
+                    label={format(messages.factory.deleteClass, { name: definition.name })}
+                    className="hover:text-destructive"
                     disabled={isSystemClassName(definition.name)}
                     onClick={() => requestDeleteClass(definition)}
-                    className="text-muted-foreground hover:text-destructive disabled:text-muted-foreground/40 disabled:hover:text-muted-foreground/40 rounded-md px-1.5 text-lg leading-none"
                   >
-                    ×
-                  </button>
+                    <TrashIcon />
+                  </IconButton>
                 </li>
               ))}
             </ul>
@@ -315,25 +310,22 @@ export function FactoryView() {
                   >
                     {object.name}
                   </button>
-                  <button
-                    type="button"
-                    aria-label={format(messages.factory.duplicateObject, { name: object.name })}
+                  <IconButton
+                    label={format(messages.factory.duplicateObject, { name: object.name })}
                     onClick={() => {
                       duplicateObject(scene.id, object.id)
                       pushLog(messages.activity.objectDuplicated)
                     }}
-                    className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md px-1.5 text-sm leading-none"
                   >
-                    ⧉
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={format(messages.factory.removeObject, { name: object.name })}
+                    <CopyIcon />
+                  </IconButton>
+                  <IconButton
+                    label={format(messages.factory.removeObject, { name: object.name })}
+                    className="hover:text-destructive"
                     onClick={() => setPendingDeleteId(object.id)}
-                    className="text-muted-foreground hover:text-destructive rounded-md px-2 py-1 text-lg leading-none"
                   >
-                    ×
-                  </button>
+                    <TrashIcon />
+                  </IconButton>
                 </li>
               ))}
             </ul>

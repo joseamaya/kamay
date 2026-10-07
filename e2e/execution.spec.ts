@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test'
 
 import { expect, test } from './fixtures'
 
-import { methodBody, openMore, convertToCode } from './helpers'
+import { methodBody, openMenu, convertToCode } from './helpers'
 
 async function addHeroeWithRawMethod(page: Page, code: string) {
   await page.getByRole('button', { name: 'Nueva clase' }).click()
@@ -95,7 +95,7 @@ test('runs the polymorphism template', async ({ page }) => {
 
   await page.goto('/')
 
-  await openMore(page)
+  await openMenu(page, 'Archivo')
   await page.getByRole('menuitem', { name: 'Plantillas' }).click()
   await page.getByRole('button', { name: /Polimorfismo/ }).click()
 

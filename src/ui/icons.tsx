@@ -48,6 +48,46 @@ export function EditIcon(props: IconProps) {
   )
 }
 
+export function SaveIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
+      <path d="M17 21v-8H7v8" />
+      <path d="M7 3v5h8" />
+    </Icon>
+  )
+}
+
+export function PlusIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </Icon>
+  )
+}
+
+export function TrashIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M3 6h18" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </Icon>
+  )
+}
+
+export function CopyIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="9" y="9" width="13" height="13" rx="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </Icon>
+  )
+}
+
 export function UndoIcon(props: IconProps) {
   return (
     <Icon {...props}>

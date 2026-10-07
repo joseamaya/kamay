@@ -1,37 +1,22 @@
 import { useRef, useState } from 'react'
 import type { ChangeEventHandler } from 'react'
 
-import { format, getMessages } from '../../i18n'
-import { MISSIONS } from '../../missions'
+import { getMessages } from '../../i18n'
 import { createEmptyProject, createId } from '../../model'
 import type { PersistenceApi } from '../../persistence'
 import type { RuntimeApi } from '../../runtime'
-import {
-  canRedo,
-  canUndo,
-  useEditorStore,
-  useLevel,
-  usePreferencesStore,
-  useProgressStore,
-  useProjectStore,
-  useRuntimeStore,
-} from '../../store'
-import type { FontScale } from '../../store'
+import { useEditorStore, useProjectStore } from '../../store'
 import { findTemplate } from '../../templates'
 import type { TemplateId } from '../../templates'
-import { Button } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
-import { EditIcon, PlayIcon, RedoIcon, StopIcon, UndoIcon } from '../../ui/icons'
-import { IconButton } from '../../ui/IconButton'
-import { Menu, MenuItem } from '../../ui/Menu'
-import { Select } from '../../ui/Select'
 import { LevelsDialog } from '../levels/LevelsDialog'
 import { MissionsDialog } from '../missions/MissionsDialog'
 import { RubricDialog } from '../rubric/RubricDialog'
-import { TemplatesDialog } from '../templates/TemplatesDialog'
-import { PortfolioDialog } from './PortfolioDialog'
-import { StepControls } from './StepControls'
 import { TeacherDialog } from '../teacher/TeacherDialog'
+import { TemplatesDialog } from '../templates/TemplatesDialog'
+import { MenuBar } from './MenuBar'
+import { PortfolioDialog } from './PortfolioDialog'
+import { Toolbar } from './Toolbar'
 
 export interface TopBarProps {
   persistence: PersistenceApi
@@ -40,10 +25,6 @@ export interface TopBarProps {
 
 export function TopBar({ persistence, runtime }: TopBarProps) {
   const messages = getMessages()
-  const undo = useProjectStore((state) => state.undo)
-  const redo = useProjectStore((state) => state.redo)
-  const hasPast = useProjectStore(canUndo)
-  const hasFuture = useProjectStore(canRedo)
   const projectName = useProjectStore((state) => state.project.meta.name)
   const loadProject = useProjectStore((state) => state.loadProject)
   const renameProject = useProjectStore((state) => state.renameProject)
@@ -54,16 +35,6 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
   const clearLog = useEditorStore((state) => state.clearLog)
   const dirty = useEditorStore((state) => state.dirty)
   const setDirty = useEditorStore((state) => state.setDirty)
-  const runtimeStatus = useRuntimeStore((state) => state.status)
-  const isRunning = runtimeStatus === 'loading' || runtimeStatus === 'running'
-  const theme = usePreferencesStore((state) => state.theme)
-  const setTheme = usePreferencesStore((state) => state.setTheme)
-  const fontScale = usePreferencesStore((state) => state.fontScale)
-  const setFontScale = usePreferencesStore((state) => state.setFontScale)
-  const completedMissions = useProgressStore((state) => state.completed)
-  const level = useLevel()
-  const projector = usePreferencesStore((state) => state.projector)
-  const setProjector = usePreferencesStore((state) => state.setProjector)
 
   const [portfolioOpen, setPortfolioOpen] = useState(false)
   const [missionsOpen, setMissionsOpen] = useState(false)
@@ -182,176 +153,33 @@ export function TopBar({ persistence, runtime }: TopBarProps) {
   }
 
   return (
-    <header className="border-border bg-card flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2">
-      <div className="flex items-baseline gap-3">
-        <span className="text-primary text-lg font-bold">{messages.app.name}</span>
-        <button
-          type="button"
-          onClick={openRename}
-          aria-label={messages.bar.renameProject}
-          className="text-muted-foreground hover:text-foreground hidden max-w-40 truncate text-sm hover:underline sm:inline"
-        >
-          {projectName}
-          {dirty ? ' •' : ''}
-        </button>
-      </div>
+    <header className="border-border bg-card flex flex-col gap-1.5 border-b px-3 py-1.5">
+      <MenuBar
+        name={projectName}
+        dirty={dirty}
+        onRename={openRename}
+        onNew={handleNew}
+        onSave={() => void handleSave()}
+        onPortfolio={() => setPortfolioOpen(true)}
+        onImport={() => fileInputRef.current?.click()}
+        onExport={handleExport}
+        onDeliver={handleDeliver}
+        onShare={() => void handleShare()}
+        onTemplates={() => setTemplatesOpen(true)}
+        onRubric={() => setRubricOpen(true)}
+        onTeacher={() => setTeacherOpen(true)}
+        onLevels={() => setLevelsOpen(true)}
+        onMissions={() => setMissionsOpen(true)}
+        canSave={persistence.ready}
+      />
 
-      <div className="flex flex-wrap items-center gap-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => void handleSave()}
-          disabled={!persistence.ready}
-        >
-          {messages.bar.save}
-        </Button>
-        <Button variant="ghost" size="sm" onClick={() => setLevelsOpen(true)}>
-          {format(messages.levels.button, { level })}
-        </Button>
-        <Button variant="ghost" size="sm" onClick={() => setMissionsOpen(true)}>
-          {format(messages.bar.missions, {
-            done: completedMissions.length,
-            total: MISSIONS.length,
-          })}
-        </Button>
-
-        <span className="bg-border mx-1 h-5 w-px" aria-hidden="true" />
-
-        <IconButton label={messages.bar.undo} onClick={undo} disabled={!hasPast}>
-          <UndoIcon />
-        </IconButton>
-        <IconButton label={messages.bar.redo} onClick={redo} disabled={!hasFuture}>
-          <RedoIcon />
-        </IconButton>
-        <StepControls runtime={runtime} />
-        {runtimeStatus === 'ready' ? (
-          <IconButton label={messages.bar.reset} variant="secondary" onClick={runtime.stop}>
-            <EditIcon />
-          </IconButton>
-        ) : null}
-        {isRunning ? (
-          <IconButton label={messages.bar.stop} variant="secondary" onClick={runtime.stop}>
-            <StopIcon />
-          </IconButton>
-        ) : (
-          <IconButton label={messages.bar.run} variant="primary" onClick={runtime.run}>
-            <PlayIcon />
-          </IconButton>
-        )}
-
-        <span className="bg-border mx-1 h-5 w-px" aria-hidden="true" />
-
-        <Select
-          ariaLabel={messages.bar.textSize}
-          value={fontScale}
-          options={[
-            { value: 'normal', label: messages.bar.textNormal },
-            { value: 'large', label: messages.bar.textLarge },
-            { value: 'xlarge', label: messages.bar.textXLarge },
-          ]}
-          className="w-28"
-          disabled={projector}
-          onChange={(value) => setFontScale(value as FontScale)}
-        />
-        <Button
-          variant="ghost"
-          size="sm"
-          aria-pressed={theme === 'dark'}
-          aria-label={messages.bar.toggleTheme}
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-        >
-          {theme === 'dark' ? messages.bar.themeDark : messages.bar.themeLight}
-        </Button>
-
-        <Menu label={messages.bar.more} trigger="⋯">
-          {(close) => (
-            <>
-              <MenuItem
-                onClick={() => {
-                  close()
-                  handleNew()
-                }}
-              >
-                {messages.bar.newProject}
-              </MenuItem>
-              <MenuItem
-                disabled={!persistence.ready}
-                onClick={() => {
-                  close()
-                  setPortfolioOpen(true)
-                }}
-              >
-                {messages.bar.portfolio}
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  close()
-                  handleExport()
-                }}
-              >
-                {messages.bar.export}
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  close()
-                  handleDeliver()
-                }}
-              >
-                {messages.bar.deliver}
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  close()
-                  fileInputRef.current?.click()
-                }}
-              >
-                {messages.bar.import}
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  close()
-                  void handleShare()
-                }}
-              >
-                {messages.bar.share}
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  close()
-                  setTemplatesOpen(true)
-                }}
-              >
-                {messages.bar.templates}
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  close()
-                  setRubricOpen(true)
-                }}
-              >
-                {messages.rubric.title}
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  close()
-                  setTeacherOpen(true)
-                }}
-              >
-                {messages.teacher.title}
-              </MenuItem>
-              <MenuItem
-                pressed={projector}
-                onClick={() => {
-                  close()
-                  setProjector(!projector)
-                }}
-              >
-                {messages.bar.projector}
-              </MenuItem>
-            </>
-          )}
-        </Menu>
-      </div>
+      <Toolbar
+        runtime={runtime}
+        onSave={() => void handleSave()}
+        canSave={persistence.ready}
+        onLevels={() => setLevelsOpen(true)}
+        onMissions={() => setMissionsOpen(true)}
+      />
 
       <input
         ref={fileInputRef}
