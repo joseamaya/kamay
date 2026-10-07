@@ -46,6 +46,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   "Método". This makes the OOP terminology explicit and avoids clashing with
   "Métodos", the class editor section where methods are defined. The speech bubble
   content is now "texto".
+- **Object menu**: the object inspector is now a **floating popover portaled to
+  the document**, positioned in window coordinates with a window-height max, so it
+  is no longer capped to the (small) stage and no longer shrinks when the code
+  editor is open. It is slightly wider and stays non-modal.
 
 ### Added
 

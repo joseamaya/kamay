@@ -22,6 +22,7 @@ import {
 import { SelectionOverlay } from './SelectionOverlay'
 import { rotationFromPointer, scaleFromDrag } from './handles'
 import type { Point } from './handles'
+import { placeMenu } from './menuPlacement'
 
 interface DragState {
   objectId: string
@@ -242,26 +243,29 @@ export function ScenarioCanvas() {
     }
 
     const menu = menuRef.current
-    if (menu) {
-      menu.style.setProperty('--kamay-menu-max', `${Math.max(120, height - 2 * MENU_PAD)}px`)
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (menu && rect) {
+      const viewport = { width: window.innerWidth, height: window.innerHeight }
+      menu.style.setProperty(
+        '--kamay-menu-max',
+        `${Math.max(160, viewport.height - rect.top - 2 * MENU_PAD)}px`,
+      )
       const selected = actors.find((actor) => actor.id === selectedRef.current)
       if (selected) {
         const { width: menuWidth, height: menuHeight } = menuLayoutRef.current
-        const centerX = width / 2 + selected.transform.position.x
-        const centerY = height / 2 - selected.transform.position.y
-        const radius = (ACTOR_SIZE / 2) * Math.max(selected.transform.scale, 0.2) + MENU_GAP
-        const preferred =
-          centerX + radius + menuWidth <= width - MENU_PAD
-            ? centerX + radius
-            : centerX - radius - menuWidth
-        const left = Math.min(
-          Math.max(preferred, MENU_PAD),
-          Math.max(MENU_PAD, width - menuWidth - MENU_PAD),
-        )
-        const top = Math.min(
-          Math.max(centerY - menuHeight / 2, MENU_PAD),
-          Math.max(MENU_PAD, height - MENU_PAD - menuHeight),
-        )
+        const anchor = {
+          x: rect.left + width / 2 + selected.transform.position.x,
+          y: rect.top + height / 2 - selected.transform.position.y,
+        }
+        const offset = (ACTOR_SIZE / 2) * Math.max(selected.transform.scale, 0.2) + MENU_GAP
+        const { left, top } = placeMenu({
+          anchor,
+          offset,
+          menu: { width: menuWidth, height: menuHeight },
+          viewport,
+          pad: MENU_PAD,
+          minTop: rect.top,
+        })
         menu.style.transform = `translate(${left}px, ${top}px)`
       }
     }

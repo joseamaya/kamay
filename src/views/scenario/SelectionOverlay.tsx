@@ -39,19 +39,19 @@ export const SelectionOverlay = forwardRef<HTMLDivElement>(function SelectionOve
     setConfirmDelete(false)
   }
 
-  return (
+  return createPortal(
     <div
       ref={ref}
       data-selection-overlay
       data-simulation={JSON.stringify(object.simulation)}
       role="group"
       aria-label={messages.selection.menu}
-      className="pointer-events-none absolute top-0 left-0 z-20"
+      className="pointer-events-none fixed top-0 left-0 z-40"
       style={{ transform: 'translate(-9999px, -9999px)' }}
     >
       <div
-        className="border-border bg-card text-card-foreground pointer-events-auto flex w-72 flex-col gap-3 overflow-auto rounded-lg border p-3 shadow-lg"
-        style={{ maxHeight: 'var(--kamay-menu-max, 70vh)' }}
+        className="border-border bg-card text-card-foreground pointer-events-auto flex w-80 max-w-[calc(100vw-1rem)] flex-col gap-3 overflow-auto rounded-lg border p-3 shadow-lg"
+        style={{ maxHeight: 'var(--kamay-menu-max, 80vh)' }}
       >
         <header className="flex flex-col">
           <span className="text-sm font-semibold">{object.name}</span>
@@ -109,6 +109,7 @@ export const SelectionOverlay = forwardRef<HTMLDivElement>(function SelectionOve
             document.body,
           )
         : null}
-    </div>
+    </div>,
+    document.body,
   )
 })
