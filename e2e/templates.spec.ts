@@ -1,11 +1,11 @@
 import { expect, test } from './fixtures'
 
-import { codeContent, openMore } from './helpers'
+import { codeContent, openMenu } from './helpers'
 
 test('loads a template and shows its generated code', async ({ page }) => {
   await page.goto('/')
 
-  await openMore(page)
+  await openMenu(page, 'Archivo')
   await page.getByRole('menuitem', { name: 'Plantillas' }).click()
   await page.getByRole('button', { name: /Mi clase/ }).click()
 
@@ -16,7 +16,7 @@ test('loads a template and shows its generated code', async ({ page }) => {
 test('loads the polymorphism template with overridden methods', async ({ page }) => {
   await page.goto('/')
 
-  await openMore(page)
+  await openMenu(page, 'Archivo')
   await page.getByRole('menuitem', { name: 'Plantillas' }).click()
   await page.getByRole('button', { name: /Polimorfismo/ }).click()
 

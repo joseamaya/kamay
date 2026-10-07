@@ -5,6 +5,8 @@ import type { Scene } from '../../model'
 import { useEditorStore, useProjectStore } from '../../store'
 import { cn } from '../../ui/cn'
 import { Dialog } from '../../ui/Dialog'
+import { EditIcon, TrashIcon } from '../../ui/icons'
+import { IconButton } from '../../ui/IconButton'
 
 const INPUT_CLASS =
   'border-border bg-background focus-visible:ring-ring h-8 w-full rounded-md border px-2 text-sm focus-visible:ring-2 focus-visible:outline-none'
@@ -78,23 +80,20 @@ export function SceneManager() {
             >
               {scene.name}
             </button>
-            <button
-              type="button"
-              aria-label={format(messages.factory.editScene, { name: scene.name })}
+            <IconButton
+              label={format(messages.factory.editScene, { name: scene.name })}
               onClick={() => startRename(scene)}
-              className="text-muted-foreground hover:bg-muted hover:text-foreground rounded-md px-1.5 text-sm leading-none"
             >
-              ✎
-            </button>
-            <button
-              type="button"
-              aria-label={format(messages.factory.deleteScene, { name: scene.name })}
+              <EditIcon />
+            </IconButton>
+            <IconButton
+              label={format(messages.factory.deleteScene, { name: scene.name })}
+              className="hover:text-destructive"
               onClick={() => setPendingDelete(scene)}
               disabled={isLastScene}
-              className="text-muted-foreground hover:text-destructive rounded-md px-1.5 text-lg leading-none disabled:opacity-40"
             >
-              ×
-            </button>
+              <TrashIcon />
+            </IconButton>
           </li>
         ))}
       </ul>

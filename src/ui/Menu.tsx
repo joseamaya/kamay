@@ -7,10 +7,12 @@ import { cn } from './cn'
 export interface MenuProps {
   label: string
   trigger?: ReactNode
+  /** Side the dropdown aligns to. Defaults to the trigger's right edge. */
+  align?: 'left' | 'right'
   children: (close: () => void) => ReactNode
 }
 
-export function Menu({ label, trigger, children }: MenuProps) {
+export function Menu({ label, trigger, align = 'right', children }: MenuProps) {
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -47,7 +49,10 @@ export function Menu({ label, trigger, children }: MenuProps) {
       {open ? (
         <div
           role="menu"
-          className="border-border bg-card text-card-foreground absolute right-0 z-40 mt-1 flex w-48 flex-col gap-0.5 rounded-md border p-1 shadow-lg"
+          className={cn(
+            'border-border bg-card text-card-foreground absolute z-40 mt-1 flex w-48 flex-col gap-0.5 rounded-md border p-1 shadow-lg',
+            align === 'left' ? 'left-0' : 'right-0',
+          )}
         >
           {children(() => setOpen(false))}
         </div>

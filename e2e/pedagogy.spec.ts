@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import { openMore } from './helpers'
+import { openMenu } from './helpers'
 
 test('detects the shared-state misconception when editing an instance', async ({ page }) => {
   await page.addInitScript(() => {
@@ -35,7 +35,7 @@ test('detects the shared-state misconception when editing an instance', async ({
   await expect(dialog.getByText(/Cada instancia tiene su propio estado/)).toBeVisible()
   await dialog.getByRole('button', { name: 'Entendido' }).click()
 
-  await openMore(page)
+  await openMenu(page, 'Curso')
   await page.getByRole('menuitem', { name: 'Rúbrica' }).click()
   const rubric = page.getByRole('dialog', { name: 'Rúbrica' })
   await expect(rubric.getByText(/Para repasar/)).toBeVisible()

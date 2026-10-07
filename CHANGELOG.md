@@ -57,6 +57,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **Icon controls**: run/stop, back-to-editing, step mode/step/back and
   undo/redo are now **icon-only buttons with a tooltip** (`src/ui/IconButton`,
   `src/ui/icons`), keeping the accessible name for tests and screen readers.
+- **Top bar split (IDE-style)**: the top bar is now a **menu bar** (Archivo, Ver,
+  Curso) plus a **toolbar** (guardar, deshacer/rehacer, ejecutar/detener, paso a
+  paso), with level and missions on the right. The old "⋯" overflow menu is gone;
+  its items live in the menus. Factory and scene row actions use `IconButton`
+  instead of text glyphs.
 
 ### Added
 
