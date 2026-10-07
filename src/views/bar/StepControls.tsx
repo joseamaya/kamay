@@ -1,7 +1,8 @@
 import { format, getMessages } from '../../i18n'
 import type { RuntimeApi } from '../../runtime'
 import { useRuntimeStore } from '../../store'
-import { Button } from '../../ui/Button'
+import { StepBackIcon, StepIcon, StepModeIcon } from '../../ui/icons'
+import { IconButton } from '../../ui/IconButton'
 
 export interface StepControlsProps {
   runtime: RuntimeApi
@@ -16,19 +17,23 @@ export function StepControls({ runtime }: StepControlsProps) {
 
   return (
     <>
-      <Button
-        variant="ghost"
-        size="sm"
-        aria-pressed={stepMode}
+      <IconButton
+        label={messages.bar.stepMode}
+        pressed={stepMode}
         onClick={() => (stepMode ? runtime.resume() : runtime.setStepMode(true))}
       >
-        {messages.bar.stepMode}
-      </Button>
+        <StepModeIcon />
+      </IconButton>
       {stepMode && hasSteps ? (
         <>
-          <Button variant="secondary" size="sm" disabled={cursor === 0} onClick={runtime.back}>
-            {messages.bar.back}
-          </Button>
+          <IconButton
+            label={messages.bar.back}
+            variant="secondary"
+            disabled={cursor === 0}
+            onClick={runtime.back}
+          >
+            <StepBackIcon />
+          </IconButton>
           <input
             type="range"
             aria-label={messages.bar.timeline}
@@ -38,9 +43,14 @@ export function StepControls({ runtime }: StepControlsProps) {
             onChange={(event) => runtime.seek(Number(event.target.value))}
             className="accent-primary h-1 w-28 cursor-pointer sm:w-40"
           />
-          <Button variant="secondary" size="sm" disabled={cursor >= total} onClick={runtime.step}>
-            {messages.bar.step}
-          </Button>
+          <IconButton
+            label={messages.bar.step}
+            variant="secondary"
+            disabled={cursor >= total}
+            onClick={runtime.step}
+          >
+            <StepIcon />
+          </IconButton>
           <span className="text-muted-foreground text-xs" aria-live="polite">
             {format(messages.bar.stepProgress, { index: Math.min(cursor + 1, total), total })}
           </span>
