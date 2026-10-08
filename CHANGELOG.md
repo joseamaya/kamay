@@ -76,6 +76,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Herencia, Composición, Estado, Llamada) with an info tooltip that shows their
   definition, and the object/class are labelled "Objeto"/"Clase" to reinforce the
   mould-vs-instance distinction. The tooltip is now a shared `Tooltip` component.
+- **Contextual hints**: the guide bar has a **"Pista"** button that reveals the
+  current mission's hints progressively, sharing progress with the missions dialog
+  (hint state moved to `editorStore`). Mission/guide texts now reference the
+  "Objetos" panel instead of the old "Fábrica".
 
 ### Added
 

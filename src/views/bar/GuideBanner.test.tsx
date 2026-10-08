@@ -1,13 +1,15 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 
+import { getMessages } from '../../i18n'
 import { ACTOR_CATALOG, addCatalogObject, createEmptyProject, createScene } from '../../model'
 import { useEditorStore, useProgressStore, useProjectStore } from '../../store'
 import { GuideBanner } from './GuideBanner'
 
 beforeEach(() => {
   useProjectStore.setState({ project: createEmptyProject({ name: 'Demo' }), past: [], future: [] })
-  useEditorStore.setState({ selectedObjectId: null })
+  useEditorStore.setState({ selectedObjectId: null, revealedHints: {} })
 })
 
 describe('GuideBanner', () => {
@@ -51,8 +53,22 @@ describe('GuideBanner', () => {
     render(<GuideBanner />)
 
     expect(
-      screen.getByText('Crea tu clase desde la Fábrica, sección «Clases».'),
+      screen.getByText('Crea tu clase desde el panel «Objetos», sección «Clases».'),
     ).toBeInTheDocument()
+  })
+
+  it('reveals the next mission hints progressively', async () => {
+    const user = userEvent.setup()
+    useProgressStore.setState({ freeMode: false, unlockedLevel: 1, completed: [] })
+
+    render(<GuideBanner />)
+
+    const firstHint = getMessages().missions.list.first_object.hints[0]
+    expect(screen.queryByText(firstHint)).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Pista' }))
+
+    expect(screen.getByText(firstHint)).toBeInTheDocument()
   })
 
   it('tailors the selected hint to the available capabilities', () => {
@@ -69,7 +85,7 @@ describe('GuideBanner', () => {
     render(<GuideBanner />)
 
     expect(
-      screen.getByText('Usa el menú junto al objeto para cambiar sus propiedades.'),
+      screen.getByText('Usa el panel de la derecha para cambiar sus propiedades.'),
     ).toBeInTheDocument()
     expect(screen.queryByText(/llamar a sus métodos/)).not.toBeInTheDocument()
   })

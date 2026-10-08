@@ -1,11 +1,7 @@
-import { useState } from 'react'
-
 import { format, getMessages } from '../../i18n'
 import { missionLevel } from '../../levels'
 import { BADGES, completedBadges, MISSIONS } from '../../missions'
-import type { MissionId } from '../../missions'
-import { revealNext } from '../../pedagogy'
-import { useEvidenceStore, useLevel, useProgressStore } from '../../store'
+import { useEditorStore, useEvidenceStore, useLevel, useProgressStore } from '../../store'
 import { Button } from '../../ui/Button'
 import { cn } from '../../ui/cn'
 import { Dialog } from '../../ui/Dialog'
@@ -23,10 +19,8 @@ export function MissionsDialog({ open, onClose }: MissionsDialogProps) {
   const resetEvidence = useEvidenceStore((state) => state.reset)
   const level = useLevel()
   const unlocked = completedBadges(completed)
-  const [revealed, setRevealed] = useState<Record<string, number>>({})
-
-  const revealHint = (id: MissionId) =>
-    setRevealed((current) => ({ ...current, [id]: revealNext(current[id] ?? 0) }))
+  const revealedHints = useEditorStore((state) => state.revealedHints)
+  const revealHint = useEditorStore((state) => state.revealHint)
 
   return (
     <Dialog
@@ -77,7 +71,7 @@ export function MissionsDialog({ open, onClose }: MissionsDialogProps) {
               {badge.missions.map((id) => {
                 const done = completed.includes(id)
                 const mission = messages.missions.list[id]
-                const shown = revealed[id] ?? 0
+                const shown = revealedHints[id] ?? 0
                 const requiredLevel = missionLevel(id)
                 const locked = !freeMode && requiredLevel > level
                 return (

@@ -198,7 +198,7 @@ export const es = {
     canvasLabel:
       'Escenario. Usa las flechas o el mouse para mover, rotar y redimensionar el objeto seleccionado.',
     empty: 'Tu escenario está listo.',
-    emptyHint: 'Toca un objeto de la Fábrica para que aparezca aquí.',
+    emptyHint: 'Toca un objeto del panel «Objetos» para que aparezca aquí.',
     rotateHandle: 'Rotar objeto',
     scaleHandle: 'Redimensionar objeto',
   },
@@ -270,9 +270,9 @@ export const es = {
     list: {
       first_object: {
         title: 'Pon algo en el escenario',
-        description: 'Agrega al menos un objeto desde la Fábrica.',
+        description: 'Agrega al menos un objeto desde el panel «Objetos».',
         hints: [
-          'Empieza por la Fábrica: hay formas y personajes.',
+          'Empieza por «Objetos»: hay formas y personajes.',
           'Toca un objeto del catálogo y aparecerá en el escenario.',
           'Prueba con el Círculo o el Gato.',
         ],
@@ -309,7 +309,7 @@ export const es = {
         description: 'Crea una clase con «Nueva clase».',
         hints: [
           'Crea tu propio molde de objeto.',
-          'En la Fábrica, pulsa «Nueva clase» y ponle un nombre.',
+          'En «Objetos», pulsa «Nueva clase» y ponle un nombre.',
           'Por ejemplo: clase «Perro».',
         ],
       },
@@ -467,11 +467,11 @@ export const es = {
   guide: {
     title: 'Guía',
     level: 'Nivel {level}',
-    noObjects: 'Toca un objeto de la Fábrica para empezar.',
+    noObjects: 'Toca un objeto del panel «Objetos» para empezar.',
     select: 'Selecciona un objeto en el escenario para ver qué puede hacer.',
-    selected: 'Usa el menú junto al objeto para cambiar sus propiedades o llamar a sus métodos.',
-    selectedProperties: 'Usa el menú junto al objeto para cambiar sus propiedades.',
-    createClass: 'Crea tu clase desde la Fábrica, sección «Clases».',
+    selected: 'Usa el panel de la derecha para cambiar sus propiedades o llamar a sus métodos.',
+    selectedProperties: 'Usa el panel de la derecha para cambiar sus propiedades.',
+    createClass: 'Crea tu clase desde el panel «Objetos», sección «Clases».',
     nextMission: 'Siguiente misión: {title}',
     allDone: '¡Completaste todas las misiones!',
   },
