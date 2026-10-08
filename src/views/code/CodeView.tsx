@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 
-import { generatePython } from '../../generator'
-import type { EditableValue } from '../../generator'
+import { generatePython, symbolAtLine } from '../../generator'
+import type { EditableValue, GeneratedSymbol } from '../../generator'
 import { getMessages } from '../../i18n'
 import { translateRuntimeError, translateRuntimeHint } from '../../runtime'
 import {
@@ -14,8 +14,25 @@ import {
   useProjectStore,
   useRuntimeStore,
 } from '../../store'
+import type { MemberRef } from '../../store'
 import { cn } from '../../ui/cn'
 import { LazyCodeEditor } from '../../ui/LazyCodeEditor'
+import { findSymbol, symbolMemberRef } from './memberSymbol'
+
+/** The object to select when a symbol has no explicit instance (class members). */
+function objectForSymbol(
+  scene: { objects: { id: string; name: string; class: string }[] } | null,
+  symbol: GeneratedSymbol,
+): string | null {
+  if (!scene) return null
+  if (symbol.objectName) {
+    return scene.objects.find((object) => object.name === symbol.objectName)?.id ?? null
+  }
+  if (symbol.className) {
+    return scene.objects.find((object) => object.class === symbol.className)?.id ?? null
+  }
+  return null
+}
 
 const COPY_FEEDBACK_MS = 1500
 const RESIZE_STEP = 24
@@ -42,6 +59,10 @@ export function CodeView() {
   const setCodeCollapsed = useEditorStore((state) => state.setCodeCollapsed)
   const codeFile = useEditorStore((state) => state.codeFile)
   const setCodeFile = useEditorStore((state) => state.setCodeFile)
+  const selectedObjectId = useEditorStore((state) => state.selectedObjectId)
+  const highlightedMember = useEditorStore((state) => state.highlightedMember)
+  const selectObject = useEditorStore((state) => state.selectObject)
+  const setHighlightedMember = useEditorStore((state) => state.setHighlightedMember)
   const error = useRuntimeStore((state) => state.error)
 
   const [copied, setCopied] = useState(false)
@@ -53,9 +74,38 @@ export function CodeView() {
     files.find((file) => file.path === 'principal.py') ??
     files[0]
 
+  const selectedObject = scene?.objects.find((object) => object.id === selectedObjectId) ?? null
+  const explicitSymbol = highlightedMember
+    ? findSymbol(generation.symbols, highlightedMember)
+    : undefined
+  const derivedMember: MemberRef | null = selectedObject
+    ? { kind: 'object', objectName: selectedObject.name }
+    : null
+  const activeSymbol =
+    explicitSymbol ?? (derivedMember ? findSymbol(generation.symbols, derivedMember) : undefined)
+
+  const highlightLines = useMemo(
+    () =>
+      activeSymbol && activeFile?.path === activeSymbol.file
+        ? { from: activeSymbol.lineFrom, to: activeSymbol.lineTo }
+        : null,
+    [activeSymbol, activeFile?.path],
+  )
+
   useEffect(() => {
     if (codeFile && !files.some((file) => file.path === codeFile)) setCodeFile(null)
   }, [files, codeFile, setCodeFile])
+
+  useEffect(() => {
+    if (!explicitSymbol) return
+    if (
+      files.some((file) => file.path === explicitSymbol.file) &&
+      codeFile !== explicitSymbol.file
+    ) {
+      setCodeFile(explicitSymbol.file)
+    }
+    setCodeCollapsed(false)
+  }, [explicitSymbol, files, codeFile, setCodeFile, setCodeCollapsed])
 
   useEffect(() => {
     if (!capabilities.editValues) setCodeCollapsed(true)
@@ -91,6 +141,19 @@ export function CodeView() {
       setOrderArg(scene.id, item.orderIndex, item.key, next)
     },
     [scene, updateObjectAttributes, setOrderArg],
+  )
+
+  const handleLineClick = useCallback(
+    (line: number) => {
+      if (!activeFile) return
+      const symbol = symbolAtLine(generation.symbols, activeFile.path, line)
+      if (!symbol) return
+      const objectId = objectForSymbol(scene, symbol)
+      if (objectId) selectObject(objectId)
+      const member = symbolMemberRef(symbol)
+      if (member) setHighlightedMember(member)
+    },
+    [activeFile, generation.symbols, scene, selectObject, setHighlightedMember],
   )
 
   const handleCopy = async () => {
@@ -199,6 +262,8 @@ export function CodeView() {
               diagnostics={diagnostics}
               editableValues={editableValues}
               onEditValue={handleEditValue}
+              highlightLines={highlightLines}
+              onLineClick={handleLineClick}
             />
           ) : (
             <p className="text-muted-foreground p-4 text-sm">{messages.code.empty}</p>

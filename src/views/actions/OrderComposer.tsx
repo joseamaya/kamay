@@ -15,6 +15,7 @@ import { Button } from '../../ui/Button'
 import { NumberField } from '../../ui/NumberField'
 import { Select } from '../../ui/Select'
 import { TextField } from '../../ui/TextField'
+import { MemberLink } from '../inspector/MemberLink'
 
 type OrderKind = 'call' | 'for_each'
 
@@ -156,11 +157,15 @@ export function OrderComposer({ scene, object }: OrderComposerProps) {
         <ul className="flex flex-col gap-1">
           {orders.map(({ action, index }) => (
             <li key={index} className="flex items-center gap-2">
-              <code className="bg-muted/50 border-border flex-1 overflow-hidden rounded-md border px-2 py-1 font-mono text-xs text-ellipsis whitespace-nowrap">
+              <MemberLink
+                member={{ kind: 'order', orderIndex: index }}
+                label={format(messages.code.showInCodeMember, { name: action.method })}
+                className="bg-muted/50 border-border flex-1 overflow-hidden rounded-md border px-2 py-1 font-mono text-xs text-ellipsis whitespace-nowrap"
+              >
                 {action.kind === 'for_each'
                   ? `${format(messages.actions.forEachTag, { class: action.class ?? '' })}: ${action.method}(${Object.values(action.args).join(', ')})`
                   : `${action.method}(${Object.values(action.args).join(', ')})`}
-              </code>
+              </MemberLink>
               <button
                 type="button"
                 aria-label={messages.actions.remove}

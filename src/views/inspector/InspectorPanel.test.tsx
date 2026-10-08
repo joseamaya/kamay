@@ -58,6 +58,33 @@ describe('InspectorPanel', () => {
     expect(useEditorStore.getState().selectedObjectId).toBeNull()
   })
 
+  it('links a member to its location in the code', async () => {
+    const user = userEvent.setup()
+    selectCar()
+
+    render(<InspectorPanel />)
+
+    await user.click(screen.getByRole('button', { name: 'Ver moverse en el código' }))
+    expect(useEditorStore.getState().highlightedMember).toEqual({
+      kind: 'method',
+      className: 'Vehiculo',
+      name: 'moverse',
+    })
+  })
+
+  it('links the object to its location in the code', async () => {
+    const user = userEvent.setup()
+    selectCar()
+
+    render(<InspectorPanel />)
+
+    await user.click(screen.getByRole('button', { name: 'Ver el objeto en el código' }))
+    expect(useEditorStore.getState().highlightedMember).toEqual({
+      kind: 'object',
+      objectName: 'carro1',
+    })
+  })
+
   it('warns about a class misconception without recording it', () => {
     const sceneId = useProjectStore.getState().project.scenes[0]!.id
     const animal = createClassDraft('Animal')

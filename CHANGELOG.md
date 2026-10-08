@@ -87,6 +87,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Inspector ↔ code links**: the generator now emits a **symbol index** (the line
+  range of each class, method, attribute, component, object and order). Clicking a
+  member in the inspector highlights its lines in the code dock (switching file and
+  expanding it), and clicking a line selects the matching object and member.
 - **Visual variants (schema v7)**: a class can declare appearance variants
   (`attribute == value` → color, shape, glyph or image) that change how its
   objects are drawn while the state matches; the catalog ships the `Vehiculo`

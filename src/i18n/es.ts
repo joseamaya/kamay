@@ -630,6 +630,9 @@ export const es = {
     collapse: 'Ocultar',
     expand: 'Mostrar',
     resize: 'Redimensionar el panel de código',
+    showInCode: 'Ver en el código',
+    showInCodeObject: 'Ver el objeto en el código',
+    showInCodeMember: 'Ver {name} en el código',
   },
   activity: {
     title: 'Actividad',

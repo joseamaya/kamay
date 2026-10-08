@@ -9,6 +9,7 @@ import type { ObjectInstance, Scene } from '../../model'
 import { ConceptTerm } from './ConceptTerm'
 import { useConceptStatus } from './conceptStatus'
 import { groupByOwner } from './groupByOwner'
+import { MemberLink } from './MemberLink'
 
 export interface ObjectConceptProps {
   scene: Scene
@@ -49,7 +50,12 @@ export function ObjectConcept({ scene, object }: ObjectConceptProps) {
               <ul className="flex flex-col gap-0.5">
                 {group.items.map((method) => (
                   <li key={method.name} className="text-xs">
-                    <code className="font-mono">{method.name}()</code>
+                    <MemberLink
+                      member={{ kind: 'method', className: group.owner, name: method.name }}
+                      label={format(messages.code.showInCodeMember, { name: method.name })}
+                    >
+                      <code className="font-mono">{method.name}()</code>
+                    </MemberLink>
                   </li>
                 ))}
               </ul>
@@ -80,7 +86,12 @@ export function ObjectConcept({ scene, object }: ObjectConceptProps) {
                   key={entry.value.name}
                   className="flex items-baseline justify-between gap-2 text-xs"
                 >
-                  <span>{entry.value.name}</span>
+                  <MemberLink
+                    member={{ kind: 'component', className: entry.owner, name: entry.value.name }}
+                    label={format(messages.code.showInCodeMember, { name: entry.value.name })}
+                  >
+                    {entry.value.name}
+                  </MemberLink>
                   <span className="text-muted-foreground">
                     {entry.value.class}
                     {members.length > 0 ? ` · ${members.join(', ')}` : ''}
