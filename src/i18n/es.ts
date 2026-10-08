@@ -450,7 +450,6 @@ export const es = {
     behavior: 'Comportamiento',
     inheritance: 'Herencia',
     composition: 'Composición',
-    own: 'Propio',
     inheritedFrom: 'Heredado de {name}',
   },
   actions: {

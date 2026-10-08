@@ -55,9 +55,10 @@ describe('ObjectAttributes', () => {
     expect(currentScene().objects[0]!.attributes.vida).toBe(100)
   })
 
-  it('labels inherited attributes with their origin', () => {
+  it('groups inherited attributes under a single origin header', () => {
     const animal = createClassDraft('Animal')
     animal.attributes.push({ name: 'energia', type: 'number', initial: 50 })
+    animal.attributes.push({ name: 'nombre', type: 'string', initial: '' })
     useProjectStore.getState().saveClass(currentScene().id, animal)
     const perro = createClassDraft('Perro')
     perro.inherits = 'Animal'
@@ -68,7 +69,8 @@ describe('ObjectAttributes', () => {
     render(<Harness />)
 
     expect(screen.getByLabelText('energia')).toBeInTheDocument()
-    expect(screen.getByText('Heredado de Animal')).toBeInTheDocument()
+    expect(screen.getByLabelText('nombre')).toBeInTheDocument()
+    expect(screen.getAllByText('Heredado de Animal')).toHaveLength(1)
   })
 
   it('shows state without appearance or transform fields', () => {

@@ -40,12 +40,10 @@ describe('ObjectConcept', () => {
     expect(screen.getByText('Comportamiento')).toBeInTheDocument()
     expect(screen.getByText('ladrar()')).toBeInTheDocument()
     expect(screen.getByText('comer()')).toBeInTheDocument()
-    expect(screen.getByText('Propio')).toBeInTheDocument()
-    expect(screen.getAllByText('Heredado de Animal')).toHaveLength(2)
+    expect(screen.getByText('Heredado de Animal')).toBeInTheDocument()
 
     expect(screen.getByText('Herencia')).toBeInTheDocument()
     expect(screen.getByText('Perro → Animal')).toBeInTheDocument()
-    expect(screen.getByText('energia')).toBeInTheDocument()
 
     expect(screen.getByText('Composición')).toBeInTheDocument()
     expect(screen.getByText('collar')).toBeInTheDocument()
