@@ -7,7 +7,8 @@ test('loads the three synchronized views', async ({ page }) => {
 
   await expect(page.getByText('Kamay', { exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Escenario' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Fábrica' })).toBeVisible()
+  await expect(page.getByRole('tab', { name: 'Objetos' })).toBeVisible()
+  await expect(page.getByRole('tab', { name: 'Proyecto' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Código' })).toBeVisible()
 })
 

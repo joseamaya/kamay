@@ -3,10 +3,10 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { createEmptyProject } from '../../model'
-import { useEditorStore, useProgressStore, useProjectStore } from '../../store'
-import { SelectionOverlay } from './SelectionOverlay'
+import { useEditorStore, useProjectStore } from '../../store'
+import { InspectorPanel } from './InspectorPanel'
 
-function selectCircle(): void {
+function selectCar() {
   const sceneId = useProjectStore.getState().project.scenes[0]!.id
   useProjectStore.getState().addObject(sceneId, 'carro')
   const objectId = useProjectStore.getState().project.scenes[0]!.objects[0]!.id
@@ -18,11 +18,11 @@ beforeEach(() => {
   useEditorStore.setState({ selectedObjectId: null, log: [] })
 })
 
-describe('SelectionOverlay', () => {
-  it('shows the object menu with orders', () => {
-    selectCircle()
+describe('InspectorPanel', () => {
+  it('shows the selected object with its orders and state', () => {
+    selectCar()
 
-    render(<SelectionOverlay />)
+    render(<InspectorPanel />)
 
     expect(screen.getByText('carro1')).toBeInTheDocument()
     expect(screen.getByText('Instancia de Carro')).toBeInTheDocument()
@@ -30,26 +30,30 @@ describe('SelectionOverlay', () => {
     expect(screen.getByLabelText('Método')).toBeInTheDocument()
   })
 
-  it('hides orders until level 2', () => {
-    useProgressStore.setState({ completed: [], freeMode: false, unlockedLevel: 1 })
-    selectCircle()
+  it('shows the scene properties when nothing is selected', () => {
+    render(<InspectorPanel />)
 
-    render(<SelectionOverlay />)
-
-    expect(screen.getByText('Estado')).toBeInTheDocument()
-    expect(screen.queryByText('Llamadas')).not.toBeInTheDocument()
+    expect(screen.getByText('Escena')).toBeInTheDocument()
+    expect(screen.getByLabelText('Fondo')).toBeInTheDocument()
+    expect(
+      screen.getByText('Selecciona un objeto para editar sus propiedades.'),
+    ).toBeInTheDocument()
   })
 
-  it('deletes the selected object after confirmation', async () => {
+  it('duplicates and deletes the selected object', async () => {
     const user = userEvent.setup()
-    selectCircle()
+    selectCar()
 
-    render(<SelectionOverlay />)
+    render(<InspectorPanel />)
+
+    await user.click(screen.getByRole('button', { name: 'Duplicar' }))
+    expect(useProjectStore.getState().project.scenes[0]!.objects).toHaveLength(2)
+
     await user.click(screen.getByRole('button', { name: 'Eliminar' }))
     const dialog = screen.getByRole('dialog')
     await user.click(within(dialog).getByRole('button', { name: 'Eliminar' }))
 
-    expect(useProjectStore.getState().project.scenes[0]!.objects).toHaveLength(0)
+    expect(useProjectStore.getState().project.scenes[0]!.objects).toHaveLength(1)
     expect(useEditorStore.getState().selectedObjectId).toBeNull()
   })
 })

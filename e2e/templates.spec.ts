@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures'
 
-import { codeContent, openMenu } from './helpers'
+import { codeContent, openMenu, openSidebar } from './helpers'
 
 test('loads a template and shows its generated code', async ({ page }) => {
   await page.goto('/')
@@ -21,6 +21,7 @@ test('loads the polymorphism template with overridden methods', async ({ page })
   await page.getByRole('button', { name: /Polimorfismo/ }).click()
 
   await expect(page.getByRole('button', { name: 'Editar SerVivo' })).toBeVisible()
+  await openSidebar(page, 'Proyecto')
   await page.getByRole('button', { name: 'Canino.py' }).click()
   await expect(codeContent(page)).toContainText('class Canino(SerVivo):')
   await expect(codeContent(page)).toContainText('def hablar(self):')

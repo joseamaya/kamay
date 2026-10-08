@@ -15,6 +15,7 @@ export const es = {
     text: 'Texto',
     levelShort: 'Nivel',
     missionsShort: 'Misiones',
+    toggleInspector: 'Mostrar u ocultar el inspector',
     stepMode: 'Paso a paso',
     step: 'Paso',
     back: 'Atrás',
@@ -39,14 +40,12 @@ export const es = {
     textLarge: 'Grande',
     textXLarge: 'Muy grande',
   },
-  views: {
-    scenario: 'Escenario',
-    factory: 'Fábrica',
-    code: 'Código',
-    actions: 'Acciones',
+  sidebar: {
+    title: 'Vistas',
+    project: 'Proyecto',
+    objects: 'Objetos',
   },
   factory: {
-    title: 'Fábrica',
     catalogVehicles: 'Vehículos',
     catalogAnimals: 'Animales',
     catalogThings: 'Cosas',
@@ -76,7 +75,6 @@ export const es = {
     deleteScene: 'Eliminar {name}',
   },
   explorer: {
-    title: 'Proyecto',
     files: 'Archivos',
   },
   classEditor: {
@@ -446,6 +444,7 @@ export const es = {
   inspector: {
     title: 'Propiedades',
     empty: 'Selecciona un objeto para editar sus propiedades.',
+    scene: 'Escena',
     color: 'Color',
     resetToClass: 'Restablecer al valor de la clase',
     behavior: 'Comportamiento',
@@ -468,7 +467,6 @@ export const es = {
     addForEach: 'Agregar «para cada»',
   },
   selection: {
-    menu: 'Menú del objeto',
     class: 'Instancia de {name}',
     state: 'Estado',
     orders: 'Llamadas',

@@ -2,6 +2,7 @@ import { create } from 'zustand'
 
 export type ThemePreference = 'light' | 'dark'
 export type FontScale = 'normal' | 'large' | 'xlarge'
+export type SidebarView = 'objects' | 'project'
 
 export const FONT_SCALE_PERCENT: Record<FontScale, number> = {
   normal: 100,
@@ -15,6 +16,8 @@ interface StoredPreferences {
   theme?: ThemePreference
   fontScale?: FontScale
   projector?: boolean
+  sidebarView?: SidebarView
+  inspectorOpen?: boolean
 }
 
 function readStored(): StoredPreferences {
@@ -42,10 +45,14 @@ export interface PreferencesState {
   fontScale: FontScale
   reducedMotion: boolean
   projector: boolean
+  sidebarView: SidebarView
+  inspectorOpen: boolean
   setTheme: (theme: ThemePreference) => void
   setFontScale: (fontScale: FontScale) => void
   setReducedMotion: (reducedMotion: boolean) => void
   setProjector: (projector: boolean) => void
+  setSidebarView: (view: SidebarView) => void
+  setInspectorOpen: (open: boolean) => void
 }
 
 const stored = readStored()
@@ -59,6 +66,8 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => {
           theme: get().theme,
           fontScale: get().fontScale,
           projector: get().projector,
+          sidebarView: get().sidebarView,
+          inspectorOpen: get().inspectorOpen,
         }),
       )
     } catch {
@@ -71,6 +80,8 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => {
     fontScale: stored.fontScale ?? 'normal',
     reducedMotion: systemReducedMotion(),
     projector: stored.projector ?? false,
+    sidebarView: stored.sidebarView ?? 'objects',
+    inspectorOpen: stored.inspectorOpen ?? true,
     setTheme: (theme) => {
       set({ theme })
       persist()
@@ -82,6 +93,14 @@ export const usePreferencesStore = create<PreferencesState>((set, get) => {
     setReducedMotion: (reducedMotion) => set({ reducedMotion }),
     setProjector: (projector) => {
       set({ projector })
+      persist()
+    },
+    setSidebarView: (sidebarView) => {
+      set({ sidebarView })
+      persist()
+    },
+    setInspectorOpen: (inspectorOpen) => {
+      set({ inspectorOpen })
       persist()
     },
   }

@@ -62,6 +62,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   paso), with level and missions on the right. The old "⋯" overflow menu is gone;
   its items live in the menus. Factory and scene row actions use `IconButton`
   instead of text glyphs.
+- **Four-zone layout (IDE-style)**: the instance inspector is now a **fixed right
+  panel** that reflects the selection (concept, calls, state; scene properties when
+  nothing is selected) with duplicate/delete in its header, replacing the floating
+  popover. The left side becomes a **single sidebar** with **Proyecto** / **Objetos**
+  tabs (persisted, default "Objetos"), and the inspector can be collapsed. Code
+  stays at the bottom. The stage keeps the selection highlight and handles.
 
 ### Added
 

@@ -19,10 +19,8 @@ import {
   useProjectStore,
   useRuntimeStore,
 } from '../../store'
-import { SelectionOverlay } from './SelectionOverlay'
 import { rotationFromPointer, scaleFromDrag } from './handles'
 import type { Point } from './handles'
-import { placeMenu } from './menuPlacement'
 
 interface DragState {
   objectId: string
@@ -48,8 +46,6 @@ interface HandlePreview {
 
 const MOVE_STEP = 4
 const MOVE_STEP_FAST = 16
-const MENU_GAP = 12
-const MENU_PAD = 8
 
 function distanceSquared(a: Point, b: Point): number {
   const dx = a.x - b.x
@@ -88,12 +84,10 @@ export function ScenarioCanvas() {
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const menuRef = useRef<HTMLDivElement>(null)
   const handlesRef = useRef<HTMLDivElement>(null)
   const centerRef = useRef<Point>({ x: 0, y: 0 })
   const handleDragRef = useRef<HandleDrag | null>(null)
   const handlePreviewRef = useRef<HandlePreview | null>(null)
-  const menuLayoutRef = useRef({ width: 288, height: 0 })
   const dragRef = useRef<DragState | null>(null)
   const controllerRef = useRef(new RuntimeController())
   const imageCacheRef = useRef(new Map<string, HTMLImageElement>())
@@ -113,19 +107,6 @@ export function ScenarioCanvas() {
   useEffect(() => {
     selectedRef.current = selectedObjectId
   }, [selectedObjectId])
-
-  useEffect(() => {
-    const menu = menuRef.current
-    if (!menu) return
-    const measure = () => {
-      menuLayoutRef.current = { width: menu.offsetWidth, height: menu.offsetHeight }
-    }
-    measure()
-    if (typeof ResizeObserver === 'undefined') return
-    const observer = new ResizeObserver(measure)
-    observer.observe(menu)
-    return () => observer.disconnect()
-  }, [selectedObjectId, runtimeStatus])
 
   useEffect(() => {
     sizeRef.current = size
@@ -239,34 +220,6 @@ export function ScenarioCanvas() {
         centerRef.current = { x: centerX, y: centerY }
         handles.style.transform = `translate(${centerX}px, ${centerY}px)`
         handles.style.setProperty('--handle-radius', `${radius}px`)
-      }
-    }
-
-    const menu = menuRef.current
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (menu && rect) {
-      const viewport = { width: window.innerWidth, height: window.innerHeight }
-      menu.style.setProperty(
-        '--kamay-menu-max',
-        `${Math.max(160, viewport.height - rect.top - 2 * MENU_PAD)}px`,
-      )
-      const selected = actors.find((actor) => actor.id === selectedRef.current)
-      if (selected) {
-        const { width: menuWidth, height: menuHeight } = menuLayoutRef.current
-        const anchor = {
-          x: rect.left + width / 2 + selected.transform.position.x,
-          y: rect.top + height / 2 - selected.transform.position.y,
-        }
-        const offset = (ACTOR_SIZE / 2) * Math.max(selected.transform.scale, 0.2) + MENU_GAP
-        const { left, top } = placeMenu({
-          anchor,
-          offset,
-          menu: { width: menuWidth, height: menuHeight },
-          viewport,
-          pad: MENU_PAD,
-          minTop: rect.top,
-        })
-        menu.style.transform = `translate(${left}px, ${top}px)`
       }
     }
 
@@ -484,7 +437,6 @@ export function ScenarioCanvas() {
           </button>
         </div>
       ) : null}
-      <SelectionOverlay ref={menuRef} />
     </div>
   )
 }

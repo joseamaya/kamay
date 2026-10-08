@@ -88,6 +88,33 @@ export function CopyIcon(props: IconProps) {
   )
 }
 
+export function FolderIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+    </Icon>
+  )
+}
+
+export function BoxIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m21 8-9-5-9 5v8l9 5 9-5Z" />
+      <path d="m3 8 9 5 9-5" />
+      <path d="M12 13v8" />
+    </Icon>
+  )
+}
+
+export function PanelRightIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M15 3v18" />
+    </Icon>
+  )
+}
+
 export function UndoIcon(props: IconProps) {
   return (
     <Icon {...props}>

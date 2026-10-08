@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test'
 
 import { expect, test } from './fixtures'
 
-import { methodBody, openMenu, convertToCode } from './helpers'
+import { methodBody, openMenu, openSidebar, convertToCode } from './helpers'
 
 async function addHeroeWithRawMethod(page: Page, code: string) {
   await page.getByRole('button', { name: 'Nueva clase' }).click()
@@ -63,6 +63,7 @@ test('shows an inline error when a method fails', async ({ page }) => {
     timeout: 150_000,
   })
   await expect(page.getByText(/le falta el método o atributo «no_existe»/)).toBeVisible()
+  await openSidebar(page, 'Proyecto')
   await expect(page.getByRole('button', { name: 'Heroe.py' })).toHaveAttribute(
     'aria-current',
     'page',

@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures'
 
-import { codeContent, methodBody, openMenu, convertToCode } from './helpers'
+import { codeContent, methodBody, openMenu, openSidebar, convertToCode } from './helpers'
 
 test('renders the code dock with a syntax-highlighted editor', async ({ page }) => {
   await page.goto('/')
@@ -34,6 +34,7 @@ test('adds a real-world entity that inherits its domain base', async ({ page }) 
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   await expect(page.getByRole('button', { name: 'carro1', exact: true })).toBeVisible()
 
+  await openSidebar(page, 'Proyecto')
   await page.getByRole('button', { name: 'Carro.py' }).click()
   await expect(codeContent(page)).toContainText('from Vehiculo import Vehiculo')
   await expect(codeContent(page)).toContainText('class Carro(Vehiculo):')
@@ -86,12 +87,15 @@ test('creates a class with a method and instantiates it', async ({ page }) => {
   await methodBody(page).fill('self.decir("hola")')
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
+  await openSidebar(page, 'Proyecto')
   await page.getByRole('button', { name: 'Heroe.py' }).click()
   await expect(codeContent(page)).toContainText('class Heroe:')
   await expect(codeContent(page)).toContainText('def saludar(self):')
   await expect(codeContent(page)).toContainText('self.decir("hola")')
 
+  await openSidebar(page, 'Objetos')
   await page.getByRole('button', { name: 'Crear objeto de Heroe' }).click()
+  await openSidebar(page, 'Proyecto')
   await page.getByRole('button', { name: 'principal.py' }).click()
   await expect(codeContent(page)).toContainText('heroe1 = Heroe("heroe1")')
 })
@@ -121,6 +125,7 @@ test('shows every generated file and switches tabs', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
 
+  await openSidebar(page, 'Proyecto')
   await page.getByRole('button', { name: 'Carro.py' }).click()
   await expect(codeContent(page)).toContainText('class Carro(Vehiculo):')
 
@@ -189,6 +194,7 @@ test('creates a class that inherits from another class', async ({ page }) => {
   await dialog.getByLabel('Hereda de').selectOption('Personaje')
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
+  await openSidebar(page, 'Proyecto')
   await page.getByRole('button', { name: 'Heroe.py' }).click()
   await expect(codeContent(page)).toContainText('from Personaje import Personaje')
   await expect(codeContent(page)).toContainText('class Heroe(Personaje):')
@@ -196,11 +202,12 @@ test('creates a class that inherits from another class', async ({ page }) => {
   await page.getByRole('button', { name: 'Personaje.py' }).click()
   await expect(codeContent(page)).toContainText('class Personaje:')
 
+  await openSidebar(page, 'Objetos')
   await page.getByRole('button', { name: 'Crear objeto de Heroe' }).click()
   await page.getByRole('button', { name: 'heroe1', exact: true }).click()
   await expect(page.getByLabel('vida', { exact: true })).toBeVisible()
 
-  const overlay = page.locator('[data-selection-overlay]')
+  const overlay = page.locator('[data-inspector]')
   await expect(overlay).toContainText('Instancia de Heroe')
   await expect(overlay).toContainText('Heroe → Personaje')
 })
@@ -211,14 +218,18 @@ test('creates and switches between scenes', async ({ page }) => {
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   await expect(page.getByRole('button', { name: 'carro1', exact: true })).toBeVisible()
 
+  await openSidebar(page, 'Proyecto')
   await page.getByRole('button', { name: 'Nueva escena' }).click()
   await expect(page.getByRole('button', { name: 'Escena 2', exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'carro1', exact: true })).toHaveCount(0)
 
+  await openSidebar(page, 'Objetos')
+  await expect(page.getByRole('button', { name: 'carro1', exact: true })).toHaveCount(0)
   await page.getByRole('button', { name: 'Agregar Bicicleta al escenario' }).click()
   await expect(page.getByRole('button', { name: 'bicicleta1', exact: true })).toBeVisible()
 
+  await openSidebar(page, 'Proyecto')
   await page.getByRole('button', { name: 'Principal', exact: true }).click()
+  await openSidebar(page, 'Objetos')
   await expect(page.getByRole('button', { name: 'carro1', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'bicicleta1', exact: true })).toHaveCount(0)
 })
@@ -226,6 +237,7 @@ test('creates and switches between scenes', async ({ page }) => {
 test('renames and deletes a scene', async ({ page }) => {
   await page.goto('/')
 
+  await openSidebar(page, 'Proyecto')
   await page.getByRole('button', { name: 'Nueva escena' }).click()
   await page.getByRole('button', { name: 'Renombrar Escena 2' }).click()
   await page.getByLabel('Nombre de la escena').fill('Nivel 2')
@@ -251,6 +263,7 @@ test('builds a method body with blocks', async ({ page }) => {
 
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
+  await openSidebar(page, 'Proyecto')
   await page.getByRole('button', { name: 'Heroe.py' }).click()
   await expect(codeContent(page)).toContainText('def saludar(self):')
   await expect(codeContent(page)).toContainText('self.saludar()')
