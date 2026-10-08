@@ -2,8 +2,8 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { createEmptyProject } from '../../model'
-import { useEditorStore, useProjectStore } from '../../store'
+import { createClassDraft, createEmptyProject } from '../../model'
+import { useEditorStore, useEvidenceStore, useProjectStore } from '../../store'
 import { InspectorPanel } from './InspectorPanel'
 
 function selectCar() {
@@ -16,6 +16,7 @@ function selectCar() {
 beforeEach(() => {
   useProjectStore.setState({ project: createEmptyProject({ name: 'Demo' }), past: [], future: [] })
   useEditorStore.setState({ selectedObjectId: null, log: [] })
+  useEvidenceStore.setState({ misconceptions: [] })
 })
 
 describe('InspectorPanel', () => {
@@ -55,5 +56,24 @@ describe('InspectorPanel', () => {
 
     expect(useProjectStore.getState().project.scenes[0]!.objects).toHaveLength(1)
     expect(useEditorStore.getState().selectedObjectId).toBeNull()
+  })
+
+  it('warns about a class misconception without recording it', () => {
+    const sceneId = useProjectStore.getState().project.scenes[0]!.id
+    const animal = createClassDraft('Animal')
+    animal.methods.push({ name: 'comer', parameters: [], body: { kind: 'blocks', ops: [] } })
+    useProjectStore.getState().saveClass(sceneId, animal)
+    const perro = createClassDraft('Perro')
+    perro.inherits = 'Animal'
+    useProjectStore.getState().saveClass(sceneId, perro)
+    useProjectStore.getState().instantiateClass(sceneId, perro.id)
+    useEditorStore.setState({
+      selectedObjectId: useProjectStore.getState().project.scenes[0]!.objects[0]!.id,
+    })
+
+    render(<InspectorPanel />)
+
+    expect(screen.getByText(/Herencia para reutilizar/)).toBeInTheDocument()
+    expect(useEvidenceStore.getState().misconceptions).not.toContain('inheritance_for_reuse')
   })
 })

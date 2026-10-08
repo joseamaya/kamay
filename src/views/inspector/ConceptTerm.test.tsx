@@ -21,4 +21,10 @@ describe('ConceptTerm', () => {
       screen.getByRole('button', { name: 'El molde que describe cómo serán sus objetos.' }),
     ).toBeInTheDocument()
   })
+
+  it('shows the rubric status badge', () => {
+    render(<ConceptTerm id="state" status="demonstrated" />)
+
+    expect(screen.getByText('Demostrado')).toBeInTheDocument()
+  })
 })

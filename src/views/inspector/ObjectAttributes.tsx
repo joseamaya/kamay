@@ -6,6 +6,7 @@ import { NumberField } from '../../ui/NumberField'
 import { Select } from '../../ui/Select'
 import { TextField } from '../../ui/TextField'
 import { ConceptTerm } from './ConceptTerm'
+import { useConceptStatus } from './conceptStatus'
 import { groupByOwner } from './groupByOwner'
 
 export interface ObjectAttributesProps {
@@ -16,6 +17,7 @@ export interface ObjectAttributesProps {
 export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
   const messages = getMessages()
   const updateObjectAttributes = useProjectStore((state) => state.updateObjectAttributes)
+  const stateStatus = useConceptStatus('state')
 
   const patch = (values: Record<string, number | string | boolean>) => {
     updateObjectAttributes(scene.id, object.id, values)
@@ -33,7 +35,7 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
       {groups.length > 0 ? (
         <section className="flex flex-col gap-2">
           <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-            <ConceptTerm id="state" />
+            <ConceptTerm id="state" status={stateStatus} />
           </h3>
           {groups.map((group) => (
             <div key={group.owner} className="flex flex-col gap-2">
