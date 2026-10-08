@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { ACTOR_CATALOG, addCatalogObject, createEmptyProject, createScene } from '../model'
 import type { Project } from '../model'
 import { projectSchema } from '../model'
-import { generatePython } from './generatePython'
+import { generatePython, symbolAtLine } from './generatePython'
 
 function buildFixture(): Project {
   return projectSchema.parse({
@@ -513,5 +513,80 @@ describe('composition', () => {
 
     expect(robot?.content).toContain('from Bateria import Bateria')
     expect(robot?.content).toContain('self.bateria = Bateria("bateria")')
+  })
+})
+
+describe('symbols', () => {
+  function lineOf(content: string, needle: string): number {
+    return content.split('\n').findIndex((line) => line.includes(needle)) + 1
+  }
+
+  it('locates class members and scene entities in the generated files', () => {
+    const { files, symbols } = generatePython(buildFixture())
+    const heroe = files.find((file) => file.path === 'Heroe.py')!.content
+    const principal = files.find((file) => file.path === 'principal.py')!.content
+
+    const classSymbol = symbols.find((symbol) => symbol.kind === 'class')!
+    expect(classSymbol.file).toBe('Heroe.py')
+    expect(classSymbol.lineFrom).toBe(lineOf(heroe, 'class Heroe'))
+
+    const attribute = symbols.find((symbol) => symbol.kind === 'attribute')!
+    expect(attribute.member).toBe('vida')
+    expect(attribute.lineFrom).toBe(lineOf(heroe, 'self.vida = 100'))
+
+    const method = symbols.find((symbol) => symbol.kind === 'method')!
+    expect(method.member).toBe('saltar')
+    expect(method.lineFrom).toBe(lineOf(heroe, 'def saltar'))
+    expect(heroe.split('\n')[method.lineTo - 1]).toContain('pass')
+
+    const object = symbols.find((symbol) => symbol.kind === 'object')!
+    expect(object.file).toBe('principal.py')
+    expect(object.objectName).toBe('h1')
+    expect(object.lineFrom).toBe(lineOf(principal, 'h1 = Heroe("h1")'))
+    expect(object.lineTo).toBe(lineOf(principal, 'h1.vida = 50'))
+
+    const order = symbols.find((symbol) => symbol.kind === 'order')!
+    expect(order.orderIndex).toBe(0)
+    expect(order.member).toBe('saltar')
+    expect(order.lineFrom).toBe(lineOf(principal, 'h1.saltar('))
+    expect(order.lineTo).toBe(order.lineFrom)
+  })
+
+  it('locates components and the __init__ block', () => {
+    const composed = projectSchema.parse({
+      version: 1,
+      meta: { name: 'Robot' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          classes: [
+            {
+              id: 'c-robot',
+              name: 'Robot',
+              attributes: [],
+              components: [{ name: 'bateria', class: 'Bateria' }],
+            },
+          ],
+          objects: [{ id: 'r1', name: 'r1', class: 'Robot' }],
+        },
+      ],
+    })
+    const { symbols } = generatePython(composed)
+    const init = symbols.find((symbol) => symbol.kind === 'init')!
+    const component = symbols.find((symbol) => symbol.kind === 'component')!
+
+    expect(init.className).toBe('Robot')
+    expect(component.member).toBe('bateria')
+    expect(component.lineFrom).toBe(init.lineFrom + 1)
+  })
+
+  it('maps a line back to its most specific symbol', () => {
+    const { symbols } = generatePython(buildFixture())
+    const attribute = symbols.find((symbol) => symbol.kind === 'attribute')!
+
+    expect(symbolAtLine(symbols, 'Heroe.py', attribute.lineFrom)?.kind).toBe('attribute')
+    expect(symbolAtLine(symbols, 'Heroe.py', 999)).toBeNull()
+    expect(symbolAtLine(symbols, 'Nope.py', 1)).toBeNull()
   })
 })

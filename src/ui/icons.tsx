@@ -88,6 +88,15 @@ export function CopyIcon(props: IconProps) {
   )
 }
 
+export function CodeIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="m16 18 6-6-6-6" />
+      <path d="m8 6-6 6 6 6" />
+    </Icon>
+  )
+}
+
 export function InfoIcon(props: IconProps) {
   return (
     <Icon {...props}>

@@ -2,12 +2,14 @@ import { format, getMessages } from '../../i18n'
 import { resolveAttributeDefaults, resolveCustomAttributesWithOrigin } from '../../model'
 import type { ObjectInstance, Scene } from '../../model'
 import { askPredictionForAttribute, useProjectStore } from '../../store'
+import { CodeIcon } from '../../ui/icons'
 import { NumberField } from '../../ui/NumberField'
 import { Select } from '../../ui/Select'
 import { TextField } from '../../ui/TextField'
 import { ConceptTerm } from './ConceptTerm'
 import { useConceptStatus } from './conceptStatus'
 import { groupByOwner } from './groupByOwner'
+import { MemberLink } from './MemberLink'
 
 export interface ObjectAttributesProps {
   scene: Scene
@@ -76,6 +78,14 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
                         />
                       )}
                     </div>
+                    <MemberLink
+                      member={{ kind: 'attribute', className: group.owner, name: attribute.name }}
+                      label={format(messages.code.showInCodeMember, { name: attribute.name })}
+                      muted
+                      className="border-border hover:bg-muted inline-flex h-8 items-center rounded-md border px-2"
+                    >
+                      <CodeIcon size={14} />
+                    </MemberLink>
                     <button
                       type="button"
                       aria-label={resetLabel}

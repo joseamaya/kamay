@@ -35,4 +35,17 @@ describe('CodeEditor', () => {
     expect(content(container)).toContain('b = 2')
     expect(content(container)).not.toContain('a = 1')
   })
+
+  it('highlights the requested lines', () => {
+    const { container, rerender } = render(
+      <CodeEditor value={'a = 1\nb = 2\nc = 3'} highlightLines={{ from: 2, to: 2 }} />,
+    )
+
+    const lines = () => container.querySelectorAll('.cm-line')
+    expect(lines()[1]?.classList.contains('cm-kamay-highlight')).toBe(true)
+    expect(lines()[0]?.classList.contains('cm-kamay-highlight')).toBe(false)
+
+    rerender(<CodeEditor value={'a = 1\nb = 2\nc = 3'} highlightLines={null} />)
+    expect(container.querySelector('.cm-kamay-highlight')).toBeNull()
+  })
 })

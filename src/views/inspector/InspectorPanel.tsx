@@ -11,7 +11,7 @@ import {
 } from '../../store'
 import { Button } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
-import { CopyIcon, TrashIcon } from '../../ui/icons'
+import { CodeIcon, CopyIcon, TrashIcon } from '../../ui/icons'
 import { IconButton } from '../../ui/IconButton'
 import { NumberField } from '../../ui/NumberField'
 import { Panel } from '../../ui/Panel'
@@ -29,6 +29,7 @@ export function InspectorPanel() {
   const object = useSelectedObject()
   const capabilities = useCapabilities()
   const selectObject = useEditorStore((state) => state.selectObject)
+  const setHighlightedMember = useEditorStore((state) => state.setHighlightedMember)
   const pushLog = useEditorStore((state) => state.pushLog)
   const duplicateObject = useProjectStore((state) => state.duplicateObject)
   const removeObject = useProjectStore((state) => state.removeObject)
@@ -100,6 +101,12 @@ export function InspectorPanel() {
         className="min-h-0 flex-1"
         actions={
           <>
+            <IconButton
+              label={messages.code.showInCodeObject}
+              onClick={() => setHighlightedMember({ kind: 'object', objectName: object.name })}
+            >
+              <CodeIcon />
+            </IconButton>
             <IconButton
               label={messages.selection.duplicate}
               onClick={() => {

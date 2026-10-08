@@ -80,6 +80,9 @@ const theme = EditorView.theme({
     backgroundColor: 'color-mix(in oklch, var(--color-primary) 22%, transparent)',
   },
   '.cm-kamay-value-string': { color: 'var(--color-syntax-string)' },
+  '.cm-kamay-highlight': {
+    backgroundColor: 'color-mix(in oklch, var(--color-primary) 16%, transparent)',
+  },
 })
 
 const highlight = HighlightStyle.define([
@@ -224,6 +227,38 @@ const editableValuesField = StateField.define<DecorationSet>({
   provide: (field) => EditorView.decorations.from(field),
 })
 
+/** 1-based inclusive line range highlighted in the editor. */
+export interface HighlightLines {
+  from: number
+  to: number
+}
+
+const setHighlightLines = StateEffect.define<HighlightLines | null>()
+
+const highlightLinesField = StateField.define<DecorationSet>({
+  create: () => Decoration.none,
+  update(decorations, transaction) {
+    let next = decorations.map(transaction.changes)
+    for (const effect of transaction.effects) {
+      if (!effect.is(setHighlightLines)) continue
+      if (!effect.value) {
+        next = Decoration.none
+        continue
+      }
+      const doc = transaction.state.doc
+      const from = Math.min(Math.max(effect.value.from, 1), doc.lines)
+      const to = Math.min(Math.max(effect.value.to, from), doc.lines)
+      const ranges = []
+      for (let line = from; line <= to; line += 1) {
+        ranges.push(Decoration.line({ class: 'cm-kamay-highlight' }).range(doc.line(line).from))
+      }
+      next = Decoration.set(ranges, true)
+    }
+    return next
+  },
+  provide: (field) => EditorView.decorations.from(field),
+})
+
 export interface CodeEditorProps {
   value: string
   onValueChange?: (value: string) => void
@@ -233,6 +268,8 @@ export interface CodeEditorProps {
   diagnostics?: CodeDiagnostic[]
   editableValues?: EditableValue[]
   onEditValue?: (item: EditableValue, next: number | string | boolean) => void
+  highlightLines?: HighlightLines | null
+  onLineClick?: (line: number) => void
 }
 
 export default function CodeEditor({
@@ -244,15 +281,20 @@ export default function CodeEditor({
   diagnostics,
   editableValues,
   onEditValue,
+  highlightLines,
+  onLineClick,
 }: CodeEditorProps) {
   const hostRef = useRef<HTMLDivElement | null>(null)
   const viewRef = useRef<EditorView | null>(null)
   const changeRef = useRef(onValueChange)
   const valueRef = useRef(value)
+  const lineClickRef = useRef(onLineClick)
+  const lastHighlightRef = useRef<HighlightLines | null>(null)
 
   useEffect(() => {
     changeRef.current = onValueChange
     valueRef.current = value
+    lineClickRef.current = onLineClick
   })
 
   useEffect(() => {
@@ -275,10 +317,20 @@ export default function CodeEditor({
         syntaxHighlighting(highlight),
         theme,
         editableValuesField,
+        highlightLinesField,
         EditorState.readOnly.of(readOnly),
         EditorView.editable.of(!readOnly),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) changeRef.current?.(update.state.doc.toString())
+        }),
+        EditorView.domEventHandlers({
+          mousedown: (event, view) => {
+            if (event.button !== 0) return false
+            const pos = view.posAtCoords({ x: event.clientX, y: event.clientY })
+            if (pos == null) return false
+            lineClickRef.current?.(view.state.doc.lineAt(pos).number)
+            return false
+          },
         }),
         EditorView.contentAttributes.of(ariaLabel ? { 'aria-label': ariaLabel } : {}),
       ],
@@ -318,6 +370,22 @@ export default function CodeEditor({
     if (!view) return
     view.dispatch(setDiagnostics(view.state, toDiagnostics(view.state.doc, diagnostics ?? [])))
   }, [diagnostics, value, readOnly, ariaLabel])
+
+  useEffect(() => {
+    const view = viewRef.current
+    if (!view) return
+    const effects: StateEffect<unknown>[] = [setHighlightLines.of(highlightLines ?? null)]
+    const changed =
+      highlightLines?.from !== lastHighlightRef.current?.from ||
+      highlightLines?.to !== lastHighlightRef.current?.to
+    if (highlightLines && changed) {
+      const doc = view.state.doc
+      const line = Math.min(Math.max(highlightLines.from, 1), doc.lines)
+      effects.push(EditorView.scrollIntoView(doc.line(line).from, { y: 'center' }))
+    }
+    lastHighlightRef.current = highlightLines ?? null
+    view.dispatch({ effects })
+  }, [highlightLines, value, readOnly, ariaLabel])
 
   return <div ref={hostRef} className={cn('h-full overflow-hidden', className)} />
 }
