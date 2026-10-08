@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { useProgressStore } from '../../store'
+import { useEditorStore, useProgressStore } from '../../store'
 import { MissionsDialog } from './MissionsDialog'
 
 beforeEach(() => {
@@ -12,6 +12,7 @@ beforeEach(() => {
     unlockedLevel: 1,
     onboardingDone: true,
   })
+  useEditorStore.setState({ revealedHints: {} })
 })
 
 describe('MissionsDialog', () => {
@@ -23,7 +24,7 @@ describe('MissionsDialog', () => {
     const hintButton = within(dialog).getAllByRole('button', { name: 'Pista' })[0]!
 
     await user.click(hintButton)
-    expect(screen.getByText('Empieza por la Fábrica: hay formas y personajes.')).toBeInTheDocument()
+    expect(screen.getByText('Empieza por «Objetos»: hay formas y personajes.')).toBeInTheDocument()
 
     await user.click(hintButton)
     expect(

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
 import { createId } from '../model'
+import { revealNext } from '../pedagogy'
 
 export type LogLevel = 'info' | 'error'
 
@@ -25,6 +26,9 @@ export interface EditorState {
   codeFile: string | null
   log: LogEntry[]
   toast: Toast | null
+  /** How many hints have been revealed per mission. */
+  revealedHints: Record<string, number>
+  revealHint: (missionId: string) => void
   setProjectId: (projectId: string) => void
   setActiveSceneId: (sceneId: string | null) => void
   selectObject: (objectId: string | null) => void
@@ -50,7 +54,15 @@ export const useEditorStore = create<EditorState>((set) => ({
   codeFile: null,
   log: [],
   toast: null,
+  revealedHints: {},
 
+  revealHint: (missionId) =>
+    set((state) => ({
+      revealedHints: {
+        ...state.revealedHints,
+        [missionId]: revealNext(state.revealedHints[missionId] ?? 0),
+      },
+    })),
   setProjectId: (projectId) => set({ projectId }),
   setActiveSceneId: (activeSceneId) => set({ activeSceneId }),
   selectObject: (selectedObjectId) => set({ selectedObjectId }),
