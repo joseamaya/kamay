@@ -37,7 +37,7 @@ describe('ObjectConcept', () => {
 
     render(<ObjectConcept scene={scene} object={object} />)
 
-    expect(screen.getByText('Comportamiento')).toBeInTheDocument()
+    expect(screen.getByText('Método')).toBeInTheDocument()
     expect(screen.getByText('ladrar()')).toBeInTheDocument()
     expect(screen.getByText('comer()')).toBeInTheDocument()
     expect(screen.getByText('Heredado de Animal')).toBeInTheDocument()

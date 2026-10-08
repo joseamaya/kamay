@@ -17,6 +17,7 @@ import { NumberField } from '../../ui/NumberField'
 import { Panel } from '../../ui/Panel'
 import { Select } from '../../ui/Select'
 import { OrderComposer } from '../actions/OrderComposer'
+import { ConceptTerm } from './ConceptTerm'
 import { ObjectAttributes } from './ObjectAttributes'
 import { ObjectConcept } from './ObjectConcept'
 
@@ -114,16 +115,18 @@ export function InspectorPanel() {
         }
       >
         <div className="flex flex-col gap-4">
-          <span className="text-muted-foreground text-xs">
-            {format(messages.selection.class, { name: object.class })}
-          </span>
+          <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+            <ConceptTerm id="object" />
+            <span aria-hidden="true">·</span>
+            <span>{format(messages.selection.class, { name: object.class })}</span>
+          </div>
 
           <ObjectConcept scene={scene} object={object} />
 
           {capabilities.orders ? (
             <section className="flex flex-col">
               <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-                {messages.selection.orders}
+                <ConceptTerm id="method_call" />
               </h3>
               <OrderComposer key={object.id} scene={scene} object={object} />
             </section>

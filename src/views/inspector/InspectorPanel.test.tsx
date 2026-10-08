@@ -26,7 +26,7 @@ describe('InspectorPanel', () => {
 
     expect(screen.getByText('carro1')).toBeInTheDocument()
     expect(screen.getByText('Instancia de Carro')).toBeInTheDocument()
-    expect(screen.getByText('Llamadas')).toBeInTheDocument()
+    expect(screen.getByText('Llamada')).toBeInTheDocument()
     expect(screen.getByLabelText('Método')).toBeInTheDocument()
   })
 
