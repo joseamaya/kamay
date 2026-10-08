@@ -289,6 +289,7 @@ export default function CodeEditor({
   const changeRef = useRef(onValueChange)
   const valueRef = useRef(value)
   const lineClickRef = useRef(onLineClick)
+  const lastHighlightRef = useRef<HighlightLines | null>(null)
 
   useEffect(() => {
     changeRef.current = onValueChange
@@ -374,11 +375,15 @@ export default function CodeEditor({
     const view = viewRef.current
     if (!view) return
     const effects: StateEffect<unknown>[] = [setHighlightLines.of(highlightLines ?? null)]
-    if (highlightLines) {
+    const changed =
+      highlightLines?.from !== lastHighlightRef.current?.from ||
+      highlightLines?.to !== lastHighlightRef.current?.to
+    if (highlightLines && changed) {
       const doc = view.state.doc
       const line = Math.min(Math.max(highlightLines.from, 1), doc.lines)
       effects.push(EditorView.scrollIntoView(doc.line(line).from, { y: 'center' }))
     }
+    lastHighlightRef.current = highlightLines ?? null
     view.dispatch({ effects })
   }, [highlightLines, value, readOnly, ariaLabel])
 
