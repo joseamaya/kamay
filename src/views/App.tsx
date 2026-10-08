@@ -10,18 +10,20 @@ import {
   useEvidenceStore,
   useLevelsEffects,
   usePreferencesEffects,
+  usePreferencesStore,
   useProgressStore,
   useProjectStore,
 } from '../store'
+import { cn } from '../ui/cn'
 import { ActivityPanel } from './activity/ActivityPanel'
 import { MissionToast } from './activity/MissionToast'
 import { PredictionDialog } from './activity/PredictionDialog'
 import { GuideBanner } from './bar/GuideBanner'
 import { TopBar } from './bar/TopBar'
 import { CodeView } from './code/CodeView'
-import { ProjectExplorer } from './explorer/ProjectExplorer'
-import { FactoryView } from './factory/FactoryView'
+import { InspectorPanel } from './inspector/InspectorPanel'
 import { ScenarioView } from './scenario/ScenarioView'
+import { Sidebar } from './sidebar/Sidebar'
 
 export function App() {
   usePreferencesEffects()
@@ -35,6 +37,7 @@ export function App() {
   const setDirty = useEditorStore((state) => state.setDirty)
   const pushLog = useEditorStore((state) => state.pushLog)
   const showToast = useEditorStore((state) => state.showToast)
+  const inspectorOpen = usePreferencesStore((state) => state.inspectorOpen)
   const missionsInitialized = useRef(false)
 
   useEffect(() => {
@@ -94,10 +97,17 @@ export function App() {
       <TopBar persistence={persistence} runtime={runtime} />
       <GuideBanner />
       <div className="flex min-h-0 flex-1 flex-col gap-3 p-3">
-        <main className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-auto lg:grid-cols-[18rem_minmax(0,1fr)_18rem] lg:overflow-hidden">
-          <ProjectExplorer />
+        <main
+          className={cn(
+            'grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-auto lg:overflow-hidden',
+            inspectorOpen
+              ? 'lg:grid-cols-[18rem_minmax(0,1fr)_20rem]'
+              : 'lg:grid-cols-[18rem_minmax(0,1fr)]',
+          )}
+        >
+          <Sidebar />
           <ScenarioView />
-          <FactoryView />
+          {inspectorOpen ? <InspectorPanel /> : null}
         </main>
         <CodeView />
       </div>

@@ -5,12 +5,21 @@ import {
   canRedo,
   canUndo,
   useLevel,
+  usePreferencesStore,
   useProgressStore,
   useProjectStore,
   useRuntimeStore,
 } from '../../store'
 import { Button } from '../../ui/Button'
-import { EditIcon, PlayIcon, RedoIcon, SaveIcon, StopIcon, UndoIcon } from '../../ui/icons'
+import {
+  EditIcon,
+  PanelRightIcon,
+  PlayIcon,
+  RedoIcon,
+  SaveIcon,
+  StopIcon,
+  UndoIcon,
+} from '../../ui/icons'
 import { IconButton } from '../../ui/IconButton'
 import { StepControls } from './StepControls'
 
@@ -32,6 +41,8 @@ export function Toolbar({ runtime, onSave, canSave, onLevels, onMissions }: Tool
   const isRunning = runtimeStatus === 'loading' || runtimeStatus === 'running'
   const level = useLevel()
   const completedMissions = useProgressStore((state) => state.completed)
+  const inspectorOpen = usePreferencesStore((state) => state.inspectorOpen)
+  const setInspectorOpen = usePreferencesStore((state) => state.setInspectorOpen)
 
   return (
     <div className="flex flex-1 flex-wrap items-center gap-1">
@@ -67,6 +78,14 @@ export function Toolbar({ runtime, onSave, canSave, onLevels, onMissions }: Tool
       )}
 
       <div className="flex-1" />
+
+      <IconButton
+        label={messages.bar.toggleInspector}
+        pressed={inspectorOpen}
+        onClick={() => setInspectorOpen(!inspectorOpen)}
+      >
+        <PanelRightIcon />
+      </IconButton>
 
       <Button variant="ghost" size="sm" onClick={onLevels}>
         {format(messages.levels.button, { level })}

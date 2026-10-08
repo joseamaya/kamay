@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures'
 
-import { codeContent } from './helpers'
+import { codeContent, openSidebar } from './helpers'
 
 test('composes a class from another class', async ({ page }) => {
   await page.goto('/')
@@ -19,6 +19,7 @@ test('composes a class from another class', async ({ page }) => {
   await dialog.getByRole('button', { name: 'Guardar' }).click()
 
   await page.getByRole('button', { name: 'Crear objeto de Robot' }).click()
+  await openSidebar(page, 'Proyecto')
   await page.getByRole('button', { name: 'Robot.py' }).click()
 
   await expect(codeContent(page)).toContainText('from Bateria import Bateria')

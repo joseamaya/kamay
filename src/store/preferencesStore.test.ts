@@ -9,6 +9,8 @@ beforeEach(() => {
     fontScale: 'normal',
     reducedMotion: false,
     projector: false,
+    sidebarView: 'objects',
+    inspectorOpen: true,
   })
 })
 
@@ -18,7 +20,13 @@ describe('usePreferencesStore', () => {
     usePreferencesStore.getState().setFontScale('large')
 
     const stored = JSON.parse(localStorage.getItem('kamay.preferences')!)
-    expect(stored).toEqual({ theme: 'dark', fontScale: 'large', projector: false })
+    expect(stored).toEqual({
+      theme: 'dark',
+      fontScale: 'large',
+      projector: false,
+      sidebarView: 'objects',
+      inspectorOpen: true,
+    })
   })
 
   it('updates and persists the projector preference', () => {
@@ -26,7 +34,27 @@ describe('usePreferencesStore', () => {
 
     expect(usePreferencesStore.getState().projector).toBe(true)
     const stored = JSON.parse(localStorage.getItem('kamay.preferences')!)
-    expect(stored).toEqual({ theme: 'light', fontScale: 'normal', projector: true })
+    expect(stored).toEqual({
+      theme: 'light',
+      fontScale: 'normal',
+      projector: true,
+      sidebarView: 'objects',
+      inspectorOpen: true,
+    })
+  })
+
+  it('updates and persists the layout preferences', () => {
+    usePreferencesStore.getState().setSidebarView('project')
+    usePreferencesStore.getState().setInspectorOpen(false)
+
+    const stored = JSON.parse(localStorage.getItem('kamay.preferences')!)
+    expect(stored).toEqual({
+      theme: 'light',
+      fontScale: 'normal',
+      projector: false,
+      sidebarView: 'project',
+      inspectorOpen: false,
+    })
   })
 
   it('tracks reduced motion without persisting it', () => {
@@ -35,6 +63,12 @@ describe('usePreferencesStore', () => {
 
     expect(usePreferencesStore.getState().reducedMotion).toBe(true)
     const stored = JSON.parse(localStorage.getItem('kamay.preferences')!)
-    expect(stored).toEqual({ theme: 'dark', fontScale: 'normal', projector: false })
+    expect(stored).toEqual({
+      theme: 'dark',
+      fontScale: 'normal',
+      projector: false,
+      sidebarView: 'objects',
+      inspectorOpen: true,
+    })
   })
 })

@@ -12,6 +12,10 @@ export async function openMenu(page: Page, name: string): Promise<void> {
   await page.getByRole('button', { name }).click()
 }
 
+export async function openSidebar(page: Page, name: string): Promise<void> {
+  await page.getByRole('tab', { name }).click()
+}
+
 export async function convertToCode(page: Page): Promise<void> {
   await page.getByRole('dialog').getByRole('button', { name: 'Convertir a código' }).click()
 }

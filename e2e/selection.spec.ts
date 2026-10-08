@@ -1,29 +1,18 @@
 import { expect, test } from './fixtures'
 
-test('opens a contextual menu anchored to the selected object', async ({ page }) => {
+test('shows the inspector panel for the selected object', async ({ page }) => {
   await page.goto('/')
 
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   await page.getByRole('button', { name: 'carro1', exact: true }).click()
 
-  const overlay = page.locator('[data-selection-overlay]')
-  await expect(overlay).toBeVisible()
-  await expect(overlay).toContainText('carro1')
-  await expect(overlay).toContainText('Instancia de Carro')
-  await expect(overlay.getByText('Estado')).toBeVisible()
-  await expect(overlay.getByText('Aspecto')).toHaveCount(0)
-  await expect(overlay.getByRole('combobox', { name: 'Método', exact: true })).toBeVisible()
-
-  const overlayBox = await overlay.boundingBox()
-  const viewport = page.viewportSize()
-  expect(overlayBox).not.toBeNull()
-  expect(viewport).not.toBeNull()
-  if (overlayBox && viewport) {
-    expect(overlayBox.x).toBeGreaterThanOrEqual(0)
-    expect(overlayBox.y).toBeGreaterThanOrEqual(0)
-    expect(overlayBox.x + overlayBox.width).toBeLessThanOrEqual(viewport.width)
-    expect(overlayBox.y + overlayBox.height).toBeLessThanOrEqual(viewport.height)
-  }
+  const inspector = page.locator('[data-inspector]')
+  await expect(inspector).toBeVisible()
+  await expect(inspector).toContainText('carro1')
+  await expect(inspector).toContainText('Instancia de Carro')
+  await expect(inspector.getByText('Estado')).toBeVisible()
+  await expect(inspector.getByText('Aspecto')).toHaveCount(0)
+  await expect(inspector.getByRole('combobox', { name: 'Método', exact: true })).toBeVisible()
 })
 
 test('rotates the selected object with the mouse handle', async ({ page }) => {
@@ -46,17 +35,17 @@ test('rotates the selected object with the mouse handle', async ({ page }) => {
   await page.mouse.move(startX + 80, startY + 80, { steps: 8 })
   await page.mouse.up()
 
-  const overlay = page.locator('[data-selection-overlay]')
+  const overlay = page.locator('[data-inspector]')
   await expect(overlay).toHaveAttribute('data-simulation', /"rotation":-?\d*[1-9]/)
 })
 
-test('duplicates and deletes the selected object from the menu', async ({ page }) => {
+test('duplicates and deletes the selected object from the inspector', async ({ page }) => {
   await page.goto('/')
 
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   await page.getByRole('button', { name: 'carro1', exact: true }).click()
 
-  const overlay = page.locator('[data-selection-overlay]')
+  const overlay = page.locator('[data-inspector]')
   await overlay.getByRole('button', { name: 'Duplicar' }).click()
   await expect(page.getByRole('button', { name: 'carro2', exact: true })).toBeVisible()
 

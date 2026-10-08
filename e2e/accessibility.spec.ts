@@ -50,7 +50,7 @@ test('moves the selected object with the keyboard', async ({ page }) => {
   await page.getByRole('button', { name: 'Agregar Carro al escenario' }).click()
   await page.getByRole('button', { name: 'carro1', exact: true }).click()
 
-  const overlay = page.locator('[data-selection-overlay]')
+  const overlay = page.locator('[data-inspector]')
   await page.getByRole('application', { name: /Escenario/ }).focus()
   await page.keyboard.press('ArrowRight')
 

@@ -17,7 +17,6 @@ import { cn } from '../../ui/cn'
 import { Dialog } from '../../ui/Dialog'
 import { CopyIcon, EditIcon, PlusIcon, TrashIcon } from '../../ui/icons'
 import { IconButton } from '../../ui/IconButton'
-import { Panel } from '../../ui/Panel'
 import { ClassEditorDialog } from '../classes/ClassEditorDialog'
 
 const CLIP_PATHS: Partial<Record<ActorShape, string>> = {
@@ -148,189 +147,187 @@ export function FactoryView() {
   }
 
   return (
-    <Panel title={messages.factory.title} className="min-h-0">
-      <div className="flex h-full flex-col gap-4">
-        <div className="flex flex-col gap-3">
-          {catalogGroups.map((group) => (
-            <div key={group.title}>
-              <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-                {group.title}
-              </h3>
-              <div className="grid grid-cols-3 gap-2">
-                {group.items.map((item) => {
-                  const label = catalogLabels[item.id] ?? item.className
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      aria-label={format(messages.factory.addObject, { name: label })}
-                      onClick={() => handleAdd(item)}
-                      className="border-border hover:bg-muted focus-visible:ring-ring flex flex-col items-center gap-1 rounded-md border p-2 transition focus-visible:ring-2 focus-visible:outline-none"
-                    >
-                      <ShapePreview item={item} />
-                      <span className="text-xs">{label}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div>
-          <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-              {messages.factory.classesTitle}
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
+        {catalogGroups.map((group) => (
+          <div key={group.title}>
+            <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
+              {group.title}
             </h3>
-            {capabilities.ownClasses ? (
-              <Button variant="secondary" size="sm" onClick={() => openNewClass()}>
-                {messages.factory.newClass}
-              </Button>
-            ) : null}
-          </div>
-          {!capabilities.ownClasses ? (
-            <p className="text-muted-foreground text-sm">
-              {format(messages.levels.lockedHint, { level: 3 })}
-            </p>
-          ) : scene.classes.length === 0 ? (
-            <div className="flex flex-col items-start gap-2">
-              <p className="text-muted-foreground text-sm">{messages.factory.noClasses}</p>
-              <Button variant="secondary" size="sm" onClick={() => openNewClass()}>
-                {messages.factory.createFirstClass}
-              </Button>
-            </div>
-          ) : (
-            <ul className="flex flex-col gap-1">
-              {classNodes.map(({ definition, depth }) => (
-                <li
-                  key={definition.id}
-                  data-depth={depth}
-                  style={depth > 0 ? { paddingLeft: depth * 16 } : undefined}
-                  className="border-border flex items-center gap-1 rounded-md border px-2 py-1"
-                >
-                  {depth > 0 ? (
-                    <span aria-hidden className="text-muted-foreground text-xs">
-                      ↳
-                    </span>
-                  ) : null}
-                  <span className="flex-1 truncate text-sm">{definition.name}</span>
-                  {definition.inherits && !sceneClassNames.has(definition.inherits) ? (
-                    <span className="text-muted-foreground truncate text-[10px]">
-                      {format(messages.factory.extendsFrom, { name: definition.inherits })}
-                    </span>
-                  ) : null}
-                  <IconButton
-                    label={format(messages.factory.newObjectOfClass, { name: definition.name })}
-                    onClick={() => handleInstantiate(definition)}
-                  >
-                    <PlusIcon />
-                  </IconButton>
-                  <IconButton
-                    label={format(messages.factory.editClass, { name: definition.name })}
-                    onClick={() => openEditClass(definition)}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    label={format(messages.factory.deleteClass, { name: definition.name })}
-                    className="hover:text-destructive"
-                    disabled={isSystemClassName(definition.name)}
-                    onClick={() => requestDeleteClass(definition)}
-                  >
-                    <TrashIcon />
-                  </IconButton>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div>
-          <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-            {messages.factory.baseClassesTitle}
-          </h3>
-          {capabilities.inheritance ? (
             <div className="grid grid-cols-3 gap-2">
-              {DOMAIN_BASE_NAMES.map((name) => {
-                const methodNames = DOMAIN_BASES[name]?.methods.map((method) => method.name) ?? []
+              {group.items.map((item) => {
+                const label = catalogLabels[item.id] ?? item.className
                 return (
                   <button
-                    key={name}
+                    key={item.id}
                     type="button"
-                    title={
-                      methodNames.length > 0
-                        ? format(messages.factory.baseMethods, { names: methodNames.join(', ') })
-                        : undefined
-                    }
-                    aria-label={format(messages.factory.deriveFrom, { name })}
-                    onClick={() => openNewClass(name)}
-                    className="border-border hover:bg-muted focus-visible:ring-ring flex flex-col items-center gap-1 rounded-md border border-dashed p-2 transition focus-visible:ring-2 focus-visible:outline-none"
+                    aria-label={format(messages.factory.addObject, { name: label })}
+                    onClick={() => handleAdd(item)}
+                    className="border-border hover:bg-muted focus-visible:ring-ring flex flex-col items-center gap-1 rounded-md border p-2 transition focus-visible:ring-2 focus-visible:outline-none"
                   >
-                    <span
-                      aria-hidden
-                      className="border-border flex h-6 w-6 items-center justify-center rounded-md border border-dashed text-sm leading-none"
-                    >
-                      ＋
-                    </span>
-                    <span className="text-xs">{name}</span>
-                    <span className="text-muted-foreground text-[10px] leading-none uppercase">
-                      {messages.factory.baseTag}
-                    </span>
+                    <ShapePreview item={item} />
+                    <span className="text-xs">{label}</span>
                   </button>
                 )
               })}
             </div>
-          ) : (
-            <p className="text-muted-foreground text-sm">
-              {format(messages.levels.lockedHint, { level: 5 })}
-            </p>
-          )}
-        </div>
+          </div>
+        ))}
+      </div>
 
-        <div className="flex min-h-0 flex-1 flex-col">
-          <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-            {messages.factory.objectsTitle}
+      <div>
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+            {messages.factory.classesTitle}
           </h3>
-          {scene.objects.length === 0 ? (
-            <p className="text-muted-foreground text-sm">{messages.factory.empty}</p>
-          ) : (
-            <ul className="flex flex-col gap-1">
-              {scene.objects.map((object) => (
-                <li key={object.id} className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    aria-current={object.id === selectedObjectId ? 'true' : undefined}
-                    onClick={() => selectObject(object.id)}
-                    className={cn(
-                      'flex-1 rounded-md border px-2 py-1 text-left text-sm transition',
-                      object.id === selectedObjectId
-                        ? 'border-primary bg-secondary'
-                        : 'border-border hover:bg-muted',
-                    )}
-                  >
-                    {object.name}
-                  </button>
-                  <IconButton
-                    label={format(messages.factory.duplicateObject, { name: object.name })}
-                    onClick={() => {
-                      duplicateObject(scene.id, object.id)
-                      pushLog(messages.activity.objectDuplicated)
-                    }}
-                  >
-                    <CopyIcon />
-                  </IconButton>
-                  <IconButton
-                    label={format(messages.factory.removeObject, { name: object.name })}
-                    className="hover:text-destructive"
-                    onClick={() => setPendingDeleteId(object.id)}
-                  >
-                    <TrashIcon />
-                  </IconButton>
-                </li>
-              ))}
-            </ul>
-          )}
+          {capabilities.ownClasses ? (
+            <Button variant="secondary" size="sm" onClick={() => openNewClass()}>
+              {messages.factory.newClass}
+            </Button>
+          ) : null}
         </div>
+        {!capabilities.ownClasses ? (
+          <p className="text-muted-foreground text-sm">
+            {format(messages.levels.lockedHint, { level: 3 })}
+          </p>
+        ) : scene.classes.length === 0 ? (
+          <div className="flex flex-col items-start gap-2">
+            <p className="text-muted-foreground text-sm">{messages.factory.noClasses}</p>
+            <Button variant="secondary" size="sm" onClick={() => openNewClass()}>
+              {messages.factory.createFirstClass}
+            </Button>
+          </div>
+        ) : (
+          <ul className="flex flex-col gap-1">
+            {classNodes.map(({ definition, depth }) => (
+              <li
+                key={definition.id}
+                data-depth={depth}
+                style={depth > 0 ? { paddingLeft: depth * 16 } : undefined}
+                className="border-border flex items-center gap-1 rounded-md border px-2 py-1"
+              >
+                {depth > 0 ? (
+                  <span aria-hidden className="text-muted-foreground text-xs">
+                    ↳
+                  </span>
+                ) : null}
+                <span className="flex-1 truncate text-sm">{definition.name}</span>
+                {definition.inherits && !sceneClassNames.has(definition.inherits) ? (
+                  <span className="text-muted-foreground truncate text-[10px]">
+                    {format(messages.factory.extendsFrom, { name: definition.inherits })}
+                  </span>
+                ) : null}
+                <IconButton
+                  label={format(messages.factory.newObjectOfClass, { name: definition.name })}
+                  onClick={() => handleInstantiate(definition)}
+                >
+                  <PlusIcon />
+                </IconButton>
+                <IconButton
+                  label={format(messages.factory.editClass, { name: definition.name })}
+                  onClick={() => openEditClass(definition)}
+                >
+                  <EditIcon />
+                </IconButton>
+                <IconButton
+                  label={format(messages.factory.deleteClass, { name: definition.name })}
+                  className="hover:text-destructive"
+                  disabled={isSystemClassName(definition.name)}
+                  onClick={() => requestDeleteClass(definition)}
+                >
+                  <TrashIcon />
+                </IconButton>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div>
+        <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
+          {messages.factory.baseClassesTitle}
+        </h3>
+        {capabilities.inheritance ? (
+          <div className="grid grid-cols-3 gap-2">
+            {DOMAIN_BASE_NAMES.map((name) => {
+              const methodNames = DOMAIN_BASES[name]?.methods.map((method) => method.name) ?? []
+              return (
+                <button
+                  key={name}
+                  type="button"
+                  title={
+                    methodNames.length > 0
+                      ? format(messages.factory.baseMethods, { names: methodNames.join(', ') })
+                      : undefined
+                  }
+                  aria-label={format(messages.factory.deriveFrom, { name })}
+                  onClick={() => openNewClass(name)}
+                  className="border-border hover:bg-muted focus-visible:ring-ring flex flex-col items-center gap-1 rounded-md border border-dashed p-2 transition focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  <span
+                    aria-hidden
+                    className="border-border flex h-6 w-6 items-center justify-center rounded-md border border-dashed text-sm leading-none"
+                  >
+                    ＋
+                  </span>
+                  <span className="text-xs">{name}</span>
+                  <span className="text-muted-foreground text-[10px] leading-none uppercase">
+                    {messages.factory.baseTag}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            {format(messages.levels.lockedHint, { level: 5 })}
+          </p>
+        )}
+      </div>
+
+      <div className="flex min-h-0 flex-1 flex-col">
+        <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
+          {messages.factory.objectsTitle}
+        </h3>
+        {scene.objects.length === 0 ? (
+          <p className="text-muted-foreground text-sm">{messages.factory.empty}</p>
+        ) : (
+          <ul className="flex flex-col gap-1">
+            {scene.objects.map((object) => (
+              <li key={object.id} className="flex items-center gap-2">
+                <button
+                  type="button"
+                  aria-current={object.id === selectedObjectId ? 'true' : undefined}
+                  onClick={() => selectObject(object.id)}
+                  className={cn(
+                    'flex-1 rounded-md border px-2 py-1 text-left text-sm transition',
+                    object.id === selectedObjectId
+                      ? 'border-primary bg-secondary'
+                      : 'border-border hover:bg-muted',
+                  )}
+                >
+                  {object.name}
+                </button>
+                <IconButton
+                  label={format(messages.factory.duplicateObject, { name: object.name })}
+                  onClick={() => {
+                    duplicateObject(scene.id, object.id)
+                    pushLog(messages.activity.objectDuplicated)
+                  }}
+                >
+                  <CopyIcon />
+                </IconButton>
+                <IconButton
+                  label={format(messages.factory.removeObject, { name: object.name })}
+                  className="hover:text-destructive"
+                  onClick={() => setPendingDeleteId(object.id)}
+                >
+                  <TrashIcon />
+                </IconButton>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <Dialog
@@ -386,6 +383,6 @@ export function FactoryView() {
           }}
         />
       ) : null}
-    </Panel>
+    </div>
   )
 }

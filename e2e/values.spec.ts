@@ -19,7 +19,7 @@ test('edits values directly in the generated code', async ({ page }) => {
     await vida.fill('40')
     await vida.press('Enter')
     await expect(
-      page.locator('[data-selection-overlay]').getByRole('spinbutton', { name: 'vida' }),
+      page.locator('[data-inspector]').getByRole('spinbutton', { name: 'vida' }),
     ).toHaveValue('40', { timeout: 1000 })
   }).toPass({ timeout: 10000 })
 })
