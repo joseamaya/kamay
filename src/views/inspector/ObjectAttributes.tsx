@@ -5,19 +5,12 @@ import { askPredictionForAttribute, useProjectStore } from '../../store'
 import { NumberField } from '../../ui/NumberField'
 import { Select } from '../../ui/Select'
 import { TextField } from '../../ui/TextField'
+import { ConceptTerm } from './ConceptTerm'
 import { groupByOwner } from './groupByOwner'
 
 export interface ObjectAttributesProps {
   scene: Scene
   object: ObjectInstance
-}
-
-function SectionTitle({ children }: { children: string }) {
-  return (
-    <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-      {children}
-    </h3>
-  )
 }
 
 export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
@@ -39,7 +32,9 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
     <div className="flex flex-col gap-4">
       {groups.length > 0 ? (
         <section className="flex flex-col gap-2">
-          <SectionTitle>{messages.selection.state}</SectionTitle>
+          <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+            <ConceptTerm id="state" />
+          </h3>
           {groups.map((group) => (
             <div key={group.owner} className="flex flex-col gap-2">
               {group.own ? null : (

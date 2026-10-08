@@ -442,14 +442,9 @@ export const es = {
     },
   },
   inspector: {
-    title: 'Propiedades',
     empty: 'Selecciona un objeto para editar sus propiedades.',
     scene: 'Escena',
-    color: 'Color',
     resetToClass: 'Restablecer al valor de la clase',
-    behavior: 'Comportamiento',
-    inheritance: 'Herencia',
-    composition: 'Composición',
     inheritedFrom: 'Heredado de {name}',
   },
   actions: {
@@ -467,8 +462,6 @@ export const es = {
   },
   selection: {
     class: 'Instancia de {name}',
-    state: 'Estado',
-    orders: 'Llamadas',
     duplicate: 'Duplicar',
   },
   guide: {

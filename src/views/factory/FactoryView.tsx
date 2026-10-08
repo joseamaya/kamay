@@ -18,6 +18,7 @@ import { Dialog } from '../../ui/Dialog'
 import { CopyIcon, EditIcon, PlusIcon, TrashIcon } from '../../ui/icons'
 import { IconButton } from '../../ui/IconButton'
 import { ClassEditorDialog } from '../classes/ClassEditorDialog'
+import { ConceptTerm } from '../inspector/ConceptTerm'
 
 const CLIP_PATHS: Partial<Record<ActorShape, string>> = {
   triangle: 'polygon(50% 0, 100% 100%, 0 100%)',
@@ -178,7 +179,7 @@ export function FactoryView() {
       <div>
         <div className="mb-2 flex items-center justify-between">
           <h3 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-            {messages.factory.classesTitle}
+            <ConceptTerm id="class" label={messages.factory.classesTitle} />
           </h3>
           {capabilities.ownClasses ? (
             <Button variant="secondary" size="sm" onClick={() => openNewClass()}>

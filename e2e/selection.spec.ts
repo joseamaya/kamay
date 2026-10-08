@@ -10,7 +10,7 @@ test('shows the inspector panel for the selected object', async ({ page }) => {
   await expect(inspector).toBeVisible()
   await expect(inspector).toContainText('carro1')
   await expect(inspector).toContainText('Instancia de Carro')
-  await expect(inspector.getByText('Estado')).toBeVisible()
+  await expect(inspector.getByRole('heading', { name: /Estado/ })).toBeVisible()
   await expect(inspector.getByText('Aspecto')).toHaveCount(0)
   await expect(inspector.getByRole('combobox', { name: 'Método', exact: true })).toBeVisible()
 })

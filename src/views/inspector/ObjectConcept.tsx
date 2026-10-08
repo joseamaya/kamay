@@ -6,6 +6,7 @@ import {
   resolveMethodsWithOrigin,
 } from '../../model'
 import type { ObjectInstance, Scene } from '../../model'
+import { ConceptTerm } from './ConceptTerm'
 import { groupByOwner } from './groupByOwner'
 
 export interface ObjectConceptProps {
@@ -33,7 +34,7 @@ export function ObjectConcept({ scene, object }: ObjectConceptProps) {
       {methodGroups.length > 0 ? (
         <section className="flex flex-col">
           <h3 className="text-muted-foreground mb-1 text-xs font-semibold tracking-wide uppercase">
-            {messages.inspector.behavior}
+            <ConceptTerm id="method" />
           </h3>
           {methodGroups.map((group) => (
             <div key={group.owner} className="flex flex-col">
@@ -57,7 +58,7 @@ export function ObjectConcept({ scene, object }: ObjectConceptProps) {
       {ancestry.length > 1 ? (
         <section className="flex flex-col">
           <h3 className="text-muted-foreground mb-1 text-xs font-semibold tracking-wide uppercase">
-            {messages.inspector.inheritance}
+            <ConceptTerm id="inheritance" />
           </h3>
           <p className="text-xs">{ancestry.join(' → ')}</p>
         </section>
@@ -66,7 +67,7 @@ export function ObjectConcept({ scene, object }: ObjectConceptProps) {
       {components.length > 0 ? (
         <section className="flex flex-col">
           <h3 className="text-muted-foreground mb-1 text-xs font-semibold tracking-wide uppercase">
-            {messages.inspector.composition}
+            <ConceptTerm id="composition" />
           </h3>
           <ul className="flex flex-col gap-0.5">
             {components.map((entry) => {

@@ -72,6 +72,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   class — a single "Heredado de {clase}" header with its methods/attributes below —
   instead of repeating the label on every row. The inheritance section now shows
   only the class chain.
+- **Concept glossary**: inspector section headers use the concept terms (Método,
+  Herencia, Composición, Estado, Llamada) with an info tooltip that shows their
+  definition, and the object/class are labelled "Objeto"/"Clase" to reinforce the
+  mould-vs-instance distinction. The tooltip is now a shared `Tooltip` component.
 
 ### Added
 
