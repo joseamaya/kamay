@@ -16,8 +16,10 @@ import { IconButton } from '../../ui/IconButton'
 import { NumberField } from '../../ui/NumberField'
 import { Panel } from '../../ui/Panel'
 import { Select } from '../../ui/Select'
+import { MisconceptionNotice } from '../classes/MisconceptionNotice'
 import { OrderComposer } from '../actions/OrderComposer'
 import { ConceptTerm } from './ConceptTerm'
+import { useConceptStatus } from './conceptStatus'
 import { ObjectAttributes } from './ObjectAttributes'
 import { ObjectConcept } from './ObjectConcept'
 
@@ -32,6 +34,7 @@ export function InspectorPanel() {
   const removeObject = useProjectStore((state) => state.removeObject)
   const setBackground = useProjectStore((state) => state.setBackground)
   const setPhysics = useProjectStore((state) => state.setPhysics)
+  const methodCallStatus = useConceptStatus('method_call')
 
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -77,6 +80,8 @@ export function InspectorPanel() {
     )
   }
 
+  const definition = scene.classes.find((candidate) => candidate.name === object.class)
+
   const confirmRemove = () => {
     removeObject(scene.id, object.id)
     selectObject(null)
@@ -121,12 +126,16 @@ export function InspectorPanel() {
             <span>{format(messages.selection.class, { name: object.class })}</span>
           </div>
 
+          {definition ? (
+            <MisconceptionNotice scene={scene} definition={definition} record={false} />
+          ) : null}
+
           <ObjectConcept scene={scene} object={object} />
 
           {capabilities.orders ? (
             <section className="flex flex-col">
               <h3 className="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">
-                <ConceptTerm id="method_call" />
+                <ConceptTerm id="method_call" status={methodCallStatus} />
               </h3>
               <OrderComposer key={object.id} scene={scene} object={object} />
             </section>

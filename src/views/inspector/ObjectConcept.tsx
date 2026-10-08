@@ -7,6 +7,7 @@ import {
 } from '../../model'
 import type { ObjectInstance, Scene } from '../../model'
 import { ConceptTerm } from './ConceptTerm'
+import { useConceptStatus } from './conceptStatus'
 import { groupByOwner } from './groupByOwner'
 
 export interface ObjectConceptProps {
@@ -19,6 +20,8 @@ export function ObjectConcept({ scene, object }: ObjectConceptProps) {
   const ancestry = classAncestry(scene, object.class)
   const methodGroups = groupByOwner(resolveMethodsWithOrigin(scene, object.class), object.class)
   const components = resolveComponentsWithOrigin(scene, object.class)
+  const inheritanceStatus = useConceptStatus('inheritance')
+  const compositionStatus = useConceptStatus('composition')
 
   const partMembers = (className: string): string[] => {
     const definition = scene.classes.find((candidate) => candidate.name === className)
@@ -58,7 +61,7 @@ export function ObjectConcept({ scene, object }: ObjectConceptProps) {
       {ancestry.length > 1 ? (
         <section className="flex flex-col">
           <h3 className="text-muted-foreground mb-1 text-xs font-semibold tracking-wide uppercase">
-            <ConceptTerm id="inheritance" />
+            <ConceptTerm id="inheritance" status={inheritanceStatus} />
           </h3>
           <p className="text-xs">{ancestry.join(' → ')}</p>
         </section>
@@ -67,7 +70,7 @@ export function ObjectConcept({ scene, object }: ObjectConceptProps) {
       {components.length > 0 ? (
         <section className="flex flex-col">
           <h3 className="text-muted-foreground mb-1 text-xs font-semibold tracking-wide uppercase">
-            <ConceptTerm id="composition" />
+            <ConceptTerm id="composition" status={compositionStatus} />
           </h3>
           <ul className="flex flex-col gap-0.5">
             {components.map((entry) => {

@@ -8,17 +8,24 @@ import { useEvidenceStore } from '../../store'
 export interface MisconceptionNoticeProps {
   scene: Scene
   definition: ClassDefinition
+  /** When false, only shows the notice without recording it as evidence. */
+  record?: boolean
 }
 
-export function MisconceptionNotice({ scene, definition }: MisconceptionNoticeProps) {
+export function MisconceptionNotice({
+  scene,
+  definition,
+  record = true,
+}: MisconceptionNoticeProps) {
   const messages = getMessages()
   const recordMisconception = useEvidenceStore((state) => state.recordMisconception)
   const ids = detectMisconceptions(scene, definition)
   const signature = ids.join('|')
 
   useEffect(() => {
+    if (!record) return
     for (const id of signature ? (signature.split('|') as typeof ids) : []) recordMisconception(id)
-  }, [signature, recordMisconception])
+  }, [signature, record, recordMisconception])
 
   if (ids.length === 0) return null
 

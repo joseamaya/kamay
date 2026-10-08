@@ -80,6 +80,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   current mission's hints progressively, sharing progress with the missions dialog
   (hint state moved to `editorStore`). Mission/guide texts now reference the
   "Objetos" panel instead of the old "Fábrica".
+- **Inspector feedback**: the inspector now surfaces the selected class's
+  **misconception** (read-only, without recording evidence) and shows the
+  **rubric status** (presentado/practicado/demostrado) as a badge on the concept
+  terms (Estado, Llamada, Herencia, Composición).
 
 ### Added
 
