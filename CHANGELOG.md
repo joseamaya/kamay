@@ -68,6 +68,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   popover. The left side becomes a **single sidebar** with **Proyecto** / **Objetos**
   tabs (persisted, default "Objetos"), and the inspector can be collapsed. Code
   stays at the bottom. The stage keeps the selection highlight and handles.
+- **Grouped inheritance labels**: inherited members are grouped by their origin
+  class — a single "Heredado de {clase}" header with its methods/attributes below —
+  instead of repeating the label on every row. The inheritance section now shows
+  only the class chain.
 
 ### Added
 
