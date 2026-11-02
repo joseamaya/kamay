@@ -516,6 +516,59 @@ describe('composition', () => {
       'self.bateria = Bateria(f"{name}.bateria" if name else "bateria")',
     )
   })
+
+  it('generates a call on a component method', () => {
+    const composed = projectSchema.parse({
+      version: 1,
+      meta: { name: 'Robot' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          classes: [
+            {
+              id: 'c-bateria',
+              name: 'Bateria',
+              methods: [
+                {
+                  name: 'cargar',
+                  parameters: [{ name: 'cantidad', type: 'number' }],
+                  body: { kind: 'blocks', ops: [] },
+                },
+              ],
+            },
+            {
+              id: 'c-robot',
+              name: 'Robot',
+              components: [{ name: 'bateria', class: 'Bateria' }],
+              methods: [
+                {
+                  name: 'recargar',
+                  parameters: [],
+                  body: {
+                    kind: 'blocks',
+                    ops: [
+                      {
+                        id: 'b1',
+                        op: 'call_on',
+                        args: { target: 'bateria', method: 'cargar', values: { cantidad: 5 } },
+                        children: [],
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+          objects: [{ id: 'r1', name: 'r1', class: 'Robot' }],
+        },
+      ],
+    })
+    const { files } = generatePython(composed)
+    const robot = files.find((file) => file.path === 'Robot.py')
+
+    expect(robot?.content).toContain('self.bateria.cargar(5)')
+  })
 })
 
 describe('symbols', () => {

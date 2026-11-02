@@ -163,6 +163,18 @@ export class Simulation {
           String(op.args.method ?? ''),
           (op.args.values ?? {}) as Record<string, unknown>,
         )
+      } else if (op.op === 'call_on') {
+        const target = String(op.args.target ?? '')
+        const component = this.findObject(`${object.name}.${target}`)
+        if (!component) {
+          this.error(`No existe la parte ${target} en ${object.class}.`)
+          return
+        }
+        this.invoke(
+          component,
+          String(op.args.method ?? ''),
+          (op.args.values ?? {}) as Record<string, unknown>,
+        )
       } else if (op.op === 'repeat') {
         const times = Number(op.args.times) || 0
         for (let index = 0; index < times; index += 1) this.runOps(object, op.children)

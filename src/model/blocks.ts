@@ -1,10 +1,24 @@
-import { classCustomAttributes, resolveCustomAttributes, resolveMethods } from './classroom'
+import {
+  classCustomAttributes,
+  resolveComponents,
+  resolveCustomAttributes,
+  resolveMethods,
+} from './classroom'
 import { createId } from './ids'
 import type { MethodSignature } from './methods'
 import type { Attribute, AttributeType, ClassDefinition, Operation, Scene } from './schema'
 
 export function createCallBlock(method = '', values: Record<string, unknown> = {}): Operation {
   return { id: createId('block'), op: 'call', args: { method, values }, children: [] }
+}
+
+/** Calls a method on one of the class's components (`self.parte.metodo()`). */
+export function createCallOnBlock(
+  target = '',
+  method = '',
+  values: Record<string, unknown> = {},
+): Operation {
+  return { id: createId('block'), op: 'call_on', args: { target, method, values }, children: [] }
 }
 
 export function createSetBlock(name: string, value: unknown = 0): Operation {
@@ -58,6 +72,49 @@ export function availableBlockMethods(
     if (!result.has(method.name)) result.set(method.name, method)
   }
   return [...result.values()]
+}
+
+/** A destination a call block can send a message to: the object itself or a part. */
+export interface BlockCallTarget {
+  /** Component name, or `null` for the object itself (`self`). */
+  name: string | null
+  className: string
+  methods: MethodSignature[]
+}
+
+/** Methods reachable through a call destination (`null` means the object itself). */
+export function blockMethodsFor(
+  scene: Scene,
+  definition: ClassDefinition,
+  target: string | null,
+): MethodSignature[] {
+  if (target === null) return availableBlockMethods(scene, definition)
+  const component = resolveComponents(scene, definition.name).find((item) => item.name === target)
+  if (!component) return []
+  return resolveMethods(scene, component.class).map((method) => ({
+    name: method.name,
+    parameters: method.parameters,
+  }))
+}
+
+/** The object plus the components that have methods, each with its callable methods. */
+export function availableBlockTargets(
+  scene: Scene,
+  definition: ClassDefinition,
+): BlockCallTarget[] {
+  const self: BlockCallTarget = {
+    name: null,
+    className: definition.name,
+    methods: availableBlockMethods(scene, definition),
+  }
+  const components = resolveComponents(scene, definition.name)
+    .map((component) => ({
+      name: component.name,
+      className: component.class,
+      methods: blockMethodsFor(scene, definition, component.name),
+    }))
+    .filter((component) => component.methods.length > 0)
+  return [self, ...components]
 }
 
 /** Attributes a block can assign: the class's own and inherited custom attributes. */

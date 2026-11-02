@@ -1,4 +1,4 @@
-import { defaultValueFor, resolveMethods } from '../model'
+import { defaultValueFor, resolveComponents, resolveMethods } from '../model'
 import type { ClassDefinition, MethodParameter, Operation, Scene } from '../model'
 import { pyLiteral } from './python'
 
@@ -18,6 +18,20 @@ function findMethodParameters(
   return []
 }
 
+/** Parameters of a method declared by one of the definition's components. */
+function findComponentMethodParameters(
+  scene: Scene,
+  definition: ClassDefinition,
+  target: string,
+  name: string,
+): MethodParameter[] {
+  const component = resolveComponents(scene, definition.name).find((item) => item.name === target)
+  if (!component) return []
+  return (
+    resolveMethods(scene, component.class).find((method) => method.name === name)?.parameters ?? []
+  )
+}
+
 function blockToLines(scene: Scene, definition: ClassDefinition, op: Operation): string[] {
   if (op.op === 'call') {
     const method = String(op.args.method ?? '')
@@ -27,6 +41,18 @@ function blockToLines(scene: Scene, definition: ClassDefinition, op: Operation):
       .map((parameter) => pyLiteral(values[parameter.name] ?? defaultValueFor(parameter.type)))
       .join(', ')
     return [`self.${method}(${args})`]
+  }
+
+  if (op.op === 'call_on') {
+    const target = String(op.args.target ?? '')
+    const method = String(op.args.method ?? '')
+    if (!target || !method) return []
+    const values = (op.args.values ?? {}) as Record<string, unknown>
+    const parameters = findComponentMethodParameters(scene, definition, target, method)
+    const args = parameters
+      .map((parameter) => pyLiteral(values[parameter.name] ?? defaultValueFor(parameter.type)))
+      .join(', ')
+    return [`self.${target}.${method}(${args})`]
   }
 
   if (op.op === 'set') {

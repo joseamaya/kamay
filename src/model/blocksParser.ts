@@ -1,7 +1,9 @@
 import {
   availableBlockAttributes,
   availableBlockMethods,
+  availableBlockTargets,
   createCallBlock,
+  createCallOnBlock,
   createChangeBlock,
   createCodeBlock,
   createRepeatBlock,
@@ -19,10 +21,13 @@ interface Line {
 interface ParseContext {
   methods: MethodSignature[]
   attributes: Attribute[]
+  /** Methods callable on each component, keyed by the component name. */
+  targets: Map<string, MethodSignature[]>
 }
 
 const REPEAT_PATTERN = /^for\s+_\s+in\s+range\(\s*(-?\d+)\s*\)\s*:\s*$/
 const CALL_PATTERN = /^self\.([A-Za-z_]\w*)\s*\((.*)\)\s*$/
+const CALL_ON_PATTERN = /^self\.([A-Za-z_]\w*)\.([A-Za-z_]\w*)\s*\((.*)\)\s*$/
 const CHANGE_PATTERN =
   /^self\.([A-Za-z_]\w*)\s*=\s*self\.([A-Za-z_]\w*)\s*([+-])\s*(-?\d+(?:\.\d+)?)\s*$/
 const SET_PATTERN = /^self\.([A-Za-z_]\w*)\s*=\s*(.+)$/
@@ -117,6 +122,33 @@ function parseCall(text: string, context: ParseContext): ParsedCall | null {
   return { name, values }
 }
 
+interface ParsedCallOn {
+  target: string
+  name: string
+  values: Record<string, unknown>
+}
+
+function parseCallOn(text: string, context: ParseContext): ParsedCallOn | null {
+  const match = text.match(CALL_ON_PATTERN)
+  if (!match) return null
+
+  const target = match[1]!
+  const name = match[2]!
+  const parameters = context.targets.get(target)?.find((method) => method.name === name)?.parameters
+  if (!parameters) return null
+
+  const args = splitArgs(match[3] ?? '')
+  if (!args || args.length !== parameters.length) return null
+
+  const values: Record<string, unknown> = {}
+  for (let index = 0; index < parameters.length; index += 1) {
+    const value = parseLiteral(args[index]!)
+    if (value === undefined) return null
+    values[parameters[index]!.name] = value
+  }
+  return { target, name, values }
+}
+
 function parseSet(text: string, context: ParseContext): { name: string; value: unknown } | null {
   const match = text.match(SET_PATTERN)
   if (!match) return null
@@ -152,6 +184,11 @@ function matchCall(text: string, context: ParseContext): Operation | null {
   return parsed ? createCallBlock(parsed.name, parsed.values) : null
 }
 
+function matchCallOn(text: string, context: ParseContext): Operation | null {
+  const parsed = parseCallOn(text, context)
+  return parsed ? createCallOnBlock(parsed.target, parsed.name, parsed.values) : null
+}
+
 function matchSet(text: string, context: ParseContext): Operation | null {
   const parsed = parseSet(text, context)
   return parsed ? createSetBlock(parsed.name, parsed.value) : null
@@ -170,6 +207,7 @@ function matchRepeat(text: string): number | null {
 function isRecognized(text: string, context: ParseContext): boolean {
   return (
     matchRepeat(text) !== null ||
+    parseCallOn(text, context) !== null ||
     parseCall(text, context) !== null ||
     parseChange(text, context) !== null ||
     parseSet(text, context) !== null
@@ -199,6 +237,13 @@ function parseLines(
         const children =
           index > childStart ? parseLines(lines, childStart, childIndent, context) : []
         ops.push({ ...createRepeatBlock(times), children })
+        continue
+      }
+
+      const callOn = matchCallOn(content, context)
+      if (callOn) {
+        ops.push(callOn)
+        index += 1
         continue
       }
 
@@ -255,9 +300,15 @@ export function codeToBlocks(scene: Scene, definition: ClassDefinition, code: st
   const lines = toLines(code)
   if (lines.length === 0) return []
 
+  const targets = new Map<string, MethodSignature[]>()
+  for (const target of availableBlockTargets(scene, definition)) {
+    if (target.name) targets.set(target.name, target.methods)
+  }
+
   const context: ParseContext = {
     methods: availableBlockMethods(scene, definition),
     attributes: availableBlockAttributes(scene, definition),
+    targets,
   }
   const baseIndent = Math.min(...lines.map((line) => line.indent))
   return parseLines(lines, 0, baseIndent, context)
