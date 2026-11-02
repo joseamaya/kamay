@@ -25,6 +25,11 @@ export function createSetBlock(name: string, value: unknown = 0): Operation {
   return { id: createId('block'), op: 'set', args: { name, value }, children: [] }
 }
 
+/** Assigns a method parameter to an attribute (`self.x = parametro`). */
+export function createSetFromParamBlock(name = '', parameter = ''): Operation {
+  return { id: createId('block'), op: 'set_from_param', args: { name, parameter }, children: [] }
+}
+
 export type ChangeOperator = '+' | '-'
 
 /** Adds or subtracts a literal from a numeric attribute. */

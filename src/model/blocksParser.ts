@@ -8,9 +8,10 @@ import {
   createCodeBlock,
   createRepeatBlock,
   createSetBlock,
+  createSetFromParamBlock,
 } from './blocks'
 import type { ChangeOperator } from './blocks'
-import type { MethodSignature } from './methods'
+import type { MethodParameter, MethodSignature } from './methods'
 import type { Attribute, ClassDefinition, Operation, Scene } from './schema'
 
 interface Line {
@@ -21,6 +22,8 @@ interface Line {
 interface ParseContext {
   methods: MethodSignature[]
   attributes: Attribute[]
+  /** Parameters of the method whose body is being parsed. */
+  parameters: MethodParameter[]
   /** Methods callable on each component, keyed by the component name. */
   targets: Map<string, MethodSignature[]>
 }
@@ -28,6 +31,7 @@ interface ParseContext {
 const REPEAT_PATTERN = /^for\s+_\s+in\s+range\(\s*(-?\d+)\s*\)\s*:\s*$/
 const CALL_PATTERN = /^self\.([A-Za-z_]\w*)\s*\((.*)\)\s*$/
 const CALL_ON_PATTERN = /^self\.([A-Za-z_]\w*)\.([A-Za-z_]\w*)\s*\((.*)\)\s*$/
+const SET_FROM_PARAM_PATTERN = /^self\.([A-Za-z_]\w*)\s*=\s*([A-Za-z_]\w*)\s*$/
 const CHANGE_PATTERN =
   /^self\.([A-Za-z_]\w*)\s*=\s*self\.([A-Za-z_]\w*)\s*([+-])\s*(-?\d+(?:\.\d+)?)\s*$/
 const SET_PATTERN = /^self\.([A-Za-z_]\w*)\s*=\s*(.+)$/
@@ -161,6 +165,23 @@ function parseSet(text: string, context: ParseContext): { name: string; value: u
   return { name, value }
 }
 
+interface ParsedSetFromParam {
+  name: string
+  parameter: string
+}
+
+function parseSetFromParam(text: string, context: ParseContext): ParsedSetFromParam | null {
+  const match = text.match(SET_FROM_PARAM_PATTERN)
+  if (!match) return null
+
+  const name = match[1]!
+  const parameter = match[2]!
+  const attribute = context.attributes.find((candidate) => candidate.name === name)
+  const signature = context.parameters.find((candidate) => candidate.name === parameter)
+  if (!attribute || !signature || attribute.type !== signature.type) return null
+  return { name, parameter }
+}
+
 interface ParsedChange {
   name: string
   operator: ChangeOperator
@@ -194,6 +215,11 @@ function matchSet(text: string, context: ParseContext): Operation | null {
   return parsed ? createSetBlock(parsed.name, parsed.value) : null
 }
 
+function matchSetFromParam(text: string, context: ParseContext): Operation | null {
+  const parsed = parseSetFromParam(text, context)
+  return parsed ? createSetFromParamBlock(parsed.name, parsed.parameter) : null
+}
+
 function matchChange(text: string, context: ParseContext): Operation | null {
   const parsed = parseChange(text, context)
   return parsed ? createChangeBlock(parsed.name, parsed.operator, parsed.amount) : null
@@ -210,6 +236,7 @@ function isRecognized(text: string, context: ParseContext): boolean {
     parseCallOn(text, context) !== null ||
     parseCall(text, context) !== null ||
     parseChange(text, context) !== null ||
+    parseSetFromParam(text, context) !== null ||
     parseSet(text, context) !== null
   )
 }
@@ -261,6 +288,13 @@ function parseLines(
         continue
       }
 
+      const setFromParam = matchSetFromParam(content, context)
+      if (setFromParam) {
+        ops.push(setFromParam)
+        index += 1
+        continue
+      }
+
       const set = matchSet(content, context)
       if (set) {
         ops.push(set)
@@ -296,7 +330,12 @@ function parseLines(
  * represent become blocks; everything else is preserved as "advanced code"
  * blocks so nothing is lost.
  */
-export function codeToBlocks(scene: Scene, definition: ClassDefinition, code: string): Operation[] {
+export function codeToBlocks(
+  scene: Scene,
+  definition: ClassDefinition,
+  code: string,
+  parameters: MethodParameter[] = [],
+): Operation[] {
   const lines = toLines(code)
   if (lines.length === 0) return []
 
@@ -308,6 +347,7 @@ export function codeToBlocks(scene: Scene, definition: ClassDefinition, code: st
   const context: ParseContext = {
     methods: availableBlockMethods(scene, definition),
     attributes: availableBlockAttributes(scene, definition),
+    parameters,
     targets,
   }
   const baseIndent = Math.min(...lines.map((line) => line.indent))

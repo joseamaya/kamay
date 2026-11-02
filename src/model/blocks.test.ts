@@ -11,6 +11,7 @@ import {
   createRepeatBlock,
   createScene,
   createSetBlock,
+  createSetFromParamBlock,
   upsertClass,
 } from './index'
 
@@ -33,6 +34,14 @@ describe('block builders', () => {
     expect(createCallOnBlock('bateria', 'cargar', { cantidad: 10 })).toMatchObject({
       op: 'call_on',
       args: { target: 'bateria', method: 'cargar', values: { cantidad: 10 } },
+      children: [],
+    })
+  })
+
+  it('creates a set-from-parameter block', () => {
+    expect(createSetFromParamBlock('vida', 'cantidad')).toMatchObject({
+      op: 'set_from_param',
+      args: { name: 'vida', parameter: 'cantidad' },
       children: [],
     })
   })
