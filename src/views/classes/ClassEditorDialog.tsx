@@ -20,6 +20,7 @@ import type {
   Method,
   Parameter,
   Scene,
+  ValueType,
 } from '../../model'
 import { useCapabilities } from '../../store'
 import { Button } from '../../ui/Button'
@@ -71,7 +72,9 @@ export function ClassEditorDialog({
     { value: 'number', label: messages.types.number },
     { value: 'string', label: messages.types.string },
     { value: 'boolean', label: messages.types.boolean },
+    { value: 'reference', label: messages.types.reference },
   ]
+  const parameterTypeOptions = typeOptions.filter((option) => option.value !== 'reference')
   const shapeOptions = ACTOR_SHAPES.map((shape) => ({
     value: shape,
     label: messages.shapes[shape],
@@ -338,6 +341,10 @@ export function ClassEditorDialog({
                       <option value="true">{messages.booleans.true}</option>
                       <option value="false">{messages.booleans.false}</option>
                     </select>
+                  ) : attribute.type === 'reference' ? (
+                    <span className="text-muted-foreground text-xs">
+                      {messages.classEditor.referenceHint}
+                    </span>
                   ) : (
                     <input
                       aria-label={messages.classEditor.value}
@@ -542,11 +549,11 @@ export function ClassEditorDialog({
                       value={parameter.type}
                       onChange={(event) =>
                         updateParameter(methodIndex, parameterIndex, {
-                          type: event.target.value as AttributeType,
+                          type: event.target.value as ValueType,
                         })
                       }
                     >
-                      {typeOptions.map((option) => (
+                      {parameterTypeOptions.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>

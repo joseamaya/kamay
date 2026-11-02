@@ -1,3 +1,4 @@
+import { resolveAttributes } from './classroom'
 import { DOMAIN_BASES } from './factory'
 import type { Project, Scene } from './schema'
 
@@ -9,6 +10,7 @@ export type IntegrityIssueCode =
   | 'composition_cycle'
   | 'action_target_missing'
   | 'action_class_missing'
+  | 'reference_target_missing'
 
 export interface IntegrityIssue {
   code: IntegrityIssueCode
@@ -58,6 +60,18 @@ export function validateProjectIntegrity(project: Project): IntegrityIssue[] {
     for (const object of scene.objects) {
       if (!classExists(scene, object.class)) {
         issues.push({ code: 'object_class_missing', sceneId: scene.id, detail: object.class })
+        continue
+      }
+      for (const attribute of resolveAttributes(scene, object.class)) {
+        if (attribute.type !== 'reference') continue
+        const value = object.attributes[attribute.name]
+        if (typeof value === 'string' && value.length > 0 && !objectExists(scene, value)) {
+          issues.push({
+            code: 'reference_target_missing',
+            sceneId: scene.id,
+            detail: value,
+          })
+        }
       }
     }
 

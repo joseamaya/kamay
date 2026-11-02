@@ -1,16 +1,24 @@
 import { z } from 'zod'
 
 /** Current version of the persisted project model. Bump when the shape changes. */
-export const CURRENT_SCHEMA_VERSION = 13
+export const CURRENT_SCHEMA_VERSION = 14
 
 /** Identifier pattern shared by class and variable names in the generated Python. */
 export const identifierPattern = /^[A-Za-z_][A-Za-z0-9_]*$/
 
-export const attributeTypeSchema = z.enum(['number', 'string', 'boolean'])
+/** Primitive values: the type of a method parameter. */
+export const valueTypeSchema = z.enum(['number', 'string', 'boolean'])
+
+/**
+ * A class attribute may also hold a `reference` to another object of the scene.
+ * It is a domain value (emitted as `self.parte = otro`) but not a method
+ * parameter, which stays primitive.
+ */
+export const attributeTypeSchema = z.enum(['number', 'string', 'boolean', 'reference'])
 
 export const parameterSchema = z.object({
   name: z.string().regex(identifierPattern, 'invalid_identifier'),
-  type: attributeTypeSchema,
+  type: valueTypeSchema,
 })
 
 export const attributeSchema = z.object({
@@ -174,6 +182,7 @@ export const projectSchema = z
     }
   })
 
+export type ValueType = z.infer<typeof valueTypeSchema>
 export type AttributeType = z.infer<typeof attributeTypeSchema>
 export type Parameter = z.infer<typeof parameterSchema>
 export type Attribute = z.infer<typeof attributeSchema>

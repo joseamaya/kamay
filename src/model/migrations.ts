@@ -357,6 +357,8 @@ export const migrations: Record<number, SchemaMigration> = {
         }),
       }
     }),
+  // v13 -> v14: attributes can be `reference`; existing projects are unchanged.
+  13: (data) => ({ ...data, version: 14 }),
 }
 
 export class MigrationError extends Error {

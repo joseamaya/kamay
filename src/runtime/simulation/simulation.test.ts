@@ -515,3 +515,101 @@ describe('Simulation parameters', () => {
     expect(statuses.at(-1)).toBe('error')
   })
 })
+
+describe('Simulation references', () => {
+  function radioScene(first = 'bateria1', second = 'bateria1'): Scene {
+    const bateria: ClassDefinition = {
+      ...createClassDraft('Bateria'),
+      attributes: [{ name: 'carga', type: 'number', initial: 100 }],
+      methods: [
+        {
+          name: 'gastar',
+          parameters: [],
+          body: { kind: 'blocks', ops: [createChangeBlock('carga', '-', 10)] },
+        },
+      ],
+    }
+    const radio: ClassDefinition = {
+      ...createClassDraft('Radio'),
+      attributes: [{ name: 'bateria', type: 'reference', initial: '' }],
+      methods: [
+        {
+          name: 'usar',
+          parameters: [],
+          body: {
+            kind: 'blocks',
+            ops: [
+              {
+                id: 'b1',
+                op: 'call_on',
+                args: { target: 'bateria', method: 'gastar' },
+                children: [],
+              },
+            ],
+          },
+        },
+      ],
+    }
+    let scene = upsertClass(createScene('Principal'), bateria)
+    scene = upsertClass(scene, radio)
+    scene = { ...scene, objects: [createObject(scene, 'Radio', { bateria: first })] }
+    scene = {
+      ...scene,
+      objects: [...scene.objects, createObject(scene, 'Radio', { bateria: second })],
+    }
+    scene = { ...scene, objects: [...scene.objects, createObject(scene, 'Bateria')] }
+    scene = { ...scene, objects: [...scene.objects, createObject(scene, 'Bateria')] }
+    return scene
+  }
+
+  it('mutates the shared object once for every reference', () => {
+    let scene = radioScene()
+    scene = addOrder(scene, { target: 'radio1', method: 'usar', args: {} })
+    scene = addOrder(scene, { target: 'radio2', method: 'usar', args: {} })
+
+    const { messages, errors } = run(scene)
+
+    expect(errors).toEqual([])
+    expect(targetState(messages, 'bateria1', 'carga')).toBe(80)
+    expect(targetState(messages, 'bateria2', 'carga')).toBe(100)
+    expect(
+      messages.some(
+        (message) =>
+          message.type === 'call' && message.name === 'bateria1' && message.method === 'gastar',
+      ),
+    ).toBe(true)
+  })
+
+  it('keeps references to different objects independent', () => {
+    let scene = radioScene('bateria1', 'bateria2')
+    scene = addOrder(scene, { target: 'radio1', method: 'usar', args: {} })
+    scene = addOrder(scene, { target: 'radio2', method: 'usar', args: {} })
+
+    const { messages, errors } = run(scene)
+
+    expect(errors).toEqual([])
+    expect(targetState(messages, 'bateria1', 'carga')).toBe(90)
+    expect(targetState(messages, 'bateria2', 'carga')).toBe(90)
+  })
+
+  it('does not report state for an empty reference', () => {
+    const scene = radioScene('', '')
+    const { messages } = run(scene)
+
+    expect(
+      messages.some(
+        (message) =>
+          message.type === 'state' && message.target === 'radio1' && message.name === 'bateria',
+      ),
+    ).toBe(false)
+  })
+
+  it('reports a call through a missing reference', () => {
+    let scene = radioScene('fantasma', 'bateria1')
+    scene = addOrder(scene, { target: 'radio1', method: 'usar', args: {} })
+
+    const { errors } = run(scene)
+
+    expect(errors[0]?.message).toContain('No existe la parte bateria')
+  })
+})

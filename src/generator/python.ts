@@ -1,6 +1,6 @@
-import type { Attribute } from '../model'
+import type { ValueType } from '../model'
 
-export const TYPE_HINTS: Record<Attribute['type'], string> = {
+export const TYPE_HINTS: Record<ValueType, string> = {
   number: 'float',
   string: 'str',
   boolean: 'bool',

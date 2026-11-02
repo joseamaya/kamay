@@ -44,6 +44,50 @@ describe('projectSchema', () => {
     }
   })
 
+  it('accepts a reference attribute but not a reference parameter', () => {
+    const reference = projectSchema.safeParse({
+      ...minimalProject,
+      scenes: [
+        {
+          id: 's',
+          name: 'Principal',
+          classes: [
+            {
+              id: 'c',
+              name: 'Radio',
+              attributes: [{ name: 'bateria', type: 'reference', initial: '' }],
+            },
+          ],
+        },
+      ],
+    })
+    expect(reference.success).toBe(true)
+
+    const parameter = projectSchema.safeParse({
+      ...minimalProject,
+      scenes: [
+        {
+          id: 's',
+          name: 'Principal',
+          classes: [
+            {
+              id: 'c',
+              name: 'Radio',
+              methods: [
+                {
+                  name: 'usar',
+                  parameters: [{ name: 'bateria', type: 'reference' }],
+                  body: { kind: 'blocks', ops: [] },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+    expect(parameter.success).toBe(false)
+  })
+
   it('rejects a project without scenes', () => {
     const result = projectSchema.safeParse({ ...minimalProject, scenes: [] })
     expect(result.success).toBe(false)
