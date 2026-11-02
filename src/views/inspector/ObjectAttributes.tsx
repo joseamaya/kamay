@@ -81,6 +81,7 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
                       ) : attribute.type === 'reference' ? (
                         <Select
                           label={attribute.name}
+                          ariaLabel={attribute.name}
                           value={typeof value === 'string' ? value : ''}
                           options={referenceOptions}
                           onChange={(next) => patch({ [attribute.name]: next }, false)}
