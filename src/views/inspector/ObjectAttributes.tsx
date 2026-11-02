@@ -21,13 +21,21 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
   const updateObjectAttributes = useProjectStore((state) => state.updateObjectAttributes)
   const stateStatus = useConceptStatus('state')
 
-  const patch = (values: Record<string, number | string | boolean>) => {
+  const patch = (values: Record<string, number | string | boolean>, predict = true) => {
     updateObjectAttributes(scene.id, object.id, values)
+    if (!predict) return
     const entries = Object.entries(values)
     if (entries.length !== 1) return
     const [name, value] = entries[0]!
     askPredictionForAttribute(scene, object, name, value)
   }
+
+  const referenceOptions = [
+    { value: '', label: messages.inspector.noReference },
+    ...scene.objects
+      .filter((candidate) => candidate.id !== object.id)
+      .map((candidate) => ({ value: candidate.name, label: candidate.name })),
+  ]
 
   const groups = groupByOwner(resolveCustomAttributesWithOrigin(scene, object.class), object.class)
   const defaults = resolveAttributeDefaults(scene, object.class)
@@ -69,6 +77,13 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
                             { value: 'false', label: messages.booleans.false },
                           ]}
                           onChange={(next) => patch({ [attribute.name]: next === 'true' })}
+                        />
+                      ) : attribute.type === 'reference' ? (
+                        <Select
+                          label={attribute.name}
+                          value={typeof value === 'string' ? value : ''}
+                          options={referenceOptions}
+                          onChange={(next) => patch({ [attribute.name]: next }, false)}
                         />
                       ) : (
                         <TextField

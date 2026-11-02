@@ -1,4 +1,10 @@
-import { DOMAIN_BASES, objectsOfClass, resolveMethods, withDomainBases } from '../model'
+import {
+  DOMAIN_BASES,
+  objectsOfClass,
+  resolveAttributes,
+  resolveMethods,
+  withDomainBases,
+} from '../model'
 import type { Action, ClassDefinition, Method, ObjectInstance, Project, Scene } from '../model'
 import { blocksToLines } from './blocks'
 import { indent, pyLiteral, TYPE_HINTS } from './python'
@@ -170,7 +176,11 @@ function generateClassFile(
     if (definition.inherits) body.push('super().__init__(name)')
     for (const attribute of definition.attributes) {
       entries.push({ kind: 'attribute', name: attribute.name })
-      body.push(`self.${attribute.name} = ${pyLiteral(attribute.initial)}`)
+      body.push(
+        attribute.type === 'reference'
+          ? `self.${attribute.name} = None`
+          : `self.${attribute.name} = ${pyLiteral(attribute.initial)}`,
+      )
     }
     for (const component of definition.components) {
       entries.push({ kind: 'component', name: component.name })
@@ -287,19 +297,45 @@ function generateAction(
   return `${variable}.${action.method}(${args.join(', ')})`
 }
 
-function generateObjectStatements(object: ObjectInstance, collected: CollectedValue[]): string[] {
-  const lines = [`${object.name} = ${object.class}(${pyLiteral(object.name)})`]
-  for (const [key, value] of Object.entries(object.attributes)) {
-    lines.push(
-      `${object.name}.${key} = ${mark(
-        pyLiteral(value),
-        { kind: 'attribute', objectName: object.name, key, orderIndex: -1 },
-        value,
-        collected,
-      )}`,
-    )
+function isReferenceAttribute(scene: Scene, className: string, name: string): boolean {
+  return resolveAttributes(scene, className).some(
+    (attribute) => attribute.name === name && attribute.type === 'reference',
+  )
+}
+
+function generateObjectConstructor(object: ObjectInstance): string {
+  return `${object.name} = ${object.class}(${pyLiteral(object.name)})`
+}
+
+function generateAttributeAssignment(
+  scene: Scene,
+  object: ObjectInstance,
+  key: string,
+  value: number | string | boolean,
+  collected: CollectedValue[],
+): string | null {
+  if (isReferenceAttribute(scene, object.class, key)) {
+    if (typeof value !== 'string' || value.length === 0) return null
+    return `${object.name}.${key} = ${value}`
   }
-  return lines
+  return `${object.name}.${key} = ${mark(
+    pyLiteral(value),
+    { kind: 'attribute', objectName: object.name, key, orderIndex: -1 },
+    value,
+    collected,
+  )}`
+}
+
+/** Whether any object points to another object, which needs a two-pass layout. */
+function hasReferenceAssignments(scene: Scene): boolean {
+  return scene.objects.some((object) =>
+    Object.entries(object.attributes).some(
+      ([key, value]) =>
+        typeof value === 'string' &&
+        value.length > 0 &&
+        isReferenceAttribute(scene, object.class, key),
+    ),
+  )
 }
 
 function generateSceneBody(
@@ -311,18 +347,45 @@ function generateSceneBody(
   const symbols: GeneratedSymbol[] = []
   let lineCount = lines.length
 
-  for (const object of scene.objects) {
-    const statements = generateObjectStatements(object, collected)
-    symbols.push({
-      file,
-      kind: 'object',
-      className: object.class,
-      objectName: object.name,
-      lineFrom: lineCount + 1,
-      lineTo: lineCount + statements.length,
-    })
-    lines.push(...statements)
-    lineCount += statements.length
+  // With references, every object must exist before any attribute is assigned.
+  if (hasReferenceAssignments(scene)) {
+    for (const object of scene.objects) {
+      lines.push(generateObjectConstructor(object))
+      symbols.push({
+        file,
+        kind: 'object',
+        className: object.class,
+        objectName: object.name,
+        lineFrom: lineCount + 1,
+        lineTo: lineCount + 1,
+      })
+      lineCount += 1
+    }
+    for (const object of scene.objects) {
+      for (const [key, value] of Object.entries(object.attributes)) {
+        const assignment = generateAttributeAssignment(scene, object, key, value, collected)
+        if (!assignment) continue
+        lines.push(assignment)
+        lineCount += 1
+      }
+    }
+  } else {
+    for (const object of scene.objects) {
+      const assignments = Object.entries(object.attributes)
+        .map(([key, value]) => generateAttributeAssignment(scene, object, key, value, collected))
+        .filter((line): line is string => line !== null)
+      const statements = [generateObjectConstructor(object), ...assignments]
+      symbols.push({
+        file,
+        kind: 'object',
+        className: object.class,
+        objectName: object.name,
+        lineFrom: lineCount + 1,
+        lineTo: lineCount + statements.length,
+      })
+      lines.push(...statements)
+      lineCount += statements.length
+    }
   }
 
   // The scene runs its orders in the order they were added.

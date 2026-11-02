@@ -1,6 +1,7 @@
 import {
   objectsOfClass,
   resolveAttributeDefaults,
+  resolveAttributes,
   resolveComponents,
   resolveMethods,
   withDomainBases,
@@ -89,9 +90,20 @@ export class Simulation {
     id: string = name,
     path: string[] = [],
   ): RuntimeObject {
-    const attributes: Record<string, AttributeValue> = {
+    const merged: Record<string, AttributeValue> = {
       ...resolveAttributeDefaults(this.scene, className),
       ...overrides,
+    }
+    const references = new Set(
+      resolveAttributes(this.scene, className)
+        .filter((attribute) => attribute.type === 'reference')
+        .map((attribute) => attribute.name),
+    )
+    const attributes: Record<string, AttributeValue> = {}
+    for (const [key, value] of Object.entries(merged)) {
+      // A reference with no target is simply "nothing", not an empty value.
+      if (references.has(key) && (typeof value !== 'string' || value.length === 0)) continue
+      attributes[key] = value
     }
     const runtime: RuntimeObject = { id, name, class: className, attributes }
     this.objects.set(name, runtime)
@@ -182,13 +194,13 @@ export class Simulation {
         )
       } else if (op.op === 'call_on') {
         const target = String(op.args.target ?? '')
-        const component = this.findObject(`${object.name}.${target}`)
-        if (!component) {
+        const part = this.resolvePart(object, target)
+        if (!part) {
           this.error(`No existe la parte ${target} en ${object.class}.`)
           return
         }
         this.invoke(
-          component,
+          part,
           String(op.args.method ?? ''),
           (op.args.values ?? {}) as Record<string, unknown>,
         )
@@ -235,6 +247,15 @@ export class Simulation {
     for (const object of this.objects.values()) {
       if (object.id === target || object.name === target) return object
     }
+    return undefined
+  }
+
+  /** A call destination: an owned component (`owner.part`) or a reference value. */
+  private resolvePart(object: RuntimeObject, target: string): RuntimeObject | undefined {
+    const component = this.findObject(`${object.name}.${target}`)
+    if (component) return component
+    const reference = object.attributes[target]
+    if (typeof reference === 'string' && reference.length > 0) return this.findObject(reference)
     return undefined
   }
 

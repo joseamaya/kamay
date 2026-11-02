@@ -55,7 +55,6 @@ export function defaultValueFor(type: AttributeType): number | string | boolean 
   if (type === 'boolean') return false
   return ''
 }
-
 /** Methods a block can call: the class's own and inherited methods. */
 export function availableBlockMethods(
   scene: Scene,
@@ -131,5 +130,5 @@ export function availableBlockAttributes(scene: Scene, definition: ClassDefiniti
   for (const attribute of [...own, ...inherited]) {
     if (!result.has(attribute.name)) result.set(attribute.name, attribute)
   }
-  return [...result.values()]
+  return [...result.values()].filter((attribute) => attribute.type !== 'reference')
 }

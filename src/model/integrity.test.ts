@@ -97,3 +97,41 @@ describe('validateProjectIntegrity', () => {
     )
   })
 })
+
+describe('references', () => {
+  it('reports a reference to a missing object', () => {
+    const value = project({
+      classes: [
+        {
+          id: 'c',
+          name: 'Radio',
+          attributes: [{ name: 'bateria', type: 'reference', initial: '' }],
+        },
+      ],
+      objects: [{ id: 'o', name: 'radio1', class: 'Radio', attributes: { bateria: 'fantasma' } }],
+    })
+
+    expect(validateProjectIntegrity(value).map((issue) => issue.code)).toContain(
+      'reference_target_missing',
+    )
+  })
+
+  it('accepts a reference to an existing object', () => {
+    const value = project({
+      classes: [
+        {
+          id: 'c',
+          name: 'Radio',
+          attributes: [{ name: 'bateria', type: 'reference', initial: '' }],
+        },
+        { id: 'd', name: 'Bateria' },
+      ],
+      objects: [
+        { id: 'o', name: 'radio1', class: 'Radio', attributes: { bateria: 'bateria1' } },
+        { id: 'p', name: 'bateria1', class: 'Bateria' },
+      ],
+    })
+
+    expect(validateProjectIntegrity(value)).toEqual([])
+  })
+})

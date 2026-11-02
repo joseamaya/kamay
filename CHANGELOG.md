@@ -8,6 +8,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Object references (schema v14)**: a class can declare a `reference`
+  attribute that points to another object of the scene. The target is chosen per
+  instance in the inspector, the generated Python assigns it after every object
+  exists (`radio1.bateria = bateria1`), and the simulator resolves it so a
+  `call_on` through the reference mutates the shared object. Two objects that
+  reference the same instance observe the same state; dangling references are
+  reported by the integrity check.
 - **Parameters in blocks**: a block can assign a method parameter to an
   attribute (`self.vida = cantidad`); the generator emits it, the simulator
   binds the call argument, and the block editor offers a type-compatible

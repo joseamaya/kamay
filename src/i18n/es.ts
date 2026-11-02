@@ -95,6 +95,7 @@ export const es = {
     attributeName: 'Nombre del atributo',
     attribute: 'Tipo del atributo',
     value: 'Valor',
+    referenceHint: 'Se asigna en cada objeto.',
     addAttribute: 'Agregar atributo',
     removeAttribute: 'Quitar atributo',
     components: 'Componentes',
@@ -171,6 +172,7 @@ export const es = {
     number: 'Número',
     string: 'Texto',
     boolean: 'Booleano',
+    reference: 'Referencia',
   },
   booleans: {
     true: 'Verdadero',
@@ -450,6 +452,7 @@ export const es = {
   },
   inspector: {
     empty: 'Selecciona un objeto para editar sus propiedades.',
+    noReference: 'Sin referencia',
     scene: 'Escena',
     resetToClass: 'Restablecer al valor de la clase',
     inheritedFrom: 'Heredado de {name}',

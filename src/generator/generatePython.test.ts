@@ -691,3 +691,52 @@ describe('parameters', () => {
     expect(heroe).toContain('self.vida = cantidad')
   })
 })
+
+describe('references', () => {
+  const project = projectSchema.parse({
+    version: 14,
+    meta: { name: 'Radios' },
+    scenes: [
+      {
+        id: 'scene-1',
+        name: 'Principal',
+        classes: [
+          {
+            id: 'c-bateria',
+            name: 'Bateria',
+            attributes: [{ name: 'carga', type: 'number', initial: 100 }],
+          },
+          {
+            id: 'c-radio',
+            name: 'Radio',
+            attributes: [{ name: 'bateria', type: 'reference', initial: '' }],
+          },
+        ],
+        objects: [
+          { id: 'r1', name: 'radio1', class: 'Radio', attributes: { bateria: 'bateria1' } },
+          { id: 'r2', name: 'radio2', class: 'Radio', attributes: { bateria: 'bateria1' } },
+          { id: 'b1', name: 'bateria1', class: 'Bateria', attributes: { carga: 80 } },
+        ],
+      },
+    ],
+  })
+
+  it('initialises a reference attribute to None in the class', () => {
+    const { files } = generatePython(project)
+    const radio = files.find((file) => file.path === 'Radio.py')?.content ?? ''
+
+    expect(radio).toContain('self.bateria = None')
+  })
+
+  it('assigns references after every object exists', () => {
+    const { files } = generatePython(project)
+    const main = files.find((file) => file.path === 'principal.py')?.content ?? ''
+
+    expect(main).toContain('radio1.bateria = bateria1')
+    expect(main).toContain('radio2.bateria = bateria1')
+    expect(main).toContain('bateria1.carga = 80')
+    expect(main.indexOf('bateria1 = Bateria("bateria1")')).toBeLessThan(
+      main.indexOf('radio1.bateria = bateria1'),
+    )
+  })
+})
