@@ -1,27 +1,18 @@
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { createClassDraft, createEmptyProject } from '../../model'
-import { useObservationsStore, useProjectStore } from '../../store'
+import { useObservationsStore } from '../../store'
 import { StatePanel } from './StatePanel'
-
-function projectWithHeroe(): void {
-  const definition = createClassDraft('Heroe')
-  definition.attributes.push({ name: 'energia', type: 'number', initial: 50 })
-  useProjectStore.setState({ project: createEmptyProject({ name: 'Demo' }), past: [], future: [] })
-  const sceneId = useProjectStore.getState().project.scenes[0]!.id
-  useProjectStore.getState().saveClass(sceneId, definition)
-  useProjectStore.getState().instantiateClass(sceneId, definition.id)
-}
 
 beforeEach(() => {
   useObservationsStore.getState().reset()
 })
 
 describe('StatePanel', () => {
-  it('shows attributes changed during the run', () => {
-    projectWithHeroe()
-    useObservationsStore.getState().record({ target: 'heroe1', name: 'energia', value: 80 })
+  it('shows the before → after of the last change', () => {
+    const store = useObservationsStore.getState()
+    store.record({ target: 'heroe1', name: 'energia', value: 50 })
+    store.record({ target: 'heroe1', name: 'energia', value: 80 })
 
     render(<StatePanel />)
 
@@ -31,8 +22,20 @@ describe('StatePanel', () => {
     expect(screen.getByText('80')).toBeInTheDocument()
   })
 
-  it('hides when nothing changed from the modeled state', () => {
-    projectWithHeroe()
+  it('uses the previous step value as the before, not the initial one', () => {
+    const store = useObservationsStore.getState()
+    store.record({ target: 'heroe1', name: 'energia', value: 50 })
+    store.record({ target: 'heroe1', name: 'energia', value: 70 })
+    store.record({ target: 'heroe1', name: 'energia', value: 90 })
+
+    render(<StatePanel />)
+
+    expect(screen.getByText('70')).toBeInTheDocument()
+    expect(screen.getByText('90')).toBeInTheDocument()
+    expect(screen.queryByText('50')).not.toBeInTheDocument()
+  })
+
+  it('hides when nothing changed', () => {
     useObservationsStore.getState().record({ target: 'heroe1', name: 'energia', value: 50 })
 
     const { container } = render(<StatePanel />)

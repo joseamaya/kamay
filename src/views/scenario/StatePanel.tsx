@@ -1,6 +1,5 @@
 import { getMessages } from '../../i18n'
-import { resolveAttributeDefaults } from '../../model'
-import { useObservationsStore, useProjectStore } from '../../store'
+import { useObservationsStore } from '../../store'
 
 type Value = number | string | boolean
 
@@ -12,8 +11,8 @@ function formatValue(value: Value, messages: ReturnType<typeof getMessages>): st
 
 export function StatePanel() {
   const messages = getMessages()
-  const project = useProjectStore((state) => state.project)
   const values = useObservationsStore((state) => state.values)
+  const before = useObservationsStore((state) => state.before)
   const order = useObservationsStore((state) => state.order)
 
   const rows: { key: string; label: string; before: string; after: string }[] = []
@@ -21,20 +20,15 @@ export function StatePanel() {
   for (const target of order) {
     const runtime = values[target]
     if (!runtime) continue
-    const scene = project.scenes.find((candidate) =>
-      candidate.objects.some((object) => object.name === target),
-    )
-    const object = scene?.objects.find((candidate) => candidate.name === target)
-    if (!scene || !object) continue
-    const defaults = resolveAttributeDefaults(scene, object.class)
+    const previous = before[target] ?? {}
 
     for (const [name, after] of Object.entries(runtime)) {
-      const before = object.attributes[name] ?? defaults[name] ?? 0
-      if (before === after) continue
+      const prior = previous[name] ?? after
+      if (prior === after) continue
       rows.push({
         key: `${target}.${name}`,
         label: `${target}.${name}`,
-        before: formatValue(before, messages),
+        before: formatValue(prior, messages),
         after: formatValue(after, messages),
       })
     }
