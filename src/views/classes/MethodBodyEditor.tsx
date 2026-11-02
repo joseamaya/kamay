@@ -5,8 +5,10 @@ import { getMessages } from '../../i18n'
 import {
   availableBlockAttributes,
   availableBlockMethods,
+  availableBlockTargets,
   codeToBlocks,
   createCallBlock,
+  createCallOnBlock,
   createChangeBlock,
   createRepeatBlock,
   createSetBlock,
@@ -15,6 +17,7 @@ import {
 import type {
   Attribute,
   AttributeType,
+  BlockCallTarget,
   MethodSignature,
   ClassDefinition,
   Method,
@@ -83,32 +86,56 @@ function parameterLabel(name: string): string {
 
 function BlockCard({
   op,
-  methods,
+  targets,
   attributes,
   onChange,
 }: {
   op: Operation
-  methods: MethodSignature[]
+  targets: BlockCallTarget[]
   attributes: Attribute[]
   onChange: (op: Operation) => void
 }) {
   const messages = getMessages()
 
-  if (op.op === 'call') {
-    const methodName = String(op.args.method ?? methods[0]?.name ?? '')
-    const selected = methods.find((method) => method.name === methodName) ?? methods[0]
+  if (op.op === 'call' || op.op === 'call_on') {
+    const rawTarget = op.op === 'call_on' ? String(op.args.target ?? '') : ''
+    const target = targets.find((candidate) => (candidate.name ?? '') === rawTarget) ?? targets[0]
+    const targetMethods = target?.methods ?? []
+    const methodName = String(op.args.method ?? targetMethods[0]?.name ?? '')
+    const selected = targetMethods.find((method) => method.name === methodName) ?? targetMethods[0]
     const values = (op.args.values ?? {}) as Record<string, unknown>
+
+    const withTarget = (name: string | null, method: string) =>
+      name
+        ? { ...op, op: 'call_on', args: { target: name, method, values: {} } }
+        : { ...op, op: 'call', args: { method, values: {} } }
 
     return (
       <div className="flex flex-col gap-2">
+        {targets.length > 1 ? (
+          <Select
+            label={messages.classEditor.blockTarget}
+            value={target?.name ?? ''}
+            options={targets.map((candidate) => ({
+              value: candidate.name ?? '',
+              label: candidate.name
+                ? `${candidate.name} (${candidate.className})`
+                : messages.classEditor.blockSelf,
+            }))}
+            onChange={(name) => {
+              const next = targets.find((candidate) => (candidate.name ?? '') === name)
+              if (next) onChange(withTarget(next.name, next.methods[0]?.name ?? ''))
+            }}
+          />
+        ) : null}
         <Select
           label={messages.classEditor.blockMethod}
           value={selected?.name ?? ''}
-          options={methods.map((method) => ({
+          options={targetMethods.map((method) => ({
             value: method.name,
-            label: methodLabel(methods, method.name),
+            label: methodLabel(targetMethods, method.name),
           }))}
-          onChange={(name) => onChange({ ...op, args: { method: name, values: {} } })}
+          onChange={(name) => onChange(withTarget(target?.name ?? null, name))}
         />
         {selected?.parameters.map((parameter) => (
           <ValueField
@@ -211,6 +238,7 @@ function BlockCard({
 function opLabel(op: Operation): string {
   const messages = getMessages().classEditor
   if (op.op === 'call') return messages.blockCall
+  if (op.op === 'call_on') return messages.blockCallOn
   if (op.op === 'set') return messages.blockSet
   if (op.op === 'change') return messages.blockChange
   if (op.op === 'code') return messages.advancedCode
@@ -243,12 +271,12 @@ function IconButton({
 
 function BlockList({
   ops,
-  methods,
+  targets,
   attributes,
   onChange,
 }: {
   ops: Operation[]
-  methods: MethodSignature[]
+  targets: BlockCallTarget[]
   attributes: Attribute[]
   onChange: (ops: Operation[]) => void
 }) {
@@ -293,7 +321,7 @@ function BlockList({
           </div>
           <BlockCard
             op={op}
-            methods={methods}
+            targets={targets}
             attributes={attributes}
             onChange={(next) => replace(index, next)}
           />
@@ -301,7 +329,7 @@ function BlockList({
             <div className="border-border mt-2 border-l-2 pl-2">
               <BlockList
                 ops={op.children}
-                methods={methods}
+                targets={targets}
                 attributes={attributes}
                 onChange={(children) => replace(index, { ...op, children })}
               />
@@ -326,6 +354,11 @@ export function MethodBodyEditor({ scene, definition, method, onChange }: Method
 
   const body = method.body
   const methods = availableBlockMethods(scene, definition)
+  const targets = availableBlockTargets(scene, definition)
+  const componentTargets = targets.filter(
+    (target): target is BlockCallTarget & { name: string } =>
+      target.name !== null && target.methods.length > 0,
+  )
   const attributes = availableBlockAttributes(scene, definition)
   const numericAttributes = attributes.filter((attribute) => attribute.type === 'number')
   const preview = blocksToCode(scene, definition, body.kind === 'blocks' ? body.ops : [])
@@ -373,7 +406,7 @@ export function MethodBodyEditor({ scene, definition, method, onChange }: Method
         <>
           <BlockList
             ops={body.ops}
-            methods={methods}
+            targets={targets}
             attributes={attributes}
             onChange={(ops) => onChange({ kind: 'blocks', ops })}
           />
@@ -391,6 +424,24 @@ export function MethodBodyEditor({ scene, definition, method, onChange }: Method
             >
               {messages.classEditor.addCall}
             </Button>
+            {componentTargets.length > 0 ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const target = componentTargets[0]!
+                  onChange({
+                    kind: 'blocks',
+                    ops: [
+                      ...body.ops,
+                      createCallOnBlock(target.name, target.methods[0]?.name ?? ''),
+                    ],
+                  })
+                }}
+              >
+                {messages.classEditor.addCallOn}
+              </Button>
+            ) : null}
             <Button
               variant="ghost"
               size="sm"

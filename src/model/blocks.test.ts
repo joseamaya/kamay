@@ -3,7 +3,10 @@ import { describe, expect, it } from 'vitest'
 import {
   availableBlockAttributes,
   availableBlockMethods,
+  availableBlockTargets,
+  blockMethodsFor,
   createCallBlock,
+  createCallOnBlock,
   createClassDraft,
   createRepeatBlock,
   createScene,
@@ -23,6 +26,14 @@ describe('block builders', () => {
     expect(createSetBlock('vida', 10)).toMatchObject({
       op: 'set',
       args: { name: 'vida', value: 10 },
+    })
+  })
+
+  it('creates a call-on block', () => {
+    expect(createCallOnBlock('bateria', 'cargar', { cantidad: 10 })).toMatchObject({
+      op: 'call_on',
+      args: { target: 'bateria', method: 'cargar', values: { cantidad: 10 } },
+      children: [],
     })
   })
 
@@ -66,5 +77,49 @@ describe('availableBlockAttributes', () => {
       'energia',
       'vida',
     ])
+  })
+})
+
+describe('availableBlockTargets', () => {
+  function composed() {
+    const bateria = createClassDraft('Bateria')
+    bateria.attributes.push({ name: 'carga', type: 'number', initial: 100 })
+    bateria.methods.push({
+      name: 'cargar',
+      parameters: [{ name: 'cantidad', type: 'number' }],
+      body: { kind: 'blocks', ops: [] },
+    })
+    let scene = upsertClass(createScene('Principal'), bateria)
+
+    const robot = {
+      ...createClassDraft('Robot'),
+      components: [{ name: 'bateria', class: 'Bateria' }],
+    }
+    robot.methods.push({
+      name: 'saludar',
+      parameters: [],
+      body: { kind: 'blocks', ops: [] },
+    })
+    scene = upsertClass(scene, robot)
+    return { scene, robot }
+  }
+
+  it('lists the object itself and the components that have methods', () => {
+    const { scene, robot } = composed()
+    const targets = availableBlockTargets(scene, robot)
+
+    expect(targets.map((target) => target.name)).toEqual([null, 'bateria'])
+    expect(targets[1]).toMatchObject({ className: 'Bateria' })
+    expect(targets[1]?.methods.map((method) => method.name)).toEqual(['cargar'])
+  })
+
+  it('resolves the methods of each destination', () => {
+    const { scene, robot } = composed()
+
+    expect(blockMethodsFor(scene, robot, null).map((method) => method.name)).toEqual(['saludar'])
+    expect(blockMethodsFor(scene, robot, 'bateria').map((method) => method.name)).toEqual([
+      'cargar',
+    ])
+    expect(blockMethodsFor(scene, robot, 'nada')).toEqual([])
   })
 })

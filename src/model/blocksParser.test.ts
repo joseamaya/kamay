@@ -101,4 +101,39 @@ for _ in range(2):
 
     expect(blocksToCode(scene, draft, codeToBlocks(scene, draft, code))).toBe(code)
   })
+
+  it('parses a call on a component and round-trips it', () => {
+    const bateria = createClassDraft('Bateria')
+    bateria.methods.push({
+      name: 'cargar',
+      parameters: [{ name: 'cantidad', type: 'number' }],
+      body: { kind: 'blocks', ops: [] },
+    })
+    let scene = upsertClass(createScene('Principal'), bateria)
+
+    const robot = {
+      ...createClassDraft('Robot'),
+      components: [{ name: 'bateria', class: 'Bateria' }],
+    }
+    scene = upsertClass(scene, robot)
+    const code = 'self.bateria.cargar(5)'
+
+    const ops = codeToBlocks(scene, robot, code)
+
+    expect(ops.map((op) => op.op)).toEqual(['call_on'])
+    expect(ops[0]?.args).toMatchObject({
+      target: 'bateria',
+      method: 'cargar',
+      values: { cantidad: 5 },
+    })
+    expect(blocksToCode(scene, robot, ops)).toBe(code)
+  })
+
+  it('keeps a call on an unknown part as advanced code', () => {
+    const { scene, draft } = setup()
+
+    const ops = codeToBlocks(scene, draft, 'self.otro.saludar("hola")')
+
+    expect(ops.map((op) => op.op)).toEqual(['code'])
+  })
 })

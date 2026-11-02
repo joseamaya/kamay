@@ -8,6 +8,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Calls on components**: blocks and the generator can send a message to a
+  component (`self.bateria.cargar(5)`); the simulator resolves it to the owner's
+  part and mutates only that part, and the block editor lets the student pick the
+  destination (the object or one of its parts).
 - **Composition in the simulation**: the simulator now instantiates a class's
   `components` recursively, so each part is its own observable object with
   independent state. Component names are qualified with their owner

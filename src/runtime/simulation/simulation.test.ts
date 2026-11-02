@@ -386,4 +386,83 @@ describe('Simulation composition', () => {
 
     expect(errors[0]?.message).toContain('No existe la clase Motor')
   })
+
+  it('sends a message to a part and mutates only that part', () => {
+    const bateria: ClassDefinition = {
+      ...createClassDraft('Bateria'),
+      attributes: [{ name: 'carga', type: 'number', initial: 100 }],
+      methods: [
+        {
+          name: 'gastar',
+          parameters: [],
+          body: { kind: 'blocks', ops: [createChangeBlock('carga', '-', 10)] },
+        },
+      ],
+    }
+    const carro: ClassDefinition = {
+      ...createClassDraft('Carro'),
+      components: [{ name: 'bateria', class: 'Bateria' }],
+      methods: [
+        {
+          name: 'usar',
+          parameters: [],
+          body: {
+            kind: 'blocks',
+            ops: [
+              {
+                id: 'b1',
+                op: 'call_on',
+                args: { target: 'bateria', method: 'gastar' },
+                children: [],
+              },
+            ],
+          },
+        },
+      ],
+    }
+    let scene = upsertClass(createScene('Principal'), bateria)
+    scene = upsertClass(scene, carro)
+    scene = { ...scene, objects: [createObject(scene, 'Carro')] }
+    scene = { ...scene, objects: [...scene.objects, createObject(scene, 'Carro')] }
+    scene = addOrder(scene, { target: 'carro1', method: 'usar', args: {} })
+
+    const { messages, errors } = run(scene)
+
+    expect(errors).toEqual([])
+    expect(targetState(messages, 'carro1.bateria', 'carga')).toBe(90)
+    expect(targetState(messages, 'carro2.bateria', 'carga')).toBe(100)
+    expect(
+      messages.some(
+        (message) =>
+          message.type === 'call' &&
+          message.name === 'carro1.bateria' &&
+          message.method === 'gastar',
+      ),
+    ).toBe(true)
+  })
+
+  it('reports a call on a missing part', () => {
+    const carro: ClassDefinition = {
+      ...createClassDraft('Carro'),
+      methods: [
+        {
+          name: 'usar',
+          parameters: [],
+          body: {
+            kind: 'blocks',
+            ops: [
+              { id: 'b1', op: 'call_on', args: { target: 'motor', method: 'girar' }, children: [] },
+            ],
+          },
+        },
+      ],
+    }
+    let scene = upsertClass(createScene('Principal'), carro)
+    scene = { ...scene, objects: [createObject(scene, 'Carro')] }
+    scene = addOrder(scene, { target: 'carro1', method: 'usar', args: {} })
+
+    const { errors } = run(scene)
+
+    expect(errors[0]?.message).toContain('No existe la parte motor')
+  })
 })
