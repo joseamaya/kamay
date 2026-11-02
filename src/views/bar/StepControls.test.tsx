@@ -42,6 +42,7 @@ describe('StepControls', () => {
         steps: [[{ type: 'say', target: 'a', message: 'hola' }]],
         cursor: 0,
         initializing: false,
+        depth: 0,
       },
     })
 
@@ -63,6 +64,7 @@ describe('StepControls', () => {
         ],
         cursor: 1,
         initializing: false,
+        depth: 0,
       },
     })
 
@@ -83,6 +85,7 @@ describe('StepControls', () => {
         ],
         cursor: 2,
         initializing: false,
+        depth: 0,
       },
     })
 

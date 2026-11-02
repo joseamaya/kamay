@@ -2,6 +2,7 @@ import { getMessages } from '../../i18n'
 import { useActiveScene, useProgressStore } from '../../store'
 import { Panel } from '../../ui/Panel'
 import { ScenarioCanvas } from './ScenarioCanvas'
+import { LifePanel } from './LifePanel'
 import { StatePanel } from './StatePanel'
 import { WelcomeCard } from './WelcomeCard'
 
@@ -14,6 +15,7 @@ export function ScenarioView() {
     <Panel title={messages.scenario.title} className="min-h-0">
       <div className="relative h-full min-h-48">
         <ScenarioCanvas />
+        <LifePanel />
         <StatePanel />
         {scene && scene.objects.length === 0 ? (
           onboardingDone ? (

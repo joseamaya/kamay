@@ -64,6 +64,7 @@ for _name in [name for name, module in list(sys.modules.items()) if getattr(modu
       `exec(compile(${JSON.stringify(source)}, ${JSON.stringify(entry)}, 'exec'), {'__name__': '__main__'})`,
     )
 
+    post({ type: 'command', command: { type: 'finished' } })
     post({ type: 'status', status: 'ready' })
   } catch (error) {
     post({ type: 'error', error: toRuntimeError(error, knownFiles) })

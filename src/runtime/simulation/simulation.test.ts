@@ -11,7 +11,7 @@ import {
   upsertClass,
 } from '../../model'
 import type { ClassDefinition, Project, Scene } from '../../model'
-import type { RuntimeError, RuntimeMessage } from '../types'
+import type { RuntimeError, RuntimeMessage, RuntimeStatus } from '../types'
 import { hasRawCode, Simulation } from './simulation'
 
 function heroe(): ClassDefinition {
@@ -48,15 +48,16 @@ function run(scene: Scene) {
   const project: Project = { ...createEmptyProject(), scenes: [scene] }
   const messages: RuntimeMessage[] = []
   const errors: RuntimeError[] = []
+  const statuses: RuntimeStatus[] = []
   const simulation = new Simulation({
     project,
     sceneId: scene.id,
     emit: (message) => messages.push(message),
     onError: (error) => errors.push(error),
-    onStatus: () => undefined,
+    onStatus: (status) => statuses.push(status),
   })
   simulation.start()
-  return { simulation, messages, errors }
+  return { simulation, messages, errors, statuses }
 }
 
 function stateValue(messages: RuntimeMessage[], name: string): unknown {
@@ -168,5 +169,125 @@ describe('Simulation', () => {
     expect(errors).toEqual([])
     expect(targetState(messages, 'perro1', 'sonido')).toBe('guau')
     expect(targetState(messages, 'gato1', 'sonido')).toBe('miau')
+  })
+})
+
+describe('Simulation lifecycle events', () => {
+  it('reports created, call and return around an order', () => {
+    let scene = baseScene()
+    scene = addOrder(scene, { target: 'heroe1', method: 'saludar', args: {} })
+
+    const { messages } = run(scene)
+    const created = messages.find((message) => message.type === 'created')
+    const call = messages.find((message) => message.type === 'call')
+    const returned = messages.find((message) => message.type === 'return')
+
+    expect(created).toMatchObject({
+      type: 'created',
+      name: 'heroe1',
+      className: 'Heroe',
+      attributes: { vida: 100, sonido: '' },
+    })
+    expect(call).toMatchObject({
+      type: 'call',
+      name: 'heroe1',
+      className: 'Heroe',
+      method: 'saludar',
+      args: {},
+    })
+    expect(returned).toMatchObject({ type: 'return', method: 'saludar' })
+
+    const index = (type: string) => messages.findIndex((message) => message.type === type)
+    expect(index('created')).toBeLessThan(index('call'))
+    expect(index('call')).toBeLessThan(index('return'))
+    expect(messages.at(-1)).toEqual({ type: 'finished' })
+  })
+
+  it('forwards the order arguments in the call event', () => {
+    let scene = baseScene()
+    scene = addOrder(scene, { target: 'heroe1', method: 'curar', args: { cantidad: 5 } })
+
+    const call = run(scene).messages.find((message) => message.type === 'call')
+
+    expect(call).toMatchObject({ type: 'call', method: 'curar', args: { cantidad: 5 } })
+  })
+
+  it('nests a method call event inside its caller', () => {
+    const combo: ClassDefinition = {
+      ...createClassDraft('Heroe'),
+      attributes: [{ name: 'vida', type: 'number', initial: 100 }],
+      methods: [
+        {
+          name: 'curar',
+          parameters: [],
+          body: { kind: 'blocks', ops: [createChangeBlock('vida', '+', 20)] },
+        },
+        {
+          name: 'combo',
+          parameters: [],
+          body: {
+            kind: 'blocks',
+            ops: [{ id: 'b1', op: 'call', args: { method: 'curar' }, children: [] }],
+          },
+        },
+      ],
+    }
+    let scene = upsertClass(createScene('Principal'), combo)
+    scene = { ...scene, objects: [createObject(scene, 'Heroe')] }
+    scene = addOrder(scene, { target: 'heroe1', method: 'combo', args: {} })
+
+    const { messages } = run(scene)
+    const calls = messages
+      .filter((message) => message.type === 'call')
+      .map((message) => (message.type === 'call' ? message.method : ''))
+
+    expect(calls).toEqual(['combo', 'curar'])
+  })
+})
+
+describe('Simulation error handling', () => {
+  it('stops at the first error, reports it and does not finish', () => {
+    let scene = baseScene()
+    scene = addOrder(scene, { target: 'heroe1', method: 'no_existe', args: {} })
+    scene = addOrder(scene, { target: 'heroe1', method: 'curar', args: {} })
+
+    const { messages, errors, statuses } = run(scene)
+
+    expect(errors).toHaveLength(1)
+    expect(statuses).toEqual(['running', 'error'])
+    // The order after the failing one never runs.
+    expect(stateValue(messages, 'vida')).toBe(100)
+    expect(messages.at(-1)?.type).not.toBe('finished')
+  })
+
+  it('reports a raw-code method as not simulable', () => {
+    const raw: ClassDefinition = {
+      ...createClassDraft('Heroe'),
+      methods: [{ name: 'curar', parameters: [], body: { kind: 'code', code: 'self.vida += 1' } }],
+    }
+    let scene = upsertClass(createScene('Principal'), raw)
+    scene = { ...scene, objects: [createObject(scene, 'Heroe')] }
+    scene = addOrder(scene, { target: 'heroe1', method: 'curar', args: {} })
+
+    const { errors, statuses } = run(scene)
+
+    expect(errors[0]?.message).toContain('código avanzado')
+    expect(statuses.at(-1)).toBe('error')
+  })
+
+  it('reports an advanced-code block as not simulable', () => {
+    const blockCode = { id: 'b1', op: 'code', args: { code: 'self.vida = 1' }, children: [] }
+    const raw: ClassDefinition = {
+      ...createClassDraft('Heroe'),
+      attributes: [{ name: 'vida', type: 'number', initial: 100 }],
+      methods: [{ name: 'curar', parameters: [], body: { kind: 'blocks', ops: [blockCode] } }],
+    }
+    let scene = upsertClass(createScene('Principal'), raw)
+    scene = { ...scene, objects: [createObject(scene, 'Heroe')] }
+    scene = addOrder(scene, { target: 'heroe1', method: 'curar', args: {} })
+
+    const { errors } = run(scene)
+
+    expect(errors[0]?.message).toContain('código avanzado')
   })
 })

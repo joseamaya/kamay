@@ -14,6 +14,9 @@ interface RuntimeObject {
   attributes: Record<string, AttributeValue>
 }
 
+/** Thrown internally to stop the simulation as soon as an error is reported. */
+class SimulationHalt extends Error {}
+
 export interface SimulationOptions {
   project: Project
   sceneId: string | null
@@ -58,18 +61,27 @@ export class Simulation {
         ...resolveAttributeDefaults(this.scene, object.class),
         ...object.attributes,
       }
-      this.objects.set(object.name, {
+      const runtime: RuntimeObject = {
         id: object.id,
         name: object.name,
         class: object.class,
         attributes,
-      })
+      }
+      this.objects.set(object.name, runtime)
       for (const [name, value] of Object.entries(attributes)) {
         this.emitState(object.name, name, value)
       }
+      this.emitCreated(runtime)
     }
     this.options.onInitialized?.()
-    for (const action of this.scene.orders) this.runAction(action)
+    try {
+      for (const action of this.scene.orders) this.runAction(action)
+    } catch (error) {
+      if (!(error instanceof SimulationHalt)) throw error
+      this.options.onStatus('error')
+      return
+    }
+    this.options.emit({ type: 'finished' })
     this.options.onStatus('ready')
   }
 
@@ -81,27 +93,29 @@ export class Simulation {
     if (action.kind === 'for_each') {
       for (const instance of objectsOfClass(this.scene, action.class ?? '')) {
         const object = this.findObject(instance.name)
-        if (object) this.invoke(object, action.method)
+        if (object) this.invoke(object, action.method, action.args)
       }
       return
     }
     const object = this.findObject(action.target)
-    if (object) this.invoke(object, action.method)
+    if (object) this.invoke(object, action.method, action.args)
   }
 
-  private invoke(object: RuntimeObject, name: string): void {
+  private invoke(object: RuntimeObject, name: string, args: Record<string, unknown> = {}): void {
     const method = resolveMethods(this.scene, object.class).find(
       (candidate) => candidate.name === name,
     )
-    if (method) {
-      if (method.body.kind === 'code') {
-        this.error(`No se puede simular el método ${name} (código avanzado).`)
-        return
-      }
-      this.runOps(object, method.body.ops)
+    if (!method) {
+      this.error(`No existe el método ${name} en ${object.class}.`)
       return
     }
-    this.error(`No existe el método ${name} en ${object.class}.`)
+    if (method.body.kind === 'code') {
+      this.error(`No se puede simular el método ${name} (código avanzado).`)
+      return
+    }
+    this.emitCall(object, name, args)
+    this.runOps(object, method.body.ops)
+    this.options.emit({ type: 'return', id: object.id, method: name })
   }
 
   private runOps(object: RuntimeObject, ops: Operation[]): void {
@@ -118,7 +132,11 @@ export class Simulation {
           op.args.operator === '-' ? current - amount : current + amount,
         )
       } else if (op.op === 'call') {
-        this.invoke(object, String(op.args.method ?? ''))
+        this.invoke(
+          object,
+          String(op.args.method ?? ''),
+          (op.args.values ?? {}) as Record<string, unknown>,
+        )
       } else if (op.op === 'repeat') {
         const times = Number(op.args.times) || 0
         for (let index = 0; index < times; index += 1) this.runOps(object, op.children)
@@ -131,6 +149,27 @@ export class Simulation {
   private setAttribute(object: RuntimeObject, name: string, value: AttributeValue): void {
     object.attributes[name] = value
     this.emitState(object.name, name, value)
+  }
+
+  private emitCreated(object: RuntimeObject): void {
+    this.options.emit({
+      type: 'created',
+      id: object.id,
+      name: object.name,
+      className: object.class,
+      attributes: { ...object.attributes },
+    })
+  }
+
+  private emitCall(object: RuntimeObject, method: string, args: Record<string, unknown>): void {
+    this.options.emit({
+      type: 'call',
+      id: object.id,
+      name: object.name,
+      className: object.class,
+      method,
+      args,
+    })
   }
 
   private emitState(target: string, name: string, value: AttributeValue): void {
@@ -146,5 +185,6 @@ export class Simulation {
 
   private error(message: string): void {
     this.options.onError({ kind: 'SimulationError', message, file: null, line: null })
+    throw new SimulationHalt(message)
   }
 }
