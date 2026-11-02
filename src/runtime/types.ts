@@ -21,8 +21,66 @@ export interface RuntimeState {
   value: number | string | boolean
 }
 
-/** Everything the worker can stream back: engine commands plus observations. */
-export type RuntimeMessage = RuntimeCommand | RuntimeState
+/** An object came to life: its class, identity and initial attributes. */
+export interface RuntimeCreated {
+  type: 'created'
+  /** Stable object id (the name when the runtime has no id of its own). */
+  id: string
+  name: string
+  className: string
+  attributes: Record<string, number | string | boolean>
+}
+
+/** A method call started on the receiver, with its arguments. */
+export interface RuntimeCall {
+  type: 'call'
+  id: string
+  name: string
+  className: string
+  method: string
+  args: Record<string, unknown>
+}
+
+/** The call of `method` on the receiver finished. */
+export interface RuntimeReturn {
+  type: 'return'
+  id: string
+  method: string
+}
+
+/** The program reached its end. */
+export interface RuntimeFinished {
+  type: 'finished'
+}
+
+/**
+ * Domain observations: what happened to the objects. They are separate from the
+ * engine commands, which only describe how to represent those facts on screen.
+ */
+export type RuntimeEvent =
+  RuntimeState | RuntimeCreated | RuntimeCall | RuntimeReturn | RuntimeFinished
+
+/** Everything the worker can stream back: engine commands plus domain events. */
+export type RuntimeMessage = RuntimeCommand | RuntimeEvent
+
+const COMMAND_TYPES = new Set<RuntimeCommand['type']>([
+  'say',
+  'move',
+  'rotate',
+  'scale',
+  'wait',
+  'appearance',
+])
+
+/** Whether a message is a scene instruction rather than a domain event. */
+export function isRuntimeCommand(message: RuntimeMessage): message is RuntimeCommand {
+  return COMMAND_TYPES.has(message.type as RuntimeCommand['type'])
+}
+
+/** Whether a message is an observation of the domain rather than a command. */
+export function isRuntimeEvent(message: RuntimeMessage): message is RuntimeEvent {
+  return !isRuntimeCommand(message)
+}
 
 export interface RuntimeErrorDetails {
   /** Missing name from a NameError. */

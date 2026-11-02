@@ -656,6 +656,11 @@ export const es = {
     ready: 'Listo.',
     loading: 'Preparando…',
   },
+  life: {
+    title: 'Vida del objeto',
+    born: 'Nace {name} ({className})',
+    called: '{name}.{method}()',
+  },
   dialog: {
     cancel: 'Cancelar',
     continue: 'Continuar',

@@ -7,6 +7,7 @@ import {
   useEditorStore,
   useObservationsStore,
   useProjectStore,
+  useRuntimeLogStore,
   useRuntimeStore,
 } from '../store'
 import { createRuntimeBridge } from './bridge'
@@ -14,6 +15,7 @@ import { emitRuntimeCommand, emitRuntimeReset } from './bus'
 import { stateEffect } from './effects'
 import { hasRawCode, Simulation } from './simulation'
 import { currentStep, remainingSteps } from './steps'
+import { isRuntimeCommand } from './types'
 import type { RuntimeMessage } from './types'
 
 export interface RuntimeApi {
@@ -58,10 +60,15 @@ function emitStateEffects(target: string, name: string): void {
 function applyRuntimeMessage(message: RuntimeMessage): void {
   if (message.type === 'state') {
     useObservationsStore.getState().record(message)
+    useRuntimeLogStore.getState().record(message)
     emitStateEffects(message.target, message.name)
     return
   }
-  emitRuntimeCommand(message)
+  if (isRuntimeCommand(message)) {
+    emitRuntimeCommand(message)
+    return
+  }
+  useRuntimeLogStore.getState().record(message)
 }
 
 function handleRuntimeMessage(message: RuntimeMessage): void {
@@ -102,6 +109,7 @@ export function useRuntime(): RuntimeApi {
     setError(null)
     setStatus('loading')
     useObservationsStore.getState().reset()
+    useRuntimeLogStore.getState().reset()
     useRuntimeStore.getState().resetSteps()
     emitRuntimeReset()
 
@@ -137,6 +145,7 @@ export function useRuntime(): RuntimeApi {
     bridge.stop()
     emitRuntimeReset()
     useObservationsStore.getState().reset()
+    useRuntimeLogStore.getState().reset()
     useRuntimeStore.getState().resetSteps()
     setStatus('idle')
   }, [bridge, setStatus])
@@ -159,6 +168,7 @@ export function useRuntime(): RuntimeApi {
     if (clamped === queue.cursor) return
     emitRuntimeReset()
     useObservationsStore.getState().reset()
+    useRuntimeLogStore.getState().reset()
     for (let index = 0; index < clamped; index += 1) {
       const step = queue.steps[index]
       if (!step) continue

@@ -6,8 +6,28 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Domain event contract**: the runtime now streams typed domain events next to
+  the scene commands: `created` (an object is born with its attributes), `call`
+  and `return` (a method runs on a receiver, with its arguments) and `finished`.
+  Both the TypeScript simulator and the Pyodide runtime emit them; the Python one
+  wraps the student's methods in `preparar()` so the generated code stays clean.
+- **Life of the object panel**: a new `LifePanel` next to the state panel lists,
+  in order, when each object is born and which methods are called on it.
+- **True per-step state**: the state panel now shows the value right before each
+  change (`before → after`) instead of the initial modeled value, so a sequence
+  of changes keeps its intermediate states.
+- **Engine parity tests**: reference projects verify the shared subset (two
+  instances with independent state, inherited override dispatch, errors) on the
+  simulator; an opt-in `PYODIDE_E2E` spec runs the independent-instance case
+  against real Python.
+
 ### Changed
 
+- **Error parity**: a simulation error now stops the run at the first failure,
+  sets the error status and never reports "Listo"; the orders after the failure
+  do not run, matching Python's abort-on-exception.
 - **State-driven model**: object behavior is now only state. The engine reacts to
   `x`/`y`/`rotation`/`scale` (move, rotate, scale) and `mensaje` (speech bubble);
   the old primitives (`decir`, `mover`, `girar`, `cambiar_escala`, `esperar`,

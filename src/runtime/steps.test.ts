@@ -48,4 +48,29 @@ describe('step queue', () => {
 
     expect(remainingSteps(queue)).toEqual([[say('dos')]])
   })
+
+  it('groups a call with its state changes and return into one step', () => {
+    const call = (method: string): RuntimeMessage => ({
+      type: 'call',
+      id: 'a',
+      name: 'a',
+      className: 'A',
+      method,
+      args: {},
+    })
+    const returned = (method: string): RuntimeMessage => ({ type: 'return', id: 'a', method })
+
+    let queue = createStepQueue()
+    queue = pushMessage(queue, state('x'))
+    queue = pushMessage(queue, call('mover'))
+    queue = pushMessage(queue, state('x'))
+    queue = pushMessage(queue, returned('mover'))
+    queue = pushMessage(queue, call('hablar'))
+    queue = pushMessage(queue, returned('hablar'))
+    queue = pushMessage(queue, { type: 'finished' })
+
+    expect(queue.steps).toHaveLength(3)
+    expect(queue.steps[1]).toHaveLength(3)
+    expect(queue.steps[2]?.at(-1)).toEqual({ type: 'finished' })
+  })
 })

@@ -1,6 +1,7 @@
 export * from './store'
 export * from './editorStore'
 export * from './runtimeStore'
+export * from './runtimeLogStore'
 export * from './observationsStore'
 export * from './predictionStore'
 export * from './evidenceStore'
