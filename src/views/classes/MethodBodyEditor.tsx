@@ -12,12 +12,14 @@ import {
   createChangeBlock,
   createRepeatBlock,
   createSetBlock,
+  createSetFromParamBlock,
   defaultValueFor,
 } from '../../model'
 import type {
   Attribute,
   AttributeType,
   BlockCallTarget,
+  MethodParameter,
   MethodSignature,
   ClassDefinition,
   Method,
@@ -88,11 +90,13 @@ function BlockCard({
   op,
   targets,
   attributes,
+  parameters,
   onChange,
 }: {
   op: Operation
   targets: BlockCallTarget[]
   attributes: Attribute[]
+  parameters: MethodParameter[]
   onChange: (op: Operation) => void
 }) {
   const messages = getMessages()
@@ -188,6 +192,41 @@ function BlockCard({
     )
   }
 
+  if (op.op === 'set_from_param') {
+    const name = String(op.args.name ?? attributes[0]?.name ?? '')
+    const attribute = attributes.find((candidate) => candidate.name === name) ?? attributes[0]
+    const compatible = parameters.filter(
+      (parameter) => !attribute || parameter.type === attribute.type,
+    )
+    const parameter = String(op.args.parameter ?? compatible[0]?.name ?? '')
+
+    return (
+      <div className="flex flex-col gap-2">
+        <Select
+          label={messages.classEditor.blockAttribute}
+          value={name}
+          options={attributes.map((item) => ({ value: item.name, label: item.name }))}
+          onChange={(next) => {
+            const selected = attributes.find((item) => item.name === next)
+            const first = parameters.find(
+              (candidate) => !selected || candidate.type === selected.type,
+            )
+            onChange({ ...op, args: { name: next, parameter: first?.name ?? '' } })
+          }}
+        />
+        <Select
+          label={messages.classEditor.blockParameter}
+          value={parameter}
+          options={compatible.map((item) => ({
+            value: item.name,
+            label: parameterLabel(item.name),
+          }))}
+          onChange={(next) => onChange({ ...op, args: { ...op.args, parameter: next } })}
+        />
+      </div>
+    )
+  }
+
   if (op.op === 'change') {
     const numeric = attributes.filter((attribute) => attribute.type === 'number')
     const name = String(op.args.name ?? numeric[0]?.name ?? '')
@@ -240,6 +279,7 @@ function opLabel(op: Operation): string {
   if (op.op === 'call') return messages.blockCall
   if (op.op === 'call_on') return messages.blockCallOn
   if (op.op === 'set') return messages.blockSet
+  if (op.op === 'set_from_param') return messages.blockSetFromParam
   if (op.op === 'change') return messages.blockChange
   if (op.op === 'code') return messages.advancedCode
   return messages.blockRepeat
@@ -273,11 +313,13 @@ function BlockList({
   ops,
   targets,
   attributes,
+  parameters,
   onChange,
 }: {
   ops: Operation[]
   targets: BlockCallTarget[]
   attributes: Attribute[]
+  parameters: MethodParameter[]
   onChange: (ops: Operation[]) => void
 }) {
   const messages = getMessages()
@@ -323,6 +365,7 @@ function BlockList({
             op={op}
             targets={targets}
             attributes={attributes}
+            parameters={parameters}
             onChange={(next) => replace(index, next)}
           />
           {op.op === 'repeat' ? (
@@ -331,6 +374,7 @@ function BlockList({
                 ops={op.children}
                 targets={targets}
                 attributes={attributes}
+                parameters={parameters}
                 onChange={(children) => replace(index, { ...op, children })}
               />
             </div>
@@ -361,6 +405,11 @@ export function MethodBodyEditor({ scene, definition, method, onChange }: Method
   )
   const attributes = availableBlockAttributes(scene, definition)
   const numericAttributes = attributes.filter((attribute) => attribute.type === 'number')
+  const parameterPairs = attributes.flatMap((attribute) =>
+    method.parameters
+      .filter((parameter) => parameter.type === attribute.type)
+      .map((parameter) => ({ attribute, parameter })),
+  )
   const preview = blocksToCode(scene, definition, body.kind === 'blocks' ? body.ops : [])
 
   return (
@@ -392,7 +441,10 @@ export function MethodBodyEditor({ scene, definition, method, onChange }: Method
             <button
               type="button"
               onClick={() =>
-                onChange({ kind: 'blocks', ops: codeToBlocks(scene, definition, body.code) })
+                onChange({
+                  kind: 'blocks',
+                  ops: codeToBlocks(scene, definition, body.code, method.parameters),
+                })
               }
               className="text-primary text-xs font-medium hover:underline"
             >
@@ -408,6 +460,7 @@ export function MethodBodyEditor({ scene, definition, method, onChange }: Method
             ops={body.ops}
             targets={targets}
             attributes={attributes}
+            parameters={method.parameters}
             onChange={(ops) => onChange({ kind: 'blocks', ops })}
           />
 
@@ -460,6 +513,24 @@ export function MethodBodyEditor({ scene, definition, method, onChange }: Method
             >
               {messages.classEditor.addSet}
             </Button>
+            {parameterPairs.length > 0 ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const pair = parameterPairs[0]!
+                  onChange({
+                    kind: 'blocks',
+                    ops: [
+                      ...body.ops,
+                      createSetFromParamBlock(pair.attribute.name, pair.parameter.name),
+                    ],
+                  })
+                }}
+              >
+                {messages.classEditor.addSetFromParam}
+              </Button>
+            ) : null}
             <Button
               variant="ghost"
               size="sm"

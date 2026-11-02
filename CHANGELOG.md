@@ -8,6 +8,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Parameters in blocks**: a block can assign a method parameter to an
+  attribute (`self.vida = cantidad`); the generator emits it, the simulator
+  binds the call argument, and the block editor offers a type-compatible
+  attribute/parameter pair. A missing argument is reported as an error instead of
+  inventing a value.
 - **Calls on components**: blocks and the generator can send a message to a
   component (`self.bateria.cargar(5)`); the simulator resolves it to the owner's
   part and mutates only that part, and the block editor lets the student pick the

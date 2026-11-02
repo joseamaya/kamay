@@ -140,14 +140,31 @@ export class Simulation {
       return
     }
     this.emitCall(object, name, args)
-    this.runOps(object, method.body.ops)
+    this.runOps(object, method.body.ops, args)
     this.options.emit({ type: 'return', id: object.id, method: name })
   }
 
-  private runOps(object: RuntimeObject, ops: Operation[]): void {
+  private runOps(
+    object: RuntimeObject,
+    ops: Operation[],
+    args: Record<string, unknown> = {},
+  ): void {
     for (const op of ops) {
       if (op.op === 'set') {
         this.setAttribute(object, String(op.args.name ?? ''), op.args.value as AttributeValue)
+      } else if (op.op === 'set_from_param') {
+        const name = String(op.args.name ?? '')
+        const parameter = String(op.args.parameter ?? '')
+        const value = args[parameter]
+        if (value === undefined) {
+          this.error(`No se pasó el parámetro ${parameter}.`)
+          return
+        }
+        if (typeof value !== 'number' && typeof value !== 'string' && typeof value !== 'boolean') {
+          this.error(`El parámetro ${parameter} no es un valor simple.`)
+          return
+        }
+        this.setAttribute(object, name, value)
       } else if (op.op === 'change') {
         const name = String(op.args.name ?? '')
         const amount = Number(op.args.amount) || 0
@@ -177,7 +194,7 @@ export class Simulation {
         )
       } else if (op.op === 'repeat') {
         const times = Number(op.args.times) || 0
-        for (let index = 0; index < times; index += 1) this.runOps(object, op.children)
+        for (let index = 0; index < times; index += 1) this.runOps(object, op.children, args)
       } else if (op.op === 'code') {
         this.error('No se puede simular un bloque de código avanzado.')
       }

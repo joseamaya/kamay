@@ -60,6 +60,13 @@ function blockToLines(scene: Scene, definition: ClassDefinition, op: Operation):
     return [`self.${name} = ${pyLiteral(op.args.value)}`]
   }
 
+  if (op.op === 'set_from_param') {
+    const name = String(op.args.name ?? '')
+    const parameter = String(op.args.parameter ?? '')
+    if (!name || !parameter) return []
+    return [`self.${name} = ${parameter}`]
+  }
+
   if (op.op === 'change') {
     const name = String(op.args.name ?? '')
     const operator = op.args.operator === '-' ? '-' : '+'

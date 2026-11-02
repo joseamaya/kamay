@@ -466,3 +466,52 @@ describe('Simulation composition', () => {
     expect(errors[0]?.message).toContain('No existe la parte motor')
   })
 })
+
+describe('Simulation parameters', () => {
+  function asignador(): Scene {
+    const heroe: ClassDefinition = {
+      ...createClassDraft('Heroe'),
+      attributes: [{ name: 'vida', type: 'number', initial: 0 }],
+      methods: [
+        {
+          name: 'asignar',
+          parameters: [{ name: 'cantidad', type: 'number' }],
+          body: {
+            kind: 'blocks',
+            ops: [
+              {
+                id: 'b1',
+                op: 'set_from_param',
+                args: { name: 'vida', parameter: 'cantidad' },
+                children: [],
+              },
+            ],
+          },
+        },
+      ],
+    }
+    let scene = upsertClass(createScene('Principal'), heroe)
+    scene = { ...scene, objects: [createObject(scene, 'Heroe')] }
+    return scene
+  }
+
+  it('assigns the call argument to the attribute', () => {
+    let scene = asignador()
+    scene = addOrder(scene, { target: 'heroe1', method: 'asignar', args: { cantidad: 42 } })
+
+    const { messages, errors } = run(scene)
+
+    expect(errors).toEqual([])
+    expect(stateValue(messages, 'vida')).toBe(42)
+  })
+
+  it('reports a missing argument instead of inventing a value', () => {
+    let scene = asignador()
+    scene = addOrder(scene, { target: 'heroe1', method: 'asignar', args: {} })
+
+    const { errors, statuses } = run(scene)
+
+    expect(errors[0]?.message).toContain('No se pasó el parámetro cantidad')
+    expect(statuses.at(-1)).toBe('error')
+  })
+})

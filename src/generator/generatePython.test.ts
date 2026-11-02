@@ -645,3 +645,49 @@ describe('symbols', () => {
     expect(symbolAtLine(symbols, 'Nope.py', 1)).toBeNull()
   })
 })
+
+describe('parameters', () => {
+  it('assigns a method parameter to an attribute', () => {
+    const project = projectSchema.parse({
+      version: 1,
+      meta: { name: 'Heroe' },
+      scenes: [
+        {
+          id: 'scene-1',
+          name: 'Principal',
+          classes: [
+            {
+              id: 'c-heroe',
+              name: 'Heroe',
+              attributes: [{ name: 'vida', type: 'number', initial: 0 }],
+              methods: [
+                {
+                  name: 'asignar',
+                  parameters: [{ name: 'cantidad', type: 'number' }],
+                  body: {
+                    kind: 'blocks',
+                    ops: [
+                      {
+                        id: 'b1',
+                        op: 'set_from_param',
+                        args: { name: 'vida', parameter: 'cantidad' },
+                        children: [],
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+          objects: [{ id: 'o1', name: 'h1', class: 'Heroe' }],
+        },
+      ],
+    })
+
+    const { files } = generatePython(project)
+    const heroe = files.find((file) => file.path === 'Heroe.py')!.content
+
+    expect(heroe).toContain('def asignar(self, cantidad: float):')
+    expect(heroe).toContain('self.vida = cantidad')
+  })
+})

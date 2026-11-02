@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { blocksToCode } from '../generator'
 import { codeToBlocks, createClassDraft, createScene, upsertClass } from './index'
+import type { MethodParameter } from './index'
 
 function setup() {
   const draft = createClassDraft('Heroe')
@@ -133,6 +134,27 @@ for _ in range(2):
     const { scene, draft } = setup()
 
     const ops = codeToBlocks(scene, draft, 'self.otro.saludar("hola")')
+
+    expect(ops.map((op) => op.op)).toEqual(['code'])
+  })
+
+  it('parses and round-trips assigning a parameter to an attribute', () => {
+    const { scene, draft } = setup()
+    const parameters: MethodParameter[] = [{ name: 'veces', type: 'number' }]
+    const code = 'self.vida = veces'
+
+    const ops = codeToBlocks(scene, draft, code, parameters)
+
+    expect(ops.map((op) => op.op)).toEqual(['set_from_param'])
+    expect(ops[0]?.args).toMatchObject({ name: 'vida', parameter: 'veces' })
+    expect(blocksToCode(scene, draft, ops)).toBe(code)
+  })
+
+  it('keeps an unknown identifier as advanced code', () => {
+    const { scene, draft } = setup()
+    const parameters: MethodParameter[] = [{ name: 'veces', type: 'number' }]
+
+    const ops = codeToBlocks(scene, draft, 'self.vida = otra', parameters)
 
     expect(ops.map((op) => op.op)).toEqual(['code'])
   })
