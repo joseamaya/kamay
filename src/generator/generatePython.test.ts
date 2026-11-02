@@ -512,7 +512,9 @@ describe('composition', () => {
     const robot = files.find((file) => file.path === 'Robot.py')
 
     expect(robot?.content).toContain('from Bateria import Bateria')
-    expect(robot?.content).toContain('self.bateria = Bateria("bateria")')
+    expect(robot?.content).toContain(
+      'self.bateria = Bateria(f"{name}.bateria" if name else "bateria")',
+    )
   })
 })
 

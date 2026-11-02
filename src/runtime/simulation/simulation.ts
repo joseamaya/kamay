@@ -1,6 +1,7 @@
 import {
   objectsOfClass,
   resolveAttributeDefaults,
+  resolveComponents,
   resolveMethods,
   withDomainBases,
 } from '../../model'
@@ -56,25 +57,11 @@ export class Simulation {
 
   start(): void {
     this.options.onStatus('running')
-    for (const object of this.scene.objects) {
-      const attributes: Record<string, AttributeValue> = {
-        ...resolveAttributeDefaults(this.scene, object.class),
-        ...object.attributes,
-      }
-      const runtime: RuntimeObject = {
-        id: object.id,
-        name: object.name,
-        class: object.class,
-        attributes,
-      }
-      this.objects.set(object.name, runtime)
-      for (const [name, value] of Object.entries(attributes)) {
-        this.emitState(object.name, name, value)
-      }
-      this.emitCreated(runtime)
-    }
-    this.options.onInitialized?.()
     try {
+      for (const object of this.scene.objects) {
+        this.instantiate(object.name, object.class, object.attributes, object.id)
+      }
+      this.options.onInitialized?.()
       for (const action of this.scene.orders) this.runAction(action)
     } catch (error) {
       if (!(error instanceof SimulationHalt)) throw error
@@ -87,6 +74,45 @@ export class Simulation {
 
   stop(): void {
     this.objects.clear()
+  }
+
+  /**
+   * Creates an object and, recursively, the components it owns. Component names
+   * are qualified with their owner (`carro1.motor`) so two owners never share
+   * the identity of their parts, mirroring the generated Python. A local class
+   * chain guards against composition cycles from imported projects.
+   */
+  private instantiate(
+    name: string,
+    className: string,
+    overrides: Record<string, AttributeValue> = {},
+    id: string = name,
+    path: string[] = [],
+  ): RuntimeObject {
+    const attributes: Record<string, AttributeValue> = {
+      ...resolveAttributeDefaults(this.scene, className),
+      ...overrides,
+    }
+    const runtime: RuntimeObject = { id, name, class: className, attributes }
+    this.objects.set(name, runtime)
+    for (const [attribute, value] of Object.entries(attributes)) {
+      this.emitState(name, attribute, value)
+    }
+
+    const ancestry = [...path, className]
+    for (const component of resolveComponents(this.scene, className)) {
+      if (!this.scene.classes.some((candidate) => candidate.name === component.class)) {
+        this.error(`No existe la clase ${component.class} de la parte ${component.name}.`)
+      }
+      if (ancestry.includes(component.class)) {
+        this.error(`Composición cíclica: ${className} contiene ${component.class}.`)
+      }
+      const childName = `${name}.${component.name}`
+      this.instantiate(childName, component.class, {}, childName, ancestry)
+    }
+
+    this.emitCreated(runtime)
+    return runtime
   }
 
   private runAction(action: Action): void {

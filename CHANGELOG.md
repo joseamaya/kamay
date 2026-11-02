@@ -8,6 +8,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Composition in the simulation**: the simulator now instantiates a class's
+  `components` recursively, so each part is its own observable object with
+  independent state. Component names are qualified with their owner
+  (`carro1.motor`) in both the simulator and the generated Python, fixing the
+  identity collision when two objects declare the same part. Composition cycles
+  and missing component classes are reported as errors.
 - **Domain event contract**: the runtime now streams typed domain events next to
   the scene commands: `created` (an object is born with its attributes), `call`
   and `return` (a method runs on a receiver, with its arguments) and `finished`.

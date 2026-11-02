@@ -117,6 +117,15 @@ function generateMethod(method: Method, definition: ClassDefinition, scene: Scen
   return lines.join('\n')
 }
 
+/**
+ * Constructor argument for a component. Qualifying it with the owner's name
+ * gives every part a unique identity (`carro1.motor`) even when two owners
+ * declare the same component, matching the simulation.
+ */
+function componentArgument(name: string): string {
+  return `f"{name}.${name}" if name else "${name}"`
+}
+
 function generateClassFile(
   definition: ClassDefinition,
   scene: Scene,
@@ -165,7 +174,7 @@ function generateClassFile(
     }
     for (const component of definition.components) {
       entries.push({ kind: 'component', name: component.name })
-      body.push(`self.${component.name} = ${component.class}(${pyLiteral(component.name)})`)
+      body.push(`self.${component.name} = ${component.class}(${componentArgument(component.name)})`)
     }
     if (body.length === 0) body.push('pass')
     const block = ['def __init__(self, name=None):', indent(body.join('\n'))].join('\n')

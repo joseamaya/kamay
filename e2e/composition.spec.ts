@@ -23,5 +23,7 @@ test('composes a class from another class', async ({ page }) => {
   await page.getByRole('button', { name: 'Robot.py' }).click()
 
   await expect(codeContent(page)).toContainText('from Bateria import Bateria')
-  await expect(codeContent(page)).toContainText('self.bateria = Bateria("bateria")')
+  await expect(codeContent(page)).toContainText(
+    'self.bateria = Bateria(f"{name}.bateria" if name else "bateria")',
+  )
 })

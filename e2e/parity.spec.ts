@@ -40,4 +40,40 @@ test.describe('engine parity', () => {
     await expect(panel).toContainText('contador1.valor')
     await expect(panel).not.toContainText('contador2.valor')
   })
+
+  test('a component is a separate object with a qualified identity in Python', async ({ page }) => {
+    test.setTimeout(180_000)
+
+    await page.goto('/')
+
+    await page.getByRole('button', { name: 'Nueva clase' }).click()
+    let dialog = page.getByRole('dialog')
+    await page.getByLabel('Nombre de la clase').fill('Bateria')
+    await dialog.getByRole('button', { name: 'Agregar atributo' }).click()
+    await page.getByLabel('Nombre del atributo').fill('carga')
+    await dialog.getByRole('button', { name: 'Guardar' }).click()
+
+    await page.getByRole('button', { name: 'Nueva clase' }).click()
+    dialog = page.getByRole('dialog')
+    await page.getByLabel('Nombre de la clase').fill('Carro')
+    await dialog.getByRole('button', { name: 'Agregar componente' }).click()
+    await page.getByLabel('Nombre del componente').fill('bateria')
+    await page.getByLabel('Clase del componente').selectOption('Bateria')
+    await dialog.getByRole('button', { name: 'Agregar método' }).click()
+    await page.getByLabel('Nombre del método').fill('arrancar')
+    await convertToCode(page)
+    await methodBody(page).fill('self.bateria.carga = 100')
+    await dialog.getByRole('button', { name: 'Guardar' }).click()
+
+    await page.getByRole('button', { name: 'Crear objeto de Carro' }).click()
+    await page.getByRole('button', { name: 'carro1', exact: true }).click()
+    await page.getByRole('combobox', { name: 'Método', exact: true }).selectOption('arrancar')
+    await page.getByRole('button', { name: 'Llamar método' }).click()
+
+    await page.getByRole('button', { name: 'Ejecutar' }).click()
+    await expect(page.getByText('Listo.')).toBeVisible({ timeout: 150_000 })
+
+    // The part is its own object and its state is keyed by the qualified name.
+    await expect(page.locator('[data-state-panel]')).toContainText('carro1.bateria.carga')
+  })
 })
