@@ -291,3 +291,99 @@ describe('Simulation error handling', () => {
     expect(errors[0]?.message).toContain('código avanzado')
   })
 })
+
+describe('Simulation composition', () => {
+  type Created = Extract<RuntimeMessage, { type: 'created' }>
+  const createdOf = (messages: RuntimeMessage[]): Created[] =>
+    messages.filter((message): message is Created => message.type === 'created')
+
+  function composedScene(): Scene {
+    const bateria: ClassDefinition = {
+      ...createClassDraft('Bateria'),
+      attributes: [{ name: 'carga', type: 'number', initial: 100 }],
+    }
+    const carro: ClassDefinition = {
+      ...createClassDraft('Carro'),
+      components: [{ name: 'bateria', class: 'Bateria' }],
+    }
+    let scene = upsertClass(createScene('Principal'), bateria)
+    scene = upsertClass(scene, carro)
+    scene = { ...scene, objects: [createObject(scene, 'Carro')] }
+    scene = { ...scene, objects: [...scene.objects, createObject(scene, 'Carro')] }
+    return scene
+  }
+
+  it('instantiates the parts of every object with a unique name', () => {
+    const { messages, errors } = run(composedScene())
+
+    expect(errors).toEqual([])
+    expect(createdOf(messages).map((created) => created.name)).toEqual([
+      'carro1.bateria',
+      'carro1',
+      'carro2.bateria',
+      'carro2',
+    ])
+    expect(createdOf(messages)[0]).toMatchObject({
+      className: 'Bateria',
+      attributes: { carga: 100 },
+    })
+    expect(targetState(messages, 'carro1.bateria', 'carga')).toBe(100)
+    expect(targetState(messages, 'carro2.bateria', 'carga')).toBe(100)
+  })
+
+  it('qualifies nested parts with the whole path', () => {
+    const bujia: ClassDefinition = {
+      ...createClassDraft('Bujia'),
+      attributes: [{ name: 'vida', type: 'number', initial: 1 }],
+    }
+    const motor: ClassDefinition = {
+      ...createClassDraft('Motor'),
+      components: [{ name: 'bujia', class: 'Bujia' }],
+    }
+    const carro: ClassDefinition = {
+      ...createClassDraft('Carro'),
+      components: [{ name: 'motor', class: 'Motor' }],
+    }
+    let scene = upsertClass(createScene('Principal'), bujia)
+    scene = upsertClass(scene, motor)
+    scene = upsertClass(scene, carro)
+    scene = { ...scene, objects: [createObject(scene, 'Carro')] }
+
+    const { messages, errors } = run(scene)
+
+    expect(errors).toEqual([])
+    expect(targetState(messages, 'carro1.motor.bujia', 'vida')).toBe(1)
+  })
+
+  it('reports a composition cycle instead of recursing forever', () => {
+    const a: ClassDefinition = {
+      ...createClassDraft('A'),
+      components: [{ name: 'b', class: 'B' }],
+    }
+    const b: ClassDefinition = {
+      ...createClassDraft('B'),
+      components: [{ name: 'a', class: 'A' }],
+    }
+    let scene = upsertClass(createScene('Principal'), a)
+    scene = upsertClass(scene, b)
+    scene = { ...scene, objects: [createObject(scene, 'A')] }
+
+    const { errors, statuses } = run(scene)
+
+    expect(errors[0]?.message).toContain('Composición cíclica')
+    expect(statuses.at(-1)).toBe('error')
+  })
+
+  it('reports a missing component class', () => {
+    const carro: ClassDefinition = {
+      ...createClassDraft('Carro'),
+      components: [{ name: 'motor', class: 'Motor' }],
+    }
+    let scene = upsertClass(createScene('Principal'), carro)
+    scene = { ...scene, objects: [createObject(scene, 'Carro')] }
+
+    const { errors } = run(scene)
+
+    expect(errors[0]?.message).toContain('No existe la clase Motor')
+  })
+})
