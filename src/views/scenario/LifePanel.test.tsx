@@ -38,4 +38,22 @@ describe('LifePanel', () => {
     expect(screen.getByText('Nace carro1 (Carro)')).toBeInTheDocument()
     expect(screen.getByText('carro1.prender()')).toBeInTheDocument()
   })
+
+  it('lists state changes with before and after, hiding the initial seeding', () => {
+    const log = useRuntimeLogStore.getState()
+    log.record({ type: 'state', target: 'carro1', name: 'distancia', value: 0 })
+    log.record({
+      type: 'created',
+      id: 'carro1',
+      name: 'carro1',
+      className: 'Carro',
+      attributes: {},
+    })
+    log.record({ type: 'state', target: 'carro1', name: 'distancia', value: 50 })
+
+    render(<LifePanel />)
+
+    expect(screen.getByText('carro1.distancia: 0 → 50')).toBeInTheDocument()
+    expect(screen.queryByText('carro1.distancia: 0 → 0')).not.toBeInTheDocument()
+  })
 })
