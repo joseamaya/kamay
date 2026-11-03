@@ -646,3 +646,66 @@ describe('Simulation limits', () => {
     expect(statuses.at(-1)).toBe('error')
   })
 })
+
+describe('Simulation scale', () => {
+  it('handles many instances and references without errors', () => {
+    const count = 100
+    const bateria: ClassDefinition = {
+      ...createClassDraft('Bateria'),
+      attributes: [{ name: 'carga', type: 'number', initial: 0 }],
+      methods: [
+        {
+          name: 'cargar',
+          parameters: [],
+          body: { kind: 'blocks', ops: [createChangeBlock('carga', '+', 1)] },
+        },
+      ],
+    }
+    const radio: ClassDefinition = {
+      ...createClassDraft('Radio'),
+      attributes: [{ name: 'bateria', type: 'reference', initial: '', targetClass: 'Bateria' }],
+      methods: [
+        {
+          name: 'usar',
+          parameters: [],
+          body: {
+            kind: 'blocks',
+            ops: [
+              {
+                id: 'b1',
+                op: 'call_on',
+                args: { target: 'bateria', method: 'cargar' },
+                children: [],
+              },
+            ],
+          },
+        },
+      ],
+    }
+    let scene = upsertClass(createScene('Principal'), bateria)
+    scene = upsertClass(scene, radio)
+
+    for (let index = 0; index < count; index += 1) {
+      scene = { ...scene, objects: [...scene.objects, createObject(scene, 'Bateria')] }
+    }
+    for (let index = 0; index < count; index += 1) {
+      scene = {
+        ...scene,
+        objects: [
+          ...scene.objects,
+          createObject(scene, 'Radio', { bateria: `bateria${index + 1}` }),
+        ],
+      }
+    }
+    for (let index = 0; index < count; index += 1) {
+      scene = addOrder(scene, { target: `radio${index + 1}`, method: 'usar', args: {} })
+    }
+
+    const { messages, errors } = run(scene)
+
+    expect(errors).toEqual([])
+    expect(messages.filter((message) => message.type === 'created')).toHaveLength(count * 2)
+    expect(targetState(messages, 'bateria1', 'carga')).toBe(1)
+    expect(targetState(messages, `bateria${count}`, 'carga')).toBe(1)
+  })
+})
