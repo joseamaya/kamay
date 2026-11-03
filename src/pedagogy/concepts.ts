@@ -14,7 +14,11 @@ export type ConceptId =
   | 'polymorphism'
 
 export type MisconceptionId =
-  'class_is_object' | 'shared_state' | 'inheritance_vs_composition' | 'inheritance_for_reuse'
+  | 'class_is_object'
+  | 'shared_state'
+  | 'shared_reference'
+  | 'inheritance_vs_composition'
+  | 'inheritance_for_reuse'
 
 export interface ConceptDefinition {
   id: ConceptId
@@ -40,7 +44,7 @@ export const CONCEPTS: ConceptDefinition[] = [
     id: 'state',
     prerequisites: ['attribute', 'instance'],
     level: 3,
-    misconceptions: ['shared_state'],
+    misconceptions: ['shared_state', 'shared_reference'],
   },
   { id: 'method', prerequisites: ['class'], level: 3, misconceptions: [] },
   {

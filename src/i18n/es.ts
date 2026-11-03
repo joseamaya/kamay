@@ -564,6 +564,16 @@ export const es = {
         'Una clase describe cómo serán sus objetos, pero cada instancia guarda su propio estado. Cambiar {object} no cambia {sibling}.',
       explained:
         'Sí se puede saber: cada instancia tiene su propio estado, así que {sibling} seguirá igual.',
+      shared: {
+        question:
+          'Cambiaste {object}.{attribute} a {value}. {sibling}.{via} apunta a {object}. ¿Qué valor tendrá {sibling}.{via}.{attribute}?',
+        correct:
+          '¡Correcto! {sibling}.{via} es {object}: la misma instancia, así que su estado cambia para los dos.',
+        misconception:
+          'Aunque parezcan objetos distintos, {sibling}.{via} apunta a {object}: comparten el mismo estado.',
+        explained:
+          'Sí se puede saber: {sibling}.{via} es {object}, así que cambiar {attribute} se ve en ambos.',
+      },
       retry: 'Volver a intentar',
       later: 'Ahora no',
       accept: 'Entendido',
@@ -578,6 +588,11 @@ export const es = {
         title: 'Estado compartido',
         description:
           'Cada instancia guarda su propio estado: cambiar un objeto no cambia los demás.',
+      },
+      shared_reference: {
+        title: 'Referencia compartida',
+        description:
+          'Dos objetos que apuntan a la misma instancia comparten su estado: cambiar uno se ve en el otro.',
       },
       inheritance_for_reuse: {
         title: 'Herencia para reutilizar',

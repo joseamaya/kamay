@@ -49,9 +49,21 @@ export const usePredictionStore = create<PredictionState>((set, get) => ({
     const pending = get().pending
     if (!pending) return
     const outcome: PredictionOutcome =
-      choice === 'changed' ? 'misconception' : choice === 'unchanged' ? 'correct' : 'explained'
+      choice === 'unknown'
+        ? 'explained'
+        : pending.kind === 'shared'
+          ? choice === 'changed'
+            ? 'correct'
+            : 'misconception'
+          : choice === 'changed'
+            ? 'misconception'
+            : 'correct'
     useEvidenceStore.getState().recordPrediction(pending.concept, outcome)
-    if (outcome === 'misconception') useEvidenceStore.getState().recordMisconception('shared_state')
+    if (outcome === 'misconception') {
+      useEvidenceStore
+        .getState()
+        .recordMisconception(pending.kind === 'shared' ? 'shared_reference' : 'shared_state')
+    }
     set((state) => ({
       outcome,
       askedClasses: state.askedClasses.includes(pending.className)

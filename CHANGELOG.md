@@ -8,6 +8,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Shared-reference prediction**: when an object is referenced by another,
+  editing its state asks whether the change is visible through that reference.
+  The new `shared_reference` misconception is recorded when the student expects
+  the reference to keep its own copy.
 - **Object references (schema v14)**: a class can declare a `reference`
   attribute that points to another object of the scene. The target is chosen per
   instance in the inspector, the generated Python assigns it after every object
