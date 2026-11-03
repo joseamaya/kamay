@@ -2,11 +2,12 @@ import {
   isActorShape,
   objectAppearance,
   resolveAttributeDefaults,
+  resolveAttributes,
   sceneTransform,
   withDomainBases,
 } from '../model'
 import type { AttributeValue, ObjectInstance, ResolvedAppearance, Scene } from '../model'
-import type { Actor, SceneState } from './types'
+import type { Actor, SceneLink, SceneState } from './types'
 
 export const DEFAULT_SHAPE = 'circle'
 export const DEFAULT_COLOR = '#e2603a'
@@ -43,6 +44,24 @@ export function applyAppearance(actor: Actor, appearance: ResolvedAppearance): A
   }
 }
 
+/** Reference links between scene objects, resolved by name or id. */
+export function referenceLinks(scene: Scene): SceneLink[] {
+  const links: SceneLink[] = []
+  for (const object of scene.objects) {
+    for (const attribute of resolveAttributes(scene, object.class)) {
+      if (attribute.type !== 'reference') continue
+      const target = object.attributes[attribute.name]
+      if (typeof target !== 'string' || target.length === 0) continue
+      const referenced = scene.objects.find(
+        (candidate) => candidate.id === target || candidate.name === target,
+      )
+      if (!referenced || referenced.id === object.id) continue
+      links.push({ from: object.id, to: referenced.id, label: attribute.name })
+    }
+  }
+  return links
+}
+
 export function toSceneState(scene: Scene): SceneState {
   const resolved = withDomainBases(scene)
   return {
@@ -54,6 +73,7 @@ export function toSceneState(scene: Scene): SceneState {
       }
       return applyAppearance(toActor(object, index, attributes), objectAppearance(scene, object))
     }),
+    links: referenceLinks(resolved),
     physics: { enabled: scene.physics.enabled, gravityY: scene.physics.gravityY },
   }
 }

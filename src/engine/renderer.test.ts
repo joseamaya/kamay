@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { backgroundFill, renderScene, sceneToScreen } from './renderer'
+import { backgroundFill, linkGeometry, renderScene, sceneToScreen } from './renderer'
 import type { SceneState } from './types'
 
 function createMockContext() {
@@ -153,5 +153,42 @@ describe('renderScene', () => {
     expect(ctx.moveTo).toHaveBeenCalled()
     expect(ctx.lineTo).toHaveBeenCalled()
     expect(ctx.fill).toHaveBeenCalled()
+  })
+})
+
+describe('reference links', () => {
+  const actor = (id: string, x: number, y: number) => ({
+    id,
+    name: id,
+    shape: 'circle' as const,
+    glyph: id,
+    color: '#000000',
+    transform: { position: { x, y }, rotation: 0, scale: 1 },
+    zIndex: 0,
+  })
+
+  it('computes the direction between two actors', () => {
+    expect(
+      linkGeometry(actor('a', 0, 0), actor('b', 10, 0), { width: 100, height: 100 }),
+    ).toMatchObject({
+      from: { x: 50, y: 50 },
+      to: { x: 60, y: 50 },
+      angle: 0,
+    })
+  })
+
+  it('draws the arrow for a reference between actors', () => {
+    const ctx = createMockContext()
+    const scene: SceneState = {
+      background: 'grass',
+      actors: [actor('a', -20, 0), actor('b', 20, 0)],
+      links: [{ from: 'a', to: 'b', label: 'bateria' }],
+    }
+
+    renderScene(ctx as unknown as CanvasRenderingContext2D, scene, { width: 100, height: 100 })
+
+    expect(ctx.moveTo).toHaveBeenCalled()
+    expect(ctx.lineTo).toHaveBeenCalled()
+    expect(ctx.stroke).toHaveBeenCalled()
   })
 })

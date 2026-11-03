@@ -129,6 +129,54 @@ export function sceneToScreen(
   }
 }
 
+export interface LinkGeometry {
+  from: Vector2
+  to: Vector2
+  angle: number
+}
+
+/** Screen start/end points and direction of the arrow between two actors. */
+export function linkGeometry(
+  from: Actor,
+  to: Actor,
+  options: Pick<RenderOptions, 'width' | 'height'>,
+): LinkGeometry {
+  const start = sceneToScreen(from.transform.position, options)
+  const end = sceneToScreen(to.transform.position, options)
+  return { from: start, to: end, angle: Math.atan2(end.y - start.y, end.x - start.x) }
+}
+
+function drawLink(
+  ctx: CanvasRenderingContext2D,
+  from: Actor,
+  to: Actor,
+  options: RenderOptions,
+): void {
+  const { from: start, to: end, angle } = linkGeometry(from, to, options)
+  const startX = start.x + Math.cos(angle) * (ACTOR_SIZE / 2) * Math.max(from.transform.scale, 0.2)
+  const startY = start.y + Math.sin(angle) * (ACTOR_SIZE / 2) * Math.max(from.transform.scale, 0.2)
+  const endX = end.x - Math.cos(angle) * (ACTOR_SIZE / 2) * Math.max(to.transform.scale, 0.2)
+  const endY = end.y - Math.sin(angle) * (ACTOR_SIZE / 2) * Math.max(to.transform.scale, 0.2)
+  const arrow = 8
+  const spread = Math.PI / 7
+
+  ctx.save()
+  ctx.strokeStyle = 'rgba(31, 26, 23, 0.4)'
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.moveTo(startX, startY)
+  ctx.lineTo(endX, endY)
+  ctx.stroke()
+
+  ctx.beginPath()
+  ctx.moveTo(endX, endY)
+  ctx.lineTo(endX - Math.cos(angle - spread) * arrow, endY - Math.sin(angle - spread) * arrow)
+  ctx.moveTo(endX, endY)
+  ctx.lineTo(endX - Math.cos(angle + spread) * arrow, endY - Math.sin(angle + spread) * arrow)
+  ctx.stroke()
+  ctx.restore()
+}
+
 const GLYPH_FONT = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'
 
 function polygon(ctx: CanvasRenderingContext2D, sides: number, radius: number): void {
@@ -252,6 +300,12 @@ export function renderScene(
   paintBackground(ctx, scene.background, options.width, options.height)
 
   const actors = [...scene.actors].sort((a, b) => a.zIndex - b.zIndex)
+  const byId = new Map(actors.map((actor) => [actor.id, actor]))
+  for (const link of scene.links ?? []) {
+    const from = byId.get(link.from)
+    const to = byId.get(link.to)
+    if (from && to) drawLink(ctx, from, to, options)
+  }
   for (const actor of actors) renderActor(ctx, actor, options)
 }
 

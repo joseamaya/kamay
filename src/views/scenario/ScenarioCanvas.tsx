@@ -229,7 +229,7 @@ export function ScenarioCanvas() {
       selectedId: selectedRef.current,
       images: imageCacheRef.current,
     }
-    renderScene(ctx, { background, actors }, options)
+    renderScene(ctx, { background, actors, links: controllerRef.current.getLinks() }, options)
     renderBubbles(ctx, controllerRef.current.getBubbles(), actors, options)
   }, [])
 

@@ -23,9 +23,20 @@ export interface Actor {
   zIndex: number
 }
 
+/** A reference held by an object, drawn as an arrow between two actors. */
+export interface SceneLink {
+  /** Actor id of the holder. */
+  from: string
+  /** Actor id of the referenced object. */
+  to: string
+  /** Attribute name through which the reference is held. */
+  label: string
+}
+
 export interface SceneState {
   background: string
   actors: Actor[]
+  links?: SceneLink[]
   physics?: PhysicsConfig
 }
 

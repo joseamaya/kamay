@@ -8,6 +8,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Reference arrows on the stage**: an object that holds a reference draws a
+  line with an arrowhead to the referenced object, so relationships stay visible
+  while the scene runs.
 - **Typed references (schema v15)**: a `reference` attribute can declare the
   class of its target. The inspector only offers objects of that class (and its
   subclasses), the class editor validates the choice, and the block editor offers

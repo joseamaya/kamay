@@ -3,7 +3,7 @@ import type { RuntimeCommand } from '../runtime/types'
 import { PhysicsController } from './physics'
 import { advanceTweens, createTween } from './tween'
 import type { Tween } from './tween'
-import type { Actor, Bubble, SceneState } from './types'
+import type { Actor, Bubble, SceneLink, SceneState } from './types'
 
 const MOVE_DURATION = 0.6
 const SAY_DURATION = 2.5
@@ -17,6 +17,7 @@ type ActorCommand = Exclude<RuntimeCommand, { type: 'wait' }>
  */
 export class RuntimeController {
   private actors: Actor[] = []
+  private links: SceneLink[] = []
   private bubbles: Bubble[] = []
   private tweens: Tween[] = []
   private reducedMotion = false
@@ -46,6 +47,7 @@ export class RuntimeController {
       ...actor,
       transform: { ...actor.transform, position: { ...actor.transform.position } },
     }))
+    this.links = scene.links ?? []
     this.bubbles = []
     this.tweens = []
     this.clock = 0
@@ -167,6 +169,10 @@ export class RuntimeController {
 
   getActors(): Actor[] {
     return this.actors
+  }
+
+  getLinks(): SceneLink[] {
+    return this.links
   }
 
   getBubbles(): Bubble[] {

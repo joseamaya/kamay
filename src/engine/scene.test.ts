@@ -1,7 +1,21 @@
 import { describe, expect, it } from 'vitest'
 
-import { ACTOR_CATALOG, addCatalogObject, createScene } from '../model'
-import { DEFAULT_COLOR, DEFAULT_SHAPE, applyAppearance, toActor, toSceneState } from './scene'
+import {
+  ACTOR_CATALOG,
+  addCatalogObject,
+  createClassDraft,
+  createObject,
+  createScene,
+  upsertClass,
+} from '../model'
+import {
+  DEFAULT_COLOR,
+  DEFAULT_SHAPE,
+  applyAppearance,
+  referenceLinks,
+  toActor,
+  toSceneState,
+} from './scene'
 
 const SIMULATION = { x: 5, y: -3, rotation: 90, scale: 2, mensaje: '' }
 
@@ -98,5 +112,36 @@ describe('toSceneState', () => {
     }
 
     expect(toSceneState(scene).actors[0]?.image).toBe('data:image/png;base64,abc')
+  })
+})
+
+describe('referenceLinks', () => {
+  function radioScene(reference: string) {
+    const bateria = createClassDraft('Bateria')
+    const radio = {
+      ...createClassDraft('Radio'),
+      attributes: [
+        { name: 'bateria', type: 'reference' as const, initial: '', targetClass: 'Bateria' },
+      ],
+    }
+    let scene = upsertClass(createScene('Principal'), bateria)
+    scene = upsertClass(scene, radio)
+    scene = { ...scene, objects: [createObject(scene, 'Radio', { bateria: reference })] }
+    scene = { ...scene, objects: [...scene.objects, createObject(scene, 'Bateria')] }
+    return scene
+  }
+
+  it('links a holder to the object it references', () => {
+    const scene = radioScene('bateria1')
+
+    expect(referenceLinks(scene)).toEqual([
+      { from: scene.objects[0]!.id, to: scene.objects[1]!.id, label: 'bateria' },
+    ])
+    expect(toSceneState(scene).links).toHaveLength(1)
+  })
+
+  it('ignores empty, dangling and self references', () => {
+    expect(referenceLinks(radioScene(''))).toEqual([])
+    expect(referenceLinks(radioScene('fantasma'))).toEqual([])
   })
 })
