@@ -25,8 +25,15 @@ export function PredictionDialog() {
     sibling: pending.siblingName,
     attribute: pending.attribute,
     value: formatValue(pending.newValue, messages),
+    via: pending.siblingAttribute ?? '',
   }
   const siblingValue = formatValue(pending.siblingValue, messages)
+  const shared = prediction.shared
+  const question = pending.kind === 'shared' ? shared.question : prediction.question
+  const correctText = pending.kind === 'shared' ? shared.correct : prediction.correct
+  const misconceptionText =
+    pending.kind === 'shared' ? shared.misconception : prediction.sharedState
+  const explainedText = pending.kind === 'shared' ? shared.explained : prediction.explained
 
   return (
     <Dialog
@@ -40,7 +47,7 @@ export function PredictionDialog() {
     >
       {outcome === null ? (
         <div className="flex flex-col gap-3">
-          <p>{format(prediction.question, values)}</p>
+          <p>{format(question, values)}</p>
           <div className="flex flex-col gap-2">
             <Button variant="ghost" size="sm" onClick={() => answer('changed')}>
               {format(prediction.optionChanged, { value: values.value })}
@@ -57,10 +64,10 @@ export function PredictionDialog() {
         <div className="flex flex-col gap-3">
           <p>
             {outcome === 'correct'
-              ? format(prediction.correct, values)
+              ? format(correctText, values)
               : outcome === 'misconception'
-                ? format(prediction.sharedState, values)
-                : format(prediction.explained, values)}
+                ? format(misconceptionText, values)
+                : format(explainedText, values)}
           </p>
           {outcome === 'misconception' ? (
             <Button variant="ghost" size="sm" className="self-start" onClick={retry}>

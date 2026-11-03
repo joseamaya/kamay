@@ -7,6 +7,7 @@ import { askPredictionForAttribute, usePredictionStore } from './predictionStore
 import { useProgressStore } from './progressStore'
 
 const scenario: PredictionScenario = {
+  kind: 'independent',
   concept: 'state',
   objectName: 'perro1',
   className: 'Perro',
@@ -14,6 +15,18 @@ const scenario: PredictionScenario = {
   newValue: 20,
   siblingName: 'perro2',
   siblingValue: 50,
+}
+
+const sharedScenario: PredictionScenario = {
+  kind: 'shared',
+  concept: 'state',
+  objectName: 'bateria1',
+  className: 'Bateria',
+  attribute: 'carga',
+  newValue: 50,
+  siblingName: 'radio1',
+  siblingValue: 100,
+  siblingAttribute: 'bateria',
 }
 
 beforeEach(() => {
@@ -51,6 +64,21 @@ describe('predictionStore', () => {
       misconception: 1,
       correct: 1,
     })
+  })
+
+  it('treats "unchanged" as the shared-reference misconception', () => {
+    usePredictionStore.getState().ask(sharedScenario)
+    usePredictionStore.getState().answer('unchanged')
+
+    expect(usePredictionStore.getState().outcome).toBe('misconception')
+    expect(useEvidenceStore.getState().misconceptions).toContain('shared_reference')
+  })
+
+  it('treats "changed" as correct when the object is shared', () => {
+    usePredictionStore.getState().ask(sharedScenario)
+    usePredictionStore.getState().answer('changed')
+
+    expect(usePredictionStore.getState().outcome).toBe('correct')
   })
 
   it('does not ask in free mode', () => {
