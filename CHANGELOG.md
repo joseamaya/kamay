@@ -8,6 +8,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Object life timeline**: the life panel now lists birth, method calls and
+  state changes with `before → after`, skipping the initial seeding, so a run can
+  be reconstructed in order.
 - **Self-references**: a class can declare a reference to its own class, so
   linked structures (a node pointing to another node) work from the editor,
   blocks and the simulator; the class editor offers the class itself as a target.

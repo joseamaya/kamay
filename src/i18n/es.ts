@@ -687,6 +687,7 @@ export const es = {
     title: 'Vida del objeto',
     born: 'Nace {name} ({className})',
     called: '{name}.{method}()',
+    changed: '{target}.{name}: {before} → {after}',
   },
   dialog: {
     cancel: 'Cancelar',
