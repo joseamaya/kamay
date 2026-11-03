@@ -8,6 +8,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Self-references**: a class can declare a reference to its own class, so
+  linked structures (a node pointing to another node) work from the editor,
+  blocks and the simulator; the class editor offers the class itself as a target.
 - **Reference arrows on the stage**: an object that holds a reference draws a
   line with an arrowhead to the referenced object, so relationships stay visible
   while the scene runs.

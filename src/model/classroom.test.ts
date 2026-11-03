@@ -298,6 +298,18 @@ describe('validateClassDraft', () => {
     expect(validateClassDraft(scene, draft).attributes.some(Boolean)).toBe(false)
   })
 
+  it('accepts a self-reference target class', () => {
+    const draft = createClassDraft('Nodo')
+    draft.attributes.push({
+      name: 'siguiente',
+      type: 'reference',
+      initial: '',
+      targetClass: 'Nodo',
+    })
+
+    expect(validateClassDraft(createScene('Principal'), draft).attributes.some(Boolean)).toBe(false)
+  })
+
   it('flags duplicated attributes and invalid parameters', () => {
     const draft = createClassDraft('Heroe')
     draft.attributes = [

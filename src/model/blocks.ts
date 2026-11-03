@@ -132,6 +132,7 @@ export function blockMethodsFor(
       (attribute) => attribute.name === target && attribute.type === 'reference',
     )?.targetClass
   if (!className) return []
+  if (className === definition.name) return availableBlockMethods(scene, definition)
   return resolveMethods(scene, className).map((method) => ({
     name: method.name,
     parameters: method.parameters,

@@ -453,6 +453,7 @@ export function validateClassDraft(scene: Scene, definition: ClassDefinition): C
         RESERVED_ATTRIBUTE_NAMES.has(attribute.name) ||
         (attribute.type === 'reference' &&
           attribute.targetClass != null &&
+          attribute.targetClass !== definition.name &&
           !scene.classes.some((candidate) => candidate.name === attribute.targetClass)),
     ),
     components: definition.components.map((component) => ({
