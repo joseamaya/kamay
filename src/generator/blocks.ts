@@ -1,4 +1,4 @@
-import { defaultValueFor, resolveComponents, resolveMethods } from '../model'
+import { defaultValueFor, resolveAttributes, resolveComponents, resolveMethods } from '../model'
 import type { ClassDefinition, MethodParameter, Operation, Scene } from '../model'
 import { pyLiteral } from './python'
 
@@ -18,18 +18,20 @@ function findMethodParameters(
   return []
 }
 
-/** Parameters of a method declared by one of the definition's components. */
+/** Parameters of a method reached through a component or a typed reference. */
 function findComponentMethodParameters(
   scene: Scene,
   definition: ClassDefinition,
   target: string,
   name: string,
 ): MethodParameter[] {
-  const component = resolveComponents(scene, definition.name).find((item) => item.name === target)
-  if (!component) return []
-  return (
-    resolveMethods(scene, component.class).find((method) => method.name === name)?.parameters ?? []
-  )
+  const className =
+    resolveComponents(scene, definition.name).find((item) => item.name === target)?.class ??
+    resolveAttributes(scene, definition.name).find(
+      (attribute) => attribute.name === target && attribute.type === 'reference',
+    )?.targetClass
+  if (!className) return []
+  return resolveMethods(scene, className).find((method) => method.name === name)?.parameters ?? []
 }
 
 function blockToLines(scene: Scene, definition: ClassDefinition, op: Operation): string[] {

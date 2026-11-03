@@ -96,6 +96,8 @@ export const es = {
     attribute: 'Tipo del atributo',
     value: 'Valor',
     referenceHint: 'Se asigna en cada objeto.',
+    referenceClass: 'Clase destino',
+    noReferenceClass: 'Cualquier objeto',
     addAttribute: 'Agregar atributo',
     removeAttribute: 'Quitar atributo',
     components: 'Componentes',

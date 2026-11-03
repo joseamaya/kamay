@@ -1,6 +1,10 @@
 import { format, getMessages } from '../../i18n'
-import { resolveAttributeDefaults, resolveCustomAttributesWithOrigin } from '../../model'
-import type { ObjectInstance, Scene } from '../../model'
+import {
+  classExtends,
+  resolveAttributeDefaults,
+  resolveCustomAttributesWithOrigin,
+} from '../../model'
+import type { Attribute, ObjectInstance, Scene } from '../../model'
 import { askPredictionForAttribute, useProjectStore } from '../../store'
 import { CodeIcon } from '../../ui/icons'
 import { NumberField } from '../../ui/NumberField'
@@ -30,12 +34,23 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
     askPredictionForAttribute(scene, object, name, value)
   }
 
-  const referenceOptions = [
-    { value: '', label: messages.inspector.noReference },
-    ...scene.objects
-      .filter((candidate) => candidate.id !== object.id)
-      .map((candidate) => ({ value: candidate.name, label: candidate.name })),
-  ]
+  const referenceOptionsFor = (attribute: Attribute, current: string) => {
+    const candidates = scene.objects.filter(
+      (candidate) =>
+        candidate.id !== object.id &&
+        (!attribute.targetClass ||
+          candidate.class === attribute.targetClass ||
+          classExtends(scene, candidate.class, attribute.targetClass)),
+    )
+    const options = [
+      { value: '', label: messages.inspector.noReference },
+      ...candidates.map((candidate) => ({ value: candidate.name, label: candidate.name })),
+    ]
+    if (current && !options.some((option) => option.value === current)) {
+      options.push({ value: current, label: current })
+    }
+    return options
+  }
 
   const groups = groupByOwner(resolveCustomAttributesWithOrigin(scene, object.class), object.class)
   const defaults = resolveAttributeDefaults(scene, object.class)
@@ -83,7 +98,10 @@ export function ObjectAttributes({ scene, object }: ObjectAttributesProps) {
                           label={attribute.name}
                           ariaLabel={attribute.name}
                           value={typeof value === 'string' ? value : ''}
-                          options={referenceOptions}
+                          options={referenceOptionsFor(
+                            attribute,
+                            typeof value === 'string' ? value : '',
+                          )}
                           onChange={(next) => patch({ [attribute.name]: next }, false)}
                         />
                       ) : (

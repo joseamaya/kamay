@@ -119,6 +119,7 @@ function BlockCard({
         {targets.length > 1 ? (
           <Select
             label={messages.classEditor.blockTarget}
+            ariaLabel={messages.classEditor.blockTarget}
             value={target?.name ?? ''}
             options={targets.map((candidate) => ({
               value: candidate.name ?? '',
@@ -134,6 +135,7 @@ function BlockCard({
         ) : null}
         <Select
           label={messages.classEditor.blockMethod}
+          ariaLabel={messages.classEditor.blockMethod}
           value={selected?.name ?? ''}
           options={targetMethods.map((method) => ({
             value: method.name,
@@ -167,6 +169,7 @@ function BlockCard({
       <div className="flex flex-col gap-2">
         <Select
           label={messages.classEditor.blockAttribute}
+          ariaLabel={messages.classEditor.blockAttribute}
           value={name}
           options={attributes.map((item) => ({ value: item.name, label: item.name }))}
           onChange={(next) => {
@@ -204,6 +207,7 @@ function BlockCard({
       <div className="flex flex-col gap-2">
         <Select
           label={messages.classEditor.blockAttribute}
+          ariaLabel={messages.classEditor.blockAttribute}
           value={name}
           options={attributes.map((item) => ({ value: item.name, label: item.name }))}
           onChange={(next) => {
@@ -216,6 +220,7 @@ function BlockCard({
         />
         <Select
           label={messages.classEditor.blockParameter}
+          ariaLabel={messages.classEditor.blockParameter}
           value={parameter}
           options={compatible.map((item) => ({
             value: item.name,
@@ -235,6 +240,7 @@ function BlockCard({
       <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
         <Select
           label={messages.classEditor.blockAttribute}
+          ariaLabel={messages.classEditor.blockAttribute}
           value={name}
           options={numeric.map((attribute) => ({ value: attribute.name, label: attribute.name }))}
           onChange={(next) => onChange({ ...op, args: { ...op.args, name: next } })}

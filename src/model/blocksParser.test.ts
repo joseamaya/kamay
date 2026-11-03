@@ -138,6 +138,35 @@ for _ in range(2):
     expect(ops.map((op) => op.op)).toEqual(['code'])
   })
 
+  it('parses a call through a typed reference and round-trips it', () => {
+    const bateria = createClassDraft('Bateria')
+    bateria.methods.push({
+      name: 'cargar',
+      parameters: [{ name: 'cantidad', type: 'number' }],
+      body: { kind: 'blocks', ops: [] },
+    })
+    let scene = upsertClass(createScene('Principal'), bateria)
+
+    const radio = {
+      ...createClassDraft('Radio'),
+      attributes: [
+        { name: 'bateria', type: 'reference' as const, initial: '', targetClass: 'Bateria' },
+      ],
+    }
+    scene = upsertClass(scene, radio)
+    const code = 'self.bateria.cargar(5)'
+
+    const ops = codeToBlocks(scene, radio, code)
+
+    expect(ops.map((op) => op.op)).toEqual(['call_on'])
+    expect(ops[0]?.args).toMatchObject({
+      target: 'bateria',
+      method: 'cargar',
+      values: { cantidad: 5 },
+    })
+    expect(blocksToCode(scene, radio, ops)).toBe(code)
+  })
+
   it('parses and round-trips assigning a parameter to an attribute', () => {
     const { scene, draft } = setup()
     const parameters: MethodParameter[] = [{ name: 'veces', type: 'number' }]

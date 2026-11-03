@@ -434,3 +434,15 @@ describe('reference migration', () => {
     expect(result.scenes).toEqual(scenes)
   })
 })
+
+describe('reference target class migration', () => {
+  it('upgrades a v14 project to v15 without changing its scenes', () => {
+    const scenes = [{ id: 'scene-1', name: 'Principal', classes: [], objects: [], orders: [] }]
+    const input = { version: 14, meta: { name: 'Demo' }, scenes }
+
+    const result = migrateProject(input) as { version: number; scenes: unknown[] }
+
+    expect(result.version).toBe(CURRENT_SCHEMA_VERSION)
+    expect(result.scenes).toEqual(scenes)
+  })
+})
