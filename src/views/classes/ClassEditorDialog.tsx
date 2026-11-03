@@ -8,6 +8,7 @@ import {
   availableComponentClasses,
   createClassDraft,
   hasClassDraftErrors,
+  isIdentifier,
   newAttribute,
   newComponent,
   validateClassDraft,
@@ -87,6 +88,12 @@ export function ClassEditorDialog({
     baseOptions.push({ value: draft.inherits, label: draft.inherits })
   }
   const componentClasses = availableComponentClasses(scene, draft)
+  const referenceClassNames = [
+    ...new Set([
+      ...(isIdentifier(draft.name) ? [draft.name] : []),
+      ...scene.classes.map((candidate) => candidate.name),
+    ]),
+  ]
 
   const setVisual = (name: 'color' | 'shape', value: string) => {
     setDraft((current) => ({ ...current, appearance: { ...current.appearance, [name]: value } }))
@@ -353,9 +360,9 @@ export function ClassEditorDialog({
                       }
                     >
                       <option value="">{messages.classEditor.noReferenceClass}</option>
-                      {scene.classes.map((candidate) => (
-                        <option key={candidate.name} value={candidate.name}>
-                          {candidate.name}
+                      {referenceClassNames.map((name) => (
+                        <option key={name} value={name}>
+                          {name}
                         </option>
                       ))}
                     </select>

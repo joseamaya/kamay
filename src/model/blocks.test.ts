@@ -150,4 +150,23 @@ describe('availableBlockTargets', () => {
       'cargar',
     ])
   })
+
+  it('resolves a self-reference with the draft methods', () => {
+    const nodo = {
+      ...createClassDraft('Nodo'),
+      attributes: [
+        { name: 'siguiente', type: 'reference' as const, initial: '', targetClass: 'Nodo' },
+      ],
+      methods: [{ name: 'avanzar', parameters: [], body: { kind: 'blocks' as const, ops: [] } }],
+    }
+    const scene = createScene('Principal')
+
+    expect(blockMethodsFor(scene, nodo, 'siguiente').map((method) => method.name)).toEqual([
+      'avanzar',
+    ])
+    expect(availableBlockTargets(scene, nodo).map((target) => target.name)).toEqual([
+      null,
+      'siguiente',
+    ])
+  })
 })
