@@ -16,6 +16,9 @@ interface RuntimeObject {
   attributes: Record<string, AttributeValue>
 }
 
+/** Hard cap so a runaway loop cannot freeze the interface. */
+export const MAX_SIMULATION_OPERATIONS = 100_000
+
 /** Thrown internally to stop the simulation as soon as an error is reported. */
 class SimulationHalt extends Error {}
 
@@ -46,6 +49,7 @@ export function hasRawCode(project: Project, sceneId: string | null): boolean {
 export class Simulation {
   private readonly scene: Scene
   private readonly objects = new Map<string, RuntimeObject>()
+  private operations = 0
   private readonly options: SimulationOptions
 
   constructor(options: SimulationOptions) {
@@ -57,6 +61,7 @@ export class Simulation {
   }
 
   start(): void {
+    this.operations = 0
     this.options.onStatus('running')
     try {
       for (const object of this.scene.objects) {
@@ -162,6 +167,11 @@ export class Simulation {
     args: Record<string, unknown> = {},
   ): void {
     for (const op of ops) {
+      this.operations += 1
+      if (this.operations > MAX_SIMULATION_OPERATIONS) {
+        this.error('La simulación es demasiado larga.')
+        return
+      }
       if (op.op === 'set') {
         this.setAttribute(object, String(op.args.name ?? ''), op.args.value as AttributeValue)
       } else if (op.op === 'set_from_param') {

@@ -65,6 +65,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Simulation safety cap**: a runaway block loop (for example a huge repeat)
+  now stops with an explicit error after 100k operations instead of freezing the
+  interface.
 - **Error parity**: a simulation error now stops the run at the first failure,
   sets the error status and never reports "Listo"; the orders after the failure
   do not run, matching Python's abort-on-exception.

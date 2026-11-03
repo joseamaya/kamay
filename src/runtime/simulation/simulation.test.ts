@@ -6,6 +6,7 @@ import {
   createClassDraft,
   createEmptyProject,
   createObject,
+  createRepeatBlock,
   createScene,
   createSetBlock,
   upsertClass,
@@ -611,5 +612,37 @@ describe('Simulation references', () => {
     const { errors } = run(scene)
 
     expect(errors[0]?.message).toContain('No existe la parte bateria')
+  })
+})
+
+describe('Simulation limits', () => {
+  it('stops a runaway loop with an error instead of freezing', () => {
+    const heroe: ClassDefinition = {
+      ...createClassDraft('Heroe'),
+      attributes: [{ name: 'vida', type: 'number', initial: 0 }],
+      methods: [
+        {
+          name: 'bucle',
+          parameters: [],
+          body: {
+            kind: 'blocks',
+            ops: [
+              {
+                ...createRepeatBlock(1_000_000),
+                children: [createChangeBlock('vida', '+', 1)],
+              },
+            ],
+          },
+        },
+      ],
+    }
+    let scene = upsertClass(createScene('Principal'), heroe)
+    scene = { ...scene, objects: [createObject(scene, 'Heroe')] }
+    scene = addOrder(scene, { target: 'heroe1', method: 'bucle', args: {} })
+
+    const { errors, statuses } = run(scene)
+
+    expect(errors[0]?.message).toContain('demasiado larga')
+    expect(statuses.at(-1)).toBe('error')
   })
 })
