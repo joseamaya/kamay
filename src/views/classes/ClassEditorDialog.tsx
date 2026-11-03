@@ -306,12 +306,14 @@ export function ClassEditorDialog({
                     aria-label={messages.classEditor.attribute}
                     className={INPUT_CLASS}
                     value={attribute.type}
-                    onChange={(event) =>
+                    onChange={(event) => {
+                      const type = event.target.value as AttributeType
                       updateAttribute(index, {
-                        type: event.target.value as AttributeType,
-                        initial: defaultValue(event.target.value as AttributeType),
+                        type,
+                        initial: defaultValue(type),
+                        targetClass: type === 'reference' ? (attribute.targetClass ?? null) : null,
                       })
-                    }
+                    }}
                   >
                     {typeOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -342,9 +344,21 @@ export function ClassEditorDialog({
                       <option value="false">{messages.booleans.false}</option>
                     </select>
                   ) : attribute.type === 'reference' ? (
-                    <span className="text-muted-foreground text-xs">
-                      {messages.classEditor.referenceHint}
-                    </span>
+                    <select
+                      aria-label={messages.classEditor.referenceClass}
+                      className={INPUT_CLASS}
+                      value={attribute.targetClass ?? ''}
+                      onChange={(event) =>
+                        updateAttribute(index, { targetClass: event.target.value || null })
+                      }
+                    >
+                      <option value="">{messages.classEditor.noReferenceClass}</option>
+                      {scene.classes.map((candidate) => (
+                        <option key={candidate.name} value={candidate.name}>
+                          {candidate.name}
+                        </option>
+                      ))}
+                    </select>
                   ) : (
                     <input
                       aria-label={messages.classEditor.value}

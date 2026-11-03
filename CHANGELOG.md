@@ -8,6 +8,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Typed references (schema v15)**: a `reference` attribute can declare the
+  class of its target. The inspector only offers objects of that class (and its
+  subclasses), the class editor validates the choice, and the block editor offers
+  the reference as a call destination, so `self.bateria.cargar()` can be built
+  from blocks and round-trips through the parser.
 - **Shared-reference prediction**: when an object is referenced by another,
   editing its state asks whether the change is visible through that reference.
   The new `shared_reference` misconception is recorded when the student expects

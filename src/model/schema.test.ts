@@ -55,13 +55,18 @@ describe('projectSchema', () => {
             {
               id: 'c',
               name: 'Radio',
-              attributes: [{ name: 'bateria', type: 'reference', initial: '' }],
+              attributes: [
+                { name: 'bateria', type: 'reference', initial: '', targetClass: 'Bateria' },
+              ],
             },
           ],
         },
       ],
     })
     expect(reference.success).toBe(true)
+    if (reference.success) {
+      expect(reference.data.scenes[0]?.classes[0]?.attributes[0]?.targetClass).toBe('Bateria')
+    }
 
     const parameter = projectSchema.safeParse({
       ...minimalProject,

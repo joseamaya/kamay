@@ -131,4 +131,23 @@ describe('availableBlockTargets', () => {
     ])
     expect(blockMethodsFor(scene, robot, 'nada')).toEqual([])
   })
+
+  it('lists typed references as call destinations', () => {
+    const { scene } = composed()
+    const radio = {
+      ...createClassDraft('Radio'),
+      attributes: [
+        { name: 'bateria', type: 'reference' as const, initial: '', targetClass: 'Bateria' },
+      ],
+    }
+    const withRadio = upsertClass(scene, radio)
+    const targets = availableBlockTargets(withRadio, radio)
+
+    expect(targets.map((target) => target.name)).toEqual([null, 'bateria'])
+    expect(targets[1]).toMatchObject({ className: 'Bateria' })
+    expect(targets[1]?.methods.map((method) => method.name)).toEqual(['cargar'])
+    expect(blockMethodsFor(withRadio, radio, 'bateria').map((method) => method.name)).toEqual([
+      'cargar',
+    ])
+  })
 })

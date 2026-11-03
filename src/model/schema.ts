@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 /** Current version of the persisted project model. Bump when the shape changes. */
-export const CURRENT_SCHEMA_VERSION = 14
+export const CURRENT_SCHEMA_VERSION = 15
 
 /** Identifier pattern shared by class and variable names in the generated Python. */
 export const identifierPattern = /^[A-Za-z_][A-Za-z0-9_]*$/
@@ -25,6 +25,8 @@ export const attributeSchema = z.object({
   name: z.string().regex(identifierPattern, 'invalid_identifier'),
   type: attributeTypeSchema,
   initial: z.union([z.number(), z.string(), z.boolean()]),
+  /** For a `reference` attribute: the class its target must belong to. */
+  targetClass: z.string().regex(identifierPattern, 'invalid_identifier').nullable().optional(),
 })
 
 export interface Operation {

@@ -282,6 +282,22 @@ describe('validateClassDraft', () => {
     expect(validateClassDraft(createScene('Principal'), draft).attributes.some(Boolean)).toBe(true)
   })
 
+  it('flags a reference to a class that does not exist', () => {
+    const scene = sceneWithClass(createClassDraft('Heroe'))
+    const draft = createClassDraft('Radio')
+    draft.attributes.push({
+      name: 'bateria',
+      type: 'reference',
+      initial: '',
+      targetClass: 'Fantasma',
+    })
+
+    expect(validateClassDraft(scene, draft).attributes.some(Boolean)).toBe(true)
+
+    draft.attributes[0]!.targetClass = 'Heroe'
+    expect(validateClassDraft(scene, draft).attributes.some(Boolean)).toBe(false)
+  })
+
   it('flags duplicated attributes and invalid parameters', () => {
     const draft = createClassDraft('Heroe')
     draft.attributes = [

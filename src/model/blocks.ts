@@ -1,12 +1,20 @@
 import {
   classCustomAttributes,
+  resolveAttributes,
   resolveComponents,
   resolveCustomAttributes,
   resolveMethods,
 } from './classroom'
 import { createId } from './ids'
 import type { MethodSignature } from './methods'
-import type { Attribute, AttributeType, ClassDefinition, Operation, Scene } from './schema'
+import type {
+  Attribute,
+  AttributeType,
+  ClassDefinition,
+  Component,
+  Operation,
+  Scene,
+} from './schema'
 
 export function createCallBlock(method = '', values: Record<string, unknown> = {}): Operation {
   return { id: createId('block'), op: 'call', args: { method, values }, children: [] }
@@ -86,6 +94,30 @@ export interface BlockCallTarget {
   methods: MethodSignature[]
 }
 
+/** Own and inherited components of a draft that may not be saved yet. */
+function draftComponents(scene: Scene, definition: ClassDefinition): Component[] {
+  const byName = new Map<string, Component>()
+  for (const component of definition.inherits
+    ? resolveComponents(scene, definition.inherits)
+    : []) {
+    byName.set(component.name, component)
+  }
+  for (const component of definition.components) byName.set(component.name, component)
+  return [...byName.values()]
+}
+
+/** Own and inherited attributes of a draft that may not be saved yet. */
+function draftAttributes(scene: Scene, definition: ClassDefinition): Attribute[] {
+  const byName = new Map<string, Attribute>()
+  for (const attribute of definition.inherits
+    ? resolveAttributes(scene, definition.inherits)
+    : []) {
+    byName.set(attribute.name, attribute)
+  }
+  for (const attribute of definition.attributes) byName.set(attribute.name, attribute)
+  return [...byName.values()]
+}
+
 /** Methods reachable through a call destination (`null` means the object itself). */
 export function blockMethodsFor(
   scene: Scene,
@@ -93,15 +125,20 @@ export function blockMethodsFor(
   target: string | null,
 ): MethodSignature[] {
   if (target === null) return availableBlockMethods(scene, definition)
-  const component = resolveComponents(scene, definition.name).find((item) => item.name === target)
-  if (!component) return []
-  return resolveMethods(scene, component.class).map((method) => ({
+  const component = draftComponents(scene, definition).find((item) => item.name === target)
+  const className =
+    component?.class ??
+    draftAttributes(scene, definition).find(
+      (attribute) => attribute.name === target && attribute.type === 'reference',
+    )?.targetClass
+  if (!className) return []
+  return resolveMethods(scene, className).map((method) => ({
     name: method.name,
     parameters: method.parameters,
   }))
 }
 
-/** The object plus the components that have methods, each with its callable methods. */
+/** The object plus the components and typed references that have methods. */
 export function availableBlockTargets(
   scene: Scene,
   definition: ClassDefinition,
@@ -111,14 +148,22 @@ export function availableBlockTargets(
     className: definition.name,
     methods: availableBlockMethods(scene, definition),
   }
-  const components = resolveComponents(scene, definition.name)
+  const components = draftComponents(scene, definition)
     .map((component) => ({
       name: component.name,
       className: component.class,
       methods: blockMethodsFor(scene, definition, component.name),
     }))
     .filter((component) => component.methods.length > 0)
-  return [self, ...components]
+  const references = draftAttributes(scene, definition)
+    .filter((attribute) => attribute.type === 'reference' && attribute.targetClass)
+    .map((attribute) => ({
+      name: attribute.name,
+      className: attribute.targetClass as string,
+      methods: blockMethodsFor(scene, definition, attribute.name),
+    }))
+    .filter((reference) => reference.methods.length > 0)
+  return [self, ...components, ...references]
 }
 
 /** Attributes a block can assign: the class's own and inherited custom attributes. */
